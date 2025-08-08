@@ -1,0 +1,255 @@
+#!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2025 Guus Kuiper
+# 
+# SPDX-License-Identifier: MIT
+
+import argparse
+import importlib
+import jinja2
+import os
+import sys
+import struct
+import types
+import json
+from typing import Iterable, Protocol, runtime_checkable
+
+@runtime_checkable
+class MetaObjectMeta(Protocol):
+    # Defines the expected interface for a meta object class
+
+    def __init__(self, name, cname, type, ctype, size, isfunction, f, offset, init, axi):
+        self.name = name
+        self.cname = cname
+        self.type = type
+        self.ctype = ctype
+        self.size = size
+        self.isfunction = isfunction
+        self.f = f
+        self.offset = offset
+        self.init = init
+        self.axi = axi
+
+    def _asdict(self) -> dict:
+        ...
+
+    def __repr__(self):
+        return f'MetaObjectMeta(name={self.name}, cname={self.cname}, type={self.type})'
+
+
+@runtime_checkable
+class MetaProtocol(Protocol):
+    # Defines the expected interface for a meta protocol class
+
+    @property
+    def name(self) -> str:
+        ...
+
+    @property
+    def hash(self) -> str:
+        ...
+
+    @property
+    def objects(self) -> Iterable[MetaObjectMeta]:
+        ...
+
+    @property
+    def functions(self) -> Iterable[MetaObjectMeta]:
+        ...
+
+    @property
+    def variables(self) -> Iterable[MetaObjectMeta]:
+        ...
+
+
+class MetaProtocolEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, MetaObjectMeta):
+            return obj._asdict()
+        elif isinstance(obj, MetaProtocol):
+            return {
+                'name': obj.name,
+                'hash': obj.hash,
+                'functions': [f._asdict() for f in obj.functions],
+                'variables': [v._asdict() for v in obj.variables]
+            }
+        return super().default(obj)
+
+def cstr(s):
+    bs = str(s).encode()
+    cs = '"'
+    for b in bs:
+        if b < 32 or b >= 127:
+            cs += f'\\x{b:02x}'
+        else:
+            cs += chr(b)
+    return cs + '"'
+
+def cstypes(o):
+        return {
+            'bool': 'bool',
+            'int8': 'sbyte',
+            'uint8': 'byte',
+            'int16': 'short',
+            'uint16': 'ushort',
+            'int32': 'int',
+            'uint32': 'uint',
+            'int64': 'long',
+            'uint64': 'ulong',
+            'float': 'float',
+            'double': 'double',
+            'ptr32': 'uint',
+            'ptr64': 'ulong',
+            'blob': 'byte[]',
+            'string': 'string'
+    }[o]
+
+def csetypes(o : str):
+    return 'Types.' + o[0].upper() + o[1:] if o else o
+
+def csprop(cname: str) -> str:
+    # Split by underscores, capitalize each part, and join
+    parts = cname.split('_')
+    prefix = '_' if not parts[0] else ''
+    return prefix + ''.join(part.capitalize() for part in cname.split('_'))
+
+def csfield(cname: str) -> str:
+    # Split by underscores, capitalize each part except the first, then join and prefix with '_'
+    parts = cname.split('_')
+    prefix = '_' if not parts[0] else ''
+    field_name = parts[0] + ''.join(part.capitalize() for part in parts[1:])
+    return f'{prefix}_{field_name}'
+
+def is_variable(o):
+    return not o.isfunction and o.type != 'blob' and o.type != 'string'
+
+def encode_string(x):
+    s = x.encode()
+    assert len(s) <= x.size
+    return s + bytes([0] * (x.size - len(s)))
+
+def bytes_to_hex_list(data) -> str:
+    return ', '.join(f'0x{b:02x}' for b in data)
+
+def encode(x, littleEndian=True):
+    endian = '<' if littleEndian else '>'
+    res = {
+            'bool': lambda x: struct.pack(endian + '?', not x in [False, 'false', 0]),
+            'int8': lambda x: struct.pack(endian + 'b', int(x)),
+            'uint8': lambda x: struct.pack(endian + 'B', int(x)),
+            'int16': lambda x: struct.pack(endian + 'h', int(x)),
+            'uint16': lambda x: struct.pack(endian + 'H', int(x)),
+            'int32': lambda x: struct.pack(endian + 'i', int(x)),
+            'uint32': lambda x: struct.pack(endian + 'I', int(x)),
+            'int64': lambda x: struct.pack(endian + 'q', int(x)),
+            'uint64': lambda x: struct.pack(endian + 'Q', int(x)),
+            'float': lambda x: struct.pack(endian + 'f', float(x)),
+            'double': lambda x: struct.pack(endian + 'd', float(x)),
+            'ptr32': lambda x: struct.pack(endian + 'L', int(x)),
+            'ptr64': lambda x: struct.pack(endian + 'Q', int(x)),
+            'blob': lambda x: bytearray(x),
+            'string': lambda s: s.encode() + bytes([0] * (x.size - len(s.encode())))
+    }[x.type](x.init)
+    hex_list = bytes_to_hex_list(res)
+    return hex_list
+
+
+def load_class_from_file(filepath: str, classname: str) -> MetaProtocol:
+    spec = importlib.util.spec_from_file_location(classname, filepath)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    cls = getattr(module, classname)
+    return cls
+
+def load_class_from_source(source_code: str) -> MetaProtocol:
+    module = types.ModuleType("dynamic_module")
+    exec(source_code, module.__dict__)
+    for name, obj in module.__dict__.items():
+        if isinstance(obj, object) and name.endswith('Meta') and not name.endswith('ObjectMeta'):
+            return obj
+    return None
+
+def generate(meta : MetaProtocol, tmpl_filename : str) -> tuple[str, str]:
+
+    # Validate the meta object
+    if not isinstance(meta, MetaProtocol):
+        raise TypeError("Expected a MetaProtocol instance")
+    
+    if not isinstance(next(meta.variables), MetaObjectMeta):
+        raise TypeError("Expected a MetaObjectMeta instances")
+
+    jenv = jinja2.Environment(
+        loader=jinja2.FileSystemLoader(os.path.dirname(tmpl_filename)),
+        trim_blocks=True)
+
+    jenv.filters['cstr'] = cstr
+    jenv.filters['cstypes'] = cstypes
+    jenv.filters['csetypes'] = csetypes
+    jenv.filters['csprop'] = csprop
+    jenv.filters['csfield'] = csfield
+    jenv.filters['encode'] = encode
+    jenv.tests['variable'] = is_variable
+
+    tmpl = jenv.get_template(os.path.basename(tmpl_filename))
+
+    source = tmpl.render(store=meta)
+
+    js = json.dumps(meta, cls=MetaProtocolEncoder, indent=2)
+
+    return source, js
+
+def generate_cs_meta_py(meta_py_code: str) -> str:
+    """
+    Generates a C# store file from the provided python meta source code.
+    """
+    
+    # Load the class from the source code
+    cls = load_class_from_source(meta_py_code)
+    if cls is None:
+        raise ValueError("No class found in the provided source code.")
+
+    # Create an instance of the class
+    meta_instance = cls()
+
+    template = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'store.cs.tmpl')
+
+    cs, _ = generate(meta_instance, template)
+
+    return cs
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Generator using store meta data')
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    parser.add_argument('-m', '--meta', type=str, default=os.path.join(script_dir, 'ExampleMetaMeta.py'), help='path to <store>Meta.py as input', dest="meta")
+    parser.add_argument('-t', '--template', type=str, default=os.path.join(script_dir, 'store.cs.tmpl'), help='path to jinja2 template META is to be applied to', dest="template")
+    parser.add_argument('-o', '--output', type=str, help='output file for jinja2 generated content', dest="output")
+
+    args = parser.parse_args()
+
+    file = os.path.abspath(args.meta)
+    template = os.path.abspath(args.template)
+
+    module_name = os.path.splitext(os.path.basename(file))[0]
+    loaded_meta_class = load_class_from_file(file, module_name)
+
+    meta = loaded_meta_class()  # Create instance
+
+    output_name = args.output if args.output else os.path.join(script_dir, f'{meta.name}.g.cs')
+    output_name = os.path.abspath(output_name)
+
+    cs, json = generate(meta, template)
+
+    output_dir = os.path.dirname(output_name)
+    if not os.path.exists(output_dir):
+        os.mkdir(output_dir)
+    
+    with open(output_name, 'w') as f:
+        f.write(cs)
+    
+    with open(output_name + '.json', 'w') as jf:
+        jf.write(json)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,9 @@
+.idea/
+.vs/
+obj/
+bin/
+__pycache__/
+
+*.sln.DotSettings.user
+
+*.g.cs

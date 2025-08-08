@@ -1,0 +1,163 @@
+﻿// SPDX-FileCopyrightText: 2025 Guus Kuiper
+// 
+// SPDX-License-Identifier: MIT
+
+using System.Buffers.Binary;
+using System.Text;
+
+namespace LibStored.Net.Tests;
+
+public class DebuggerTests
+{
+    [Fact]
+    public void CapabilitiesTest()
+    {
+        Debugger debugger = new();
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(debugger);
+
+        Decode(debugger, "?");
+        Assert.Single(logging.Encoded);
+        Assert.True(logging.Encoded[0].Length> 1);
+    }
+
+
+    [Theory]
+    [InlineData(null, "?")]
+    [InlineData("asdf", "asdf")]
+    public void IdentificationTest(string? input, string expected)
+    {
+        Debugger debugger = new();
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(debugger);
+
+        debugger.Identification = input;
+
+        Decode(debugger, "i");
+        Assert.Single(logging.Encoded);
+        Assert.Equal([expected], logging.Encoded);
+    }
+
+    [Theory]
+    [InlineData("", "2")]
+    [InlineData("baab", "2 baab")]
+    public void VersionTest(string input, string expected)
+    {
+        Debugger debugger = new();
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(debugger);
+
+        debugger.Versions = input;
+
+        Decode(debugger, "v");
+        Assert.Single(logging.Encoded);
+        Assert.Equal([expected], logging.Encoded);
+    }
+
+    [Fact]
+    public void EchoTest()
+    {
+        Debugger debugger = new();
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(debugger);
+
+        Decode(debugger, "eHello World!");
+        Assert.Single(logging.Encoded);
+        Assert.Equal("Hello World!", logging.Encoded[0]);
+    }
+
+    [Fact]
+    public void ReadTest()
+    {
+        Debugger debugger = new();
+        ExampleStore store = new();
+        debugger.Map(store);
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(debugger);
+
+        store.Number.Set(42);
+        Span<byte> buffer = stackalloc byte[store.Number.Size];
+        BinaryPrimitives.WriteInt32BigEndian(buffer, store.Number.Get());
+        string expected = Convert.ToHexStringLower(buffer.TrimStart((byte)0b0));
+
+        store.Fraction.Set(3.14);
+        Span<byte> bufferFaction = stackalloc byte[store.Fraction.Size];
+        BinaryPrimitives.WriteDoubleBigEndian(bufferFaction, store.Fraction.Get());
+        string expectedFactionHex = Convert.ToHexStringLower(bufferFaction.TrimStart((byte)0b0));
+
+        Decode(debugger, "r/number");
+        Assert.Single(logging.Encoded);
+        Assert.Equal(expected, logging.Encoded[0]);
+    }
+
+    [Fact]
+    public void WriteTest()
+    {
+        Debugger debugger = new();
+        ExampleStore store = new();
+        debugger.Map(store);
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(debugger);
+
+        Decode(debugger, "w12345678/number");
+        int number = store.Number.Get();
+        Assert.Equal(0x12345678, number);
+        Assert.Single(logging.Encoded);
+        Assert.Equal("!", logging.Encoded[0]);
+    }
+
+    [Theory]
+    [InlineData("/number", "2a")]
+    [InlineData("/fraction", "40091eb851eb851f")]
+    [InlineData("/text", "48656c6c6f20576f726c6421000000")]
+    public void ReadValueTest(string path, string expected)
+    {
+        Debugger debugger = new();
+        ExampleStore store = new();
+        debugger.Map(store);
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(debugger);
+
+        store.Number.Set(42);
+        store.Fraction.Set(3.14);
+        store.Text.Set("Hello World!"u8);
+
+        ReadOnlySpan<byte> text = store.Text.Get();
+
+        byte[] bytes = Encoding.UTF8.GetBytes("Hello World!\0\0\0");
+        string expectedHex = Convert.ToHexStringLower(bytes);
+
+        Decode(debugger, $"r{path}");
+        Assert.Single(logging.Encoded);
+        Assert.Equal(expected, logging.Encoded[0]);
+    }
+
+    [Fact]
+    public void ListTest()
+    {
+        Debugger debugger = new();
+        ExampleStore store = new();
+        debugger.Map(store);
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(debugger);
+
+        Decode(debugger, "l");
+        Assert.Single(logging.Encoded);
+        Assert.Equal(["3b4/number\n2f8/fraction\n02f/text\n381/four ints[0]\n381/four ints[1]\n381/four ints[3]\n381/four ints[4]\n"], logging.Encoded);
+    }
+
+    private void Encode(Debugger layer, string data, bool last = true)
+    {
+        byte[] bytes = DebuggerTests.Bytes(data);
+        layer.Encode(bytes, last);
+    }
+
+    private void Decode(Debugger layer, string data)
+    {
+        byte[] bytes = DebuggerTests.Bytes(data);
+        layer.Decode(bytes);
+    }
+
+    private static byte[] Bytes(string data) => Encoding.ASCII.GetBytes(data);
+    private static string String(byte[] data) => Encoding.ASCII.GetString(data);
+}

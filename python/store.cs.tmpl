@@ -1,0 +1,92 @@
+#nullable enable
+
+namespace LibStored.Net.Example.Console;
+
+/// <summary>
+/// {{store.name}} generated from {{store.name}}Meta.py.
+/// </summary>
+public class {{store.name}} : global::LibStored.Net.Store, global::System.ComponentModel.INotifyPropertyChanged
+{
+    private static readonly byte[] InitialBuffer = [
+        {% for o in store.variables|sort(attribute='offset') %}
+{% if o.init is not none %}{{o|encode}}, {% endif %}
+{% endfor +%}
+    ];
+
+    private readonly byte[] _data = new byte[{{ (store.variables|max(attribute='offset')).offset + (store.variables|max(attribute='offset')).size }}];
+
+    private readonly global::System.Collections.Generic.Dictionary<string, global::LibStored.Net.DebugVariantInfo> _debugDirectory = [];
+
+{% for o in store.variables %}
+{% if o is variable %}
+    private readonly global::LibStored.Net.StoreVariable<{{o.type|cstypes}}> {{o.cname|csfield}};
+{% else %}
+    private readonly global::LibStored.Net.StoreVariant<{{o.type|cstypes}}> {{o.cname|csfield}};
+{% endif %}
+{% endfor %}
+
+    public {{store.name}}()
+    {
+        {{store.name}}.InitialBuffer.AsSpan().CopyTo(_data.AsSpan());
+
+{% for o in store.variables %}
+{% if o is variable %}
+        {{o.cname|csfield}} = new global::LibStored.Net.StoreVariable<{{o.type|cstypes}}>({{o.offset}}, {{o.size}}, this);
+{% else %}
+        {{o.cname|csfield}} = new global::LibStored.Net.StoreVariant<{{o.type|cstypes}}>({{o.offset}}, {{o.size}}, this);
+{% endif %}
+{% endfor %}
+
+{% for o in store.variables %}
+        _debugDirectory.Add("/{{store.name}}/{{o.name}}", new global::LibStored.Net.DebugVariantInfo({{o.type|csetypes}}, {{o.offset}}, {{o.size}}));
+{% endfor %}
+    }
+
+    public event global::System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
+    public override global::System.Span<byte> GetBuffer() => _data;
+    public override global::System.Collections.Generic.IReadOnlyDictionary<string, global::LibStored.Net.DebugVariantInfo> GetDebugVariants() => _debugDirectory;
+
+    public override string Name => "/{{store.name}}";
+    public override string Hash => "{{store.hash}}";
+    public override int VariableCount => {{store.variables|list|count}};
+
+{% for o in store.variables %}
+    /// <summary>
+    /// {{o.name}}.
+    /// </summary>
+    public {{o.type|cstypes}} {{o.cname|csprop}} 
+    { 
+{% if o is variable %}
+        get => {{o.cname|csfield}}.Get(); 
+        set => {{o.cname|csfield}}.Set(value); 
+{% else %}
+        get => StoreVariantExtensions.Get({{o.cname|csfield}}); 
+        set => StoreVariantExtensions.Set({{o.cname|csfield}}, value); 
+{% endif %}
+    }
+
+{% endfor %}
+    /// <summary>
+    /// Notify property changed for the specific variable that changed based on the offset.
+    /// </summary>
+    /// <param name="offset"></param>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    public override void Changed(int offset)
+    {
+        if (PropertyChanged is null)
+        {
+            return;
+        }
+
+        global::System.ComponentModel.PropertyChangedEventArgs args = new(offset switch
+        {
+{% for o in store.variables|sort(attribute='offset') %}
+            {{o.offset}} => nameof({{store.name}}.{{o.cname|csprop}}),
+{% endfor %}
+            _ => throw new ArgumentOutOfRangeException(nameof(offset), offset, "Unknown offset")
+        });
+
+        PropertyChanged?.Invoke(this, args);
+    }
+}
