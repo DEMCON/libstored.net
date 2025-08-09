@@ -1,9 +1,16 @@
+# Editor and IDE specific files
 .idea/
 .vs/
-obj/
-bin/
-__pycache__/
-
 *.sln.DotSettings.user
 
+# C# build directories
+obj/
+bin/
+
+# Python specific
+.venv/
+__pycache__/
+
+
+# Ignore generated source files
 *.g.cs
