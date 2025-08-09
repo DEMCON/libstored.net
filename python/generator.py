@@ -148,6 +148,20 @@ def encode_string(x):
 def bytes_to_hex_list(data) -> str:
     return ', '.join(f'0x{b:02x}' for b in data)
 
+def encode_initial(xs : Iterable[MetaObjectMeta], littleEndian=True) -> str:
+    endian = '<' if littleEndian else '>'
+    res = bytearray()
+    for x in xs:
+        if x.init is None:
+            break
+        padding = x.offset - len(res)
+        if padding > 0:
+            # Fill with zeros until the offset
+            res += bytearray([0] * padding)  # Fill with zeros until the offset
+
+        res += encode(x, littleEndian)
+    return bytes_to_hex_list(res)
+
 def encode(x, littleEndian=True):
     endian = '<' if littleEndian else '>'
     res = {
@@ -167,8 +181,7 @@ def encode(x, littleEndian=True):
             'blob': lambda x: bytearray(x),
             'string': lambda s: s.encode() + bytes([0] * (x.size - len(s.encode())))
     }[x.type](x.init)
-    hex_list = bytes_to_hex_list(res)
-    return hex_list
+    return res
 
 
 def load_class_from_file(filepath: str, classname: str) -> MetaProtocol:
@@ -204,7 +217,7 @@ def generate(meta : MetaProtocol, tmpl_filename : str) -> tuple[str, str]:
     jenv.filters['csetypes'] = csetypes
     jenv.filters['csprop'] = csprop
     jenv.filters['csfield'] = csfield
-    jenv.filters['encode'] = encode
+    jenv.filters['encode_initial'] = encode_initial
     jenv.tests['variable'] = is_variable
 
     tmpl = jenv.get_template(os.path.basename(tmpl_filename))

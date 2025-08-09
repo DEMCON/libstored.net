@@ -8,9 +8,7 @@ namespace LibStored.Net.Example.Console;
 public class {{store.name}} : global::LibStored.Net.Store, global::System.ComponentModel.INotifyPropertyChanged
 {
     private static readonly byte[] InitialBuffer = [
-        {% for o in store.variables|sort(attribute='offset') %}
-{% if o.init is not none %}{{o|encode}}, {% endif %}
-{% endfor +%}
+        {{ store.variables|sort(attribute='offset')|encode_initial }}
     ];
 
     private readonly byte[] _data = new byte[{{ (store.variables|max(attribute='offset')).offset + (store.variables|max(attribute='offset')).size }}];
