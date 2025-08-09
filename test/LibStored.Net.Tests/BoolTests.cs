@@ -45,4 +45,23 @@ public class BoolTests
         Assert.Equal(0xff, before.Get());
         Assert.Equal(0xff, after.Get());
     }
+    
+    [Fact]
+    public void ReadBoolWriteNearTest()
+    {
+        // Arrange
+        TestStore store = new TestStore();
+        Variable<byte> before = store.GetVariable<byte>(269);
+        Variable<bool> b = store.GetVariable<bool>(270);
+        Variable<byte> after = store.GetVariable<byte>(271);
+        b.Set(false);
+        before.Set(0xff);
+        after.Set(0xff);
+        
+        // Act
+        bool value = b.Get();
+        
+        // Assert
+        Assert.False(value);
+    }
 }

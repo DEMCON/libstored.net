@@ -370,19 +370,4 @@ public class SynchronizerTests
     }
 
     private static bool Equal(DebugVariant a, DebugVariant b) => a.Offset == b.Offset && a.Size == b.Size && a.Type == b.Type && a.Get().SequenceEqual(b.Get());
-
-    private void Encode(Protocol.ProtocolLayer layer, string data, bool last = true)
-    {
-        byte[] bytes = SynchronizerTests.Bytes(data);
-        layer.Encode(bytes, last);
-    }
-
-    private void Decode(Protocol.ProtocolLayer layer, string data)
-    {
-        byte[] bytes = SynchronizerTests.Bytes(data);
-        layer.Decode(bytes);
-    }
-
-    private static byte[] Bytes(string data) => Encoding.ASCII.GetBytes(data);
-    private static string String(byte[] data) => Encoding.ASCII.GetString(data);
 }
