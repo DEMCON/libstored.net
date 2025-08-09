@@ -1,9 +1,14 @@
 root = true
 
-[*]
+[*.cs]
 indent_style = space
 indent_size = 4
 tab_width = 4
+
+[*.csproj]
+indent_style = space
+indent_size = 2
+tab_width = 2
 
 # Microsoft .NET properties
 csharp_new_line_before_members_in_object_initializers = false
