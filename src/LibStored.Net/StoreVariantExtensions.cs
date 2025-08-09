@@ -14,7 +14,7 @@ public static class StoreVariantExtensions
     public static string Get(this StoreVariant<string> variant)
     {
         ReadOnlySpan<byte> bytes = variant.Get();
-        return Encoding.UTF8.GetString(bytes);
+        return Encoding.UTF8.GetString(bytes.TrimEnd((byte)'\0'));
     }
 
     public static void Set(this StoreVariant<string> variant, string text)

@@ -13,7 +13,15 @@ public class StoreVariable<T>
 
     public StoreVariable(int offset, int size, Store store)
     {
-        if (Marshal.SizeOf<T>() != size)
+        // In C# a boolean is 4 bytes
+        if (typeof(T) == typeof(bool))
+        {
+            if (size != 1)
+            {
+                throw new ArgumentException($"Size of {typeof(T).Name} is {Marshal.SizeOf<T>()}, but expected 1.");
+            }
+        }
+        else if (Marshal.SizeOf<T>() != size)
         {
             throw new ArgumentException($"Size of {typeof(T).Name} is {Marshal.SizeOf<T>()}, but expected {size}.");
         }

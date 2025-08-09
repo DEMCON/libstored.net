@@ -24,7 +24,14 @@ public readonly ref struct Variable<T>
 
     internal Variable(Span<byte> buffer, Store store)
     {
-        if (Marshal.SizeOf<T>() > buffer.Length)
+        if (typeof(T) == typeof(bool))
+        {
+            if (1 > buffer.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(buffer), "Buffer is too small for the given type.");
+            }
+        }
+        else if (Marshal.SizeOf<T>() > buffer.Length)
         {
             throw new ArgumentOutOfRangeException(nameof(buffer), "Buffer is too small for the given type.");
         }

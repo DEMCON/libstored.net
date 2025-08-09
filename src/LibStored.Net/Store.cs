@@ -82,7 +82,7 @@ public abstract class Store
     }
 
     internal Variable<T> GetVariable<T>(int offset) where T : struct
-        => new(GetBuffer().Slice(offset, Marshal.SizeOf<T>()), this);
+        => new(GetBuffer().Slice(offset, typeof(T) == typeof(bool) ? 1 : Marshal.SizeOf<T>()), this);
 
     internal Variant GetVariant(Types type, int offset, int size) => new(GetBuffer().Slice(offset, size), type, this);
 
