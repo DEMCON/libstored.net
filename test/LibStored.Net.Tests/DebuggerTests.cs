@@ -18,9 +18,8 @@ public class DebuggerTests
 
         Decode(debugger, "?");
         Assert.Single(logging.Encoded);
-        Assert.True(logging.Encoded[0].Length> 1);
+        Assert.True(logging.Encoded[0].Length > 1);
     }
-
 
     [Theory]
     [InlineData(null, "?")]
@@ -52,6 +51,31 @@ public class DebuggerTests
         Decode(debugger, "v");
         Assert.Single(logging.Encoded);
         Assert.Equal([expected], logging.Encoded);
+    }
+
+    [Fact]
+    public void FindTest()
+    {
+        ExampleStore store = new();
+        Debugger debugger = new();
+        debugger.Map(store);
+
+        Assert.NotNull(debugger.Find("/number"));
+        Assert.Null(debugger.Find("/not number"));
+    }
+    
+    [Fact]
+    public void ListTest()
+    {
+        Debugger debugger = new();
+        ExampleStore store = new();
+        debugger.Map(store);
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(debugger);
+
+        Decode(debugger, "l");
+        Assert.Single(logging.Encoded);
+        Assert.Equal(["3b4/number\n2f8/fraction\n02f/text\n381/four ints[0]\n381/four ints[1]\n381/four ints[3]\n381/four ints[4]\n"], logging.Encoded);
     }
 
     [Fact]
@@ -132,19 +156,6 @@ public class DebuggerTests
         Assert.Equal(expected, logging.Encoded[0]);
     }
 
-    [Fact]
-    public void ListTest()
-    {
-        Debugger debugger = new();
-        ExampleStore store = new();
-        debugger.Map(store);
-        Protocol.LoggingLayer logging = new();
-        logging.Wrap(debugger);
-
-        Decode(debugger, "l");
-        Assert.Single(logging.Encoded);
-        Assert.Equal(["3b4/number\n2f8/fraction\n02f/text\n381/four ints[0]\n381/four ints[1]\n381/four ints[3]\n381/four ints[4]\n"], logging.Encoded);
-    }
 
     private void Encode(Debugger layer, string data, bool last = true)
     {

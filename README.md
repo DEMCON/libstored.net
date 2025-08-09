@@ -48,7 +48,8 @@ flowchart TD
 ### Application layers
 - Debugger
   - Supported commands (rwelvi): read, write, echo, list, identification & version.
-- Synchroniser
+  - List and find do not work when multiple stores are mapped to a single debugger.
+- Synchronizer
 
 ### Protocol layers
 - AsciiEscapeLayer

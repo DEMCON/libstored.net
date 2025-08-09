@@ -312,6 +312,23 @@ public class ProtocolTests
 
         Assert.Equal([expected], logging.Decoded);
     }
+    
+    
+    [Fact]
+    public void LoopBackTest()
+    {
+        Protocol.LoggingLayer loggingA = new();
+        Protocol.LoggingLayer loggingB = new();
+        Protocol.LoopbackLayer _ = new(loggingA, loggingB);
+
+        Encode(loggingA, "Hello ", false);
+        Encode(loggingB, "other text", false);
+        Encode(loggingA, "world!", true);
+        Encode(loggingB, "!", true);
+
+        Assert.Equal(["Hello world!"], loggingB.Decoded);
+        Assert.Equal(["other text!"], loggingA.Decoded);
+    }
 
     private void Encode(Protocol.ProtocolLayer layer, string data, bool last = true)
     {

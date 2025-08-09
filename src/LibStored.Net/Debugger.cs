@@ -60,6 +60,8 @@ public class Debugger : Protocol.ProtocolLayer
             store.Value.List(action);
         }
     }
+    
+    public DebugVariant? Find(string name) => Find(Encoding.ASCII.GetBytes(name));
 
     /// <inheritdoc />
     public override void Decode(Span<byte> buffer) => Process(buffer, this);

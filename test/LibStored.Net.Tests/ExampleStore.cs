@@ -13,7 +13,7 @@ namespace LibStored.Net.Tests;
 /// </summary>
 public class ExampleStore : Store
 {
-    private static readonly byte[] InitialBuffer = [0xFF, 0, 0, 0];
+    private static readonly byte[] InitialBuffer = [];
 
     private readonly byte[] _data = new byte[31];
     private readonly Dictionary<string, DebugVariantInfo> _debugDirectory = [];

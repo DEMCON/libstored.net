@@ -2,6 +2,7 @@
 // 
 // SPDX-License-Identifier: MIT
 
+using System.Diagnostics;
 using System.Text;
 using LibStored.Net.Synchronization;
 using Xunit.Abstractions;
@@ -18,19 +19,13 @@ public class SynchronizerTests
     }
 
     [Fact]
-    public void LoopBackTest()
+    public void SynchronizeInstantiateTest()
     {
-        Protocol.LoggingLayer loggingA = new();
-        Protocol.LoggingLayer loggingB = new();
-        Protocol.LoopbackLayer _ = new(loggingA, loggingB);
-
-        Encode(loggingA, "Hello ", false);
-        Encode(loggingB, "other text", false);
-        Encode(loggingA, "world!", true);
-        Encode(loggingB, "!", true);
-
-        Assert.Equal(["Hello world!"], loggingB.Decoded);
-        Assert.Equal(["other text!"], loggingA.Decoded);
+        // Arrange
+        SynchronizableStore<ExampleStore> store1 = new(new ExampleStore());
+        SynchronizableStore<ExampleStore> store2 = new(new ExampleStore());
+        
+        AssertSyncStoresEqual(store1, store2);
     }
 
     [Fact]
@@ -185,6 +180,155 @@ public class SynchronizerTests
         {
             PrintBuffer(s, "< ");
         }
+    }
+
+    [Fact]
+    public void Synchronize5Test()
+    {
+        var stores = new SynchronizableStore<ExampleStore>[5];
+        var synchronizers = new Synchronizer[5];
+        for (int i = 0; i < stores.Length; i++)
+        {
+            stores[i] = new SynchronizableStore<ExampleStore>(new ExampleStore());
+            synchronizers[i] = new Synchronizer();
+            synchronizers[i].Map(stores[i]);
+        }
+        
+        /*
+         * Topology: higher in tree is source.
+         *
+         *     0
+         *    /  \
+         *   1    2
+         *       /  \
+         *      3    4
+         */
+
+        Protocol.LoggingLayer logging01 = new();
+        Protocol.LoggingLayer logging10 = new();
+        Protocol.LoggingLayer logging02 = new();
+        Protocol.LoggingLayer logging20 = new();
+        Protocol.LoggingLayer logging23 = new();
+        Protocol.LoggingLayer logging32 = new();
+        Protocol.LoggingLayer logging24 = new();
+        Protocol.LoggingLayer logging42 = new();
+        
+        Protocol.LoopbackLayer loop01 = new(logging01, logging10);
+        Protocol.LoopbackLayer loop02 = new(logging02, logging20);
+        Protocol.LoopbackLayer loop23 = new(logging23, logging32);
+        Protocol.LoopbackLayer loop24 = new(logging24, logging42);
+
+        synchronizers[0].Connect(logging01);
+        synchronizers[0].Connect(logging02);
+        synchronizers[1].Connect(logging10);
+        synchronizers[2].Connect(logging20);
+        synchronizers[2].Connect(logging23);
+        synchronizers[2].Connect(logging24);
+        synchronizers[3].Connect(logging32);
+        synchronizers[4].Connect(logging42);
+
+        synchronizers[1].SyncFrom(stores[1], logging10);
+        synchronizers[2].SyncFrom(stores[2], logging20);
+        synchronizers[3].SyncFrom(stores[3], logging32);
+        synchronizers[4].SyncFrom(stores[4], logging42);
+
+        for (int i = 1; i < 5; i++)
+        {
+            AssertSyncStoresEqual(stores[0], stores[i]);
+        }
+        
+        stores[0].Store().Number.Set(1);
+        AssertSyncStoresDifferent(stores[0], stores[1]);
+        
+        // Update stores connected to 0 (1 & 2)
+        synchronizers[0].Process();
+        AssertSyncStoresEqual(stores[0], stores[1]);
+        Assert.Equal(0, stores[4].Store().Number.Value);
+        
+        // Update remaining stored connected to 2 (3 & 4)
+        synchronizers[2].Process();
+        
+        Assert.Equal(1, stores[1].Store().Number.Value);
+        Assert.Equal(1, stores[2].Store().Number.Value);
+        Assert.Equal(1, stores[3].Store().Number.Value);
+        Assert.Equal(1, stores[4].Store().Number.Value);
+        
+        for (int i = 1; i < 5; i++)
+        {
+            AssertSyncStoresEqual(stores[0], stores[i]);
+        }
+        
+        stores[3].Store().FourInts0.Set(2);
+        stores[2].Store().FourInts1.Set(3);
+        stores[4].Store().FourInts2.Set(4);
+        stores[1].Store().FourInts3.Set(5);
+        stores[0].Store().Number.Set(6);
+
+        for (int j = 0; j < 3; j++)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                synchronizers[i].Process();
+            }
+        }
+        
+        for (int i = 1; i < 5; i++)
+        {
+            AssertSyncStoresEqual(stores[0], stores[i]);
+        }
+
+        var lists = new List<DebugVariant>[5];
+        for (int i = 0; i < 5; i++)
+        {
+            var list = new List<DebugVariant>();
+            stores[i].Store().List( (_, d) =>
+            {
+                list.Add(d);
+            });
+            lists[i] = list;
+        }
+
+
+        int count = 0;
+        long timestamp = Stopwatch.GetTimestamp();
+        int maxSize = lists[0].Max(x => x.Size);
+        Span<byte> buffer = stackalloc byte[maxSize];
+        do
+        {
+            for (int batch = 0; batch < 10; batch++)
+            {
+                int i = Random.Shared.Next(0, 5);
+                var list = lists[i];
+                
+                // Pick a random object from that store (but only one in five can be written
+                // by us).
+                DebugVariant o = list[(Random.Shared.Next() % (list.Count / 5)) * 5 + i];
+
+                // Flip a bit of that object.
+                Span<byte> data = buffer.Slice(0, o.Size);
+                o.CopyTo(data);
+                data[0] = (byte)(data[0] + 1);
+                o.Set(data);
+                count++;
+            }
+            
+            // Full sync
+            for (int j = 0; j < 3; j++)
+            {
+                for (int i = 0; i < 5; i++)
+                {
+                    synchronizers[i].Process();
+                }
+            }
+            
+            for (int i = 1; i < 5; i++)
+            {
+                AssertSyncStoresEqual(stores[0], stores[i]);
+            }
+        } while (Stopwatch.GetElapsedTime(timestamp).TotalSeconds < 1);
+        
+        Assert.True(count  > 100);
+        _output.WriteLine($"Sync count {count}");
     }
 
     private void PrintBuffer(string text, string prefix = "")
