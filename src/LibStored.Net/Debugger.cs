@@ -49,7 +49,19 @@ public class Debugger : Protocol.ProtocolLayer
         set => _versions = value;
     }
 
-    public void Map(Store store, string? name = null) => _stores.Add(name ?? store.Name, store);
+    public void Map(Store store, string? name = null)
+    {
+        if (string.IsNullOrEmpty(name))
+        {
+            name = store.Name;
+        }
+        
+        if (string.IsNullOrEmpty(name) || name[0] != '/' || name.AsSpan().Slice(1).Contains('/'))
+        {
+            return;
+        }
+        _stores[name] = store;
+    }
 
     public void Unmap(string name) => _stores.Remove(name);
 
@@ -57,7 +69,7 @@ public class Debugger : Protocol.ProtocolLayer
     {
         foreach (KeyValuePair<string, Store> store in _stores)
         {
-            store.Value.List(action);
+            store.Value.List(action, store.Key);
         }
     }
     
@@ -418,7 +430,14 @@ public class Debugger : Protocol.ProtocolLayer
         if (_stores.Count == 1)
         {
             // If there is only one store, we can directly use it without prefix
-            return _stores.First().Value.Find(path);
+            Store store = _stores.First().Value;
+            DebugVariant? variant =  store.Find(path);
+            if (variant is not null)
+            {
+                return variant;
+            }
+
+            return store.Find(path.Slice(1));
         }
 
         string prefix = string.Empty;
@@ -426,13 +445,17 @@ public class Debugger : Protocol.ProtocolLayer
         if (path[0] == '/')
         {
             // Strip first / from name, and let the store eat the rest of the prefix.
-            remaining = path.Slice(1);
-            int indexPrefixEnd = remaining.IndexOf((byte)'/');
+            int indexPrefixEnd = path.Slice(1).IndexOf((byte)'/');
             if (indexPrefixEnd > 0)
             {
-                // Use the part before the first '/' as prefix
-                ReadOnlySpan<byte> prefixBytes = remaining.Slice(0, indexPrefixEnd);
+                // Use the part before the second '/' as prefix
+                ReadOnlySpan<byte> prefixBytes = path.Slice(0, indexPrefixEnd + 1);
+                remaining = path.Slice(indexPrefixEnd + 1);
                 prefix = Encoding.ASCII.GetString(prefixBytes);
+            }
+            else
+            {
+                return null;
             }
         }
 

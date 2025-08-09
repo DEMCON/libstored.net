@@ -36,7 +36,7 @@ public class {{store.name}} : global::LibStored.Net.Store, global::System.Compon
 {% endfor %}
 
 {% for o in store.variables %}
-        _debugDirectory.Add("/{{store.name}}/{{o.name}}", new global::LibStored.Net.DebugVariantInfo({{o.type|csetypes}}, {{o.offset}}, {{o.size}}));
+        _debugDirectory.Add("/{{o.name}}", new global::LibStored.Net.DebugVariantInfo({{o.type|csetypes}}, {{o.offset}}, {{o.size}}));
 {% endfor %}
     }
 

@@ -48,7 +48,7 @@ public class ExampleStore : Store
 
     public override IReadOnlyDictionary<string, DebugVariantInfo> GetDebugVariants() => _debugDirectory;
 
-    public override string Name => "ExampleStore";
+    public override string Name => "/ExampleStore";
     public override string Hash => "generated hash";
     public override int VariableCount => 7;
 

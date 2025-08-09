@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 using System.Buffers.Binary;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace LibStored.Net.Tests;
@@ -65,6 +66,47 @@ public class DebuggerTests
     }
     
     [Fact]
+    public void FindMultiTest()
+    {
+        Debugger debugger = new();
+        TestStore store1 = new();
+        TestStore store2 = new();
+        
+        // Invalid names
+        debugger.Map(store1, "first");
+        Assert.Null(debugger.Find("/default int8"));
+        debugger.Map(store1, "/fir/st");
+        Assert.Null(debugger.Find("/default int8"));
+        
+        debugger.Map(store1, "/first");
+
+        DebugVariant? v1 = debugger.Find("/default int8");
+        DebugVariant? v2 = debugger.Find("/first/default int8");
+        
+        Assert.NotNull(v1);
+        Assert.NotNull(v2);
+        Assert.Equivalent(v1, v2);
+        // Check that these variables point to the same store
+        Assert.True(v1.Buffer().Overlaps(v2.Buffer()));
+        // Abbreviations are not supported
+        
+        debugger.Map(store2, "/second");
+        Assert.Null(debugger.Find("/default int8"));
+        DebugVariant? v3 = debugger.Find("/first/default int8");
+        DebugVariant? v4 = debugger.Find("/second/default int8");
+        Assert.NotNull(v3);
+        Assert.NotNull(v4);
+        Assert.Equivalent(v3, v4);
+        // Check that these variables point to a different store
+        Assert.False(v3.Buffer().Overlaps(v4.Buffer()));
+        
+        v3 = debugger.Find("/f/default int8");
+        v4 = debugger.Find("/s/default int8");
+        Assert.NotNull(v3);
+        Assert.NotNull(v4);
+    }
+    
+    [Fact]
     public void ListTest()
     {
         Debugger debugger = new();
@@ -76,6 +118,23 @@ public class DebuggerTests
         Decode(debugger, "l");
         Assert.Single(logging.Encoded);
         Assert.Equal(["3b4/number\n2f8/fraction\n02f/text\n381/four ints[0]\n381/four ints[1]\n381/four ints[3]\n381/four ints[4]\n"], logging.Encoded);
+    }
+    
+    [Fact]
+    public void ListMultiTest()
+    {
+        Debugger debugger = new();
+        TestStore store1 = new();
+        TestStore store2 = new();
+        debugger.Map(store1, "/first");
+        debugger.Map(store2, "/second");
+
+        List<string> names = [];
+        debugger.List((name, variant) => names.Add(name));
+        
+        Assert.True(names.Count > 10);
+        Assert.Contains("/first/default int8", names);
+        Assert.Contains("/second/array bool[1]", names);
     }
 
     [Fact]

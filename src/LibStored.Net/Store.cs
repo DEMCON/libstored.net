@@ -56,8 +56,15 @@ public abstract class Store
     /// <returns></returns>
     public DebugVariant? Find(string path)
     {
-        // Remove the Name prefix if it exists
+        // Skip until '/'
+        int index = path.IndexOf('/');
+        if (index == -1)
+        {
+            return null;
+        }
+        path = path.Substring(index);
 
+        // Only support full matches from here.
         if (GetDebugVariants().TryGetValue(path, out DebugVariantInfo? info))
         {
             return new DebugVariant(this, info.Offset, info.Size, info.Type);
@@ -72,12 +79,20 @@ public abstract class Store
         return Find(pathStr);
     }
 
-    internal void List(Action<string, DebugVariant> action)
+    internal void List(Action<string, DebugVariant> action, string? prefix = null )
     {
         foreach ((string? name, DebugVariantInfo? info) in GetDebugVariants())
         {
             DebugVariant dv = new(this, info.Offset, info.Size, info.Type);
-            action(name, dv);
+            if (prefix != null)
+            {
+                string prefixedName = prefix + name;
+                action(prefixedName, dv);
+            }
+            else
+            {
+                action(name, dv);
+            }
         }
     }
 
