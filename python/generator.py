@@ -104,7 +104,25 @@ def cstypes(o):
     }[o]
 
 def csetypes(o : str):
-    return 'Types.' + o[0].upper() + o[1:] if o else o
+    t = {
+        'bool': 'Types.Bool',
+        'int8': 'Types.Int8',
+        'uint8': 'Types.Uint8',
+        'int16': 'Types.Int16',
+        'uint16': 'Types.Uint16',
+        'int32': 'Types.Int32',
+        'uint32': 'Types.Uint32',
+        'int64': 'Types.Int64',
+        'uint64': 'Types.Uint64',
+        'float': 'Types.Float',
+        'double': 'Types.Double',
+        'ptr32': 'Types.Pointer32',
+        'ptr64': 'Types.Pointer64',
+        'blob': 'Types.Blob',
+        'string': 'Types.String'
+    }[o]
+
+    return t
 
 def csprop(cname: str) -> str:
     # Split by underscores, capitalize each part, and join
