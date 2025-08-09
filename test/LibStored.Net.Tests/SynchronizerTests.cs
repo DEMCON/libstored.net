@@ -185,11 +185,11 @@ public class SynchronizerTests
     [Fact]
     public void Synchronize5Test()
     {
-        var stores = new SynchronizableStore<ExampleStore>[5];
+        var stores = new SynchronizableStore<TestStore>[5];
         var synchronizers = new Synchronizer[5];
         for (int i = 0; i < stores.Length; i++)
         {
-            stores[i] = new SynchronizableStore<ExampleStore>(new ExampleStore());
+            stores[i] = new SynchronizableStore<TestStore>(new TestStore());
             synchronizers[i] = new Synchronizer();
             synchronizers[i].Map(stores[i]);
         }
@@ -237,32 +237,32 @@ public class SynchronizerTests
             AssertSyncStoresEqual(stores[0], stores[i]);
         }
         
-        stores[0].Store().Number.Set(1);
+        stores[0].Store().DefaultUint8 = 1;
         AssertSyncStoresDifferent(stores[0], stores[1]);
         
         // Update stores connected to 0 (1 & 2)
         synchronizers[0].Process();
         AssertSyncStoresEqual(stores[0], stores[1]);
-        Assert.Equal(0, stores[4].Store().Number.Value);
+        Assert.Equal(0, stores[4].Store().DefaultUint8);
         
         // Update remaining stored connected to 2 (3 & 4)
         synchronizers[2].Process();
         
-        Assert.Equal(1, stores[1].Store().Number.Value);
-        Assert.Equal(1, stores[2].Store().Number.Value);
-        Assert.Equal(1, stores[3].Store().Number.Value);
-        Assert.Equal(1, stores[4].Store().Number.Value);
+        Assert.Equal(1, stores[1].Store().DefaultUint8);
+        Assert.Equal(1, stores[2].Store().DefaultUint8);
+        Assert.Equal(1, stores[3].Store().DefaultUint8);
+        Assert.Equal(1, stores[4].Store().DefaultUint8);
         
         for (int i = 1; i < 5; i++)
         {
             AssertSyncStoresEqual(stores[0], stores[i]);
         }
         
-        stores[3].Store().FourInts0.Set(2);
-        stores[2].Store().FourInts1.Set(3);
-        stores[4].Store().FourInts2.Set(4);
-        stores[1].Store().FourInts3.Set(5);
-        stores[0].Store().Number.Set(6);
+        stores[3].Store().DefaultInt16 = 2;
+        stores[2].Store().DefaultInt32 = 3;
+        stores[4].Store().DefaultUint8 = 4;
+        stores[1].Store().DefaultUint16 = 5;
+        stores[0].Store().DefaultUint32 = 6;
 
         for (int j = 0; j < 3; j++)
         {
@@ -288,11 +288,10 @@ public class SynchronizerTests
             lists[i] = list;
         }
 
-
         int count = 0;
-        long timestamp = Stopwatch.GetTimestamp();
         int maxSize = lists[0].Max(x => x.Size);
         Span<byte> buffer = stackalloc byte[maxSize];
+        long timestamp = Stopwatch.GetTimestamp();
         do
         {
             for (int batch = 0; batch < 10; batch++)
@@ -327,8 +326,8 @@ public class SynchronizerTests
             }
         } while (Stopwatch.GetElapsedTime(timestamp).TotalSeconds < 1);
         
-        Assert.True(count  > 100);
         _output.WriteLine($"Sync count {count}");
+        Assert.True(count  > 100);
     }
 
     private void PrintBuffer(string text, string prefix = "")
