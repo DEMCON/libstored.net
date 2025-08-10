@@ -1,8 +1,9 @@
 ﻿// SPDX-FileCopyrightText: 2025 Guus Kuiper
-// 
+//
 // SPDX-License-Identifier: MIT
 
 using System.Buffers.Binary;
+using Microsoft.Extensions.Logging;
 
 namespace LibStored.Net.Protocol;
 
@@ -39,11 +40,13 @@ public class Crc16Layer : ProtocolLayer
         0xC635, 0xB36F, 0x09C2,
     ];
 
+    private readonly ILogger<Crc16Layer>? _logger;
     private readonly ushort _init = 0xffff;
     private ushort _crc;
 
-    public Crc16Layer()
+    public Crc16Layer(ILogger<Crc16Layer>? logger = null)
     {
+        _logger = logger;
         _crc = _init; // Initialize CRC to the initial value
     }
 
@@ -63,6 +66,7 @@ public class Crc16Layer : ProtocolLayer
         if (crc != (ushort)(buffer[buffer.Length - 2] << 8 | buffer[buffer.Length - 1]))
         {
             // CRC mismatch, ignore the packet
+            _logger?.LogWarning("Invalid crc check: {Actual}, expected: {Expected}", buffer[^1], crc);
             return;
         }
 

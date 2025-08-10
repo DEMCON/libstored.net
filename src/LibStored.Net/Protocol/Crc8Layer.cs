@@ -1,6 +1,8 @@
 ﻿// SPDX-FileCopyrightText: 2025 Guus Kuiper
-// 
+//
 // SPDX-License-Identifier: MIT
+
+using Microsoft.Extensions.Logging;
 
 namespace LibStored.Net.Protocol;
 
@@ -31,11 +33,13 @@ public class Crc8Layer : ProtocolLayer
         0x4A
     ];
 
+    private readonly ILogger<Crc8Layer>? _logger;
     private readonly byte _init = 0xff;
     private byte _crc;
 
-    public Crc8Layer()
+    public Crc8Layer(ILogger<Crc8Layer>? logger = null)
     {
+        _logger = logger;
         _crc = _init; // Initialize CRC to the initial value
     }
 
@@ -55,6 +59,7 @@ public class Crc8Layer : ProtocolLayer
         if (crc != buffer[^1])
         {
             // CRC mismatch, ignore the packet
+            _logger?.LogWarning("Invalid crc check: {Actual}, expected: {Expected}", buffer[^1], crc);
             return;
         }
 
