@@ -153,7 +153,7 @@ csharp_space_between_parentheses = false
 csharp_space_between_square_brackets = false
 
 # License header
-file_header_template = // SPDX-FileCopyrightText: 2025 Guus Kuiper\n//\n// SPDX-License-Identifier: MIT
+file_header_template = SPDX-FileCopyrightText: 2025 Guus Kuiper\n\nSPDX-License-Identifier: MIT
 
 # C++ Files
 [*.{cpp,h,in}]

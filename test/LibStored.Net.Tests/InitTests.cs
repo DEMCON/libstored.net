@@ -1,6 +1,6 @@
-﻿// // SPDX-FileCopyrightText: 2025 Guus Kuiper
-// //
-// // SPDX-License-Identifier: MIT
+﻿// SPDX-FileCopyrightText: 2025 Guus Kuiper
+//
+// SPDX-License-Identifier: MIT
 
 namespace LibStored.Net.Tests;
 
@@ -13,14 +13,14 @@ public class InitTests
         Assert.Equal(42, store.InitDecimal);
         Assert.Equal(-42, store.InitNegative);
     }
-    
+
     [Fact]
     public void HexTest()
     {
         TestStore store = new TestStore();
         Assert.Equal(0x54, store.InitHex);
     }
-    
+
     [Fact]
     public void BinTest()
     {
@@ -50,7 +50,7 @@ public class InitTests
         TestStore store = new TestStore();
         string buf = store.InitString;
         Assert.Equal("a b\"c", buf);
-        
+
         Assert.Equal("", store.InitStringEmpty);
     }
 }

@@ -1,6 +1,6 @@
-﻿// // SPDX-FileCopyrightText: 2025 Guus Kuiper
-// //
-// // SPDX-License-Identifier: MIT
+﻿// SPDX-FileCopyrightText: 2025 Guus Kuiper
+//
+// SPDX-License-Identifier: MIT
 
 namespace LibStored.Net.Tests;
 
@@ -14,7 +14,7 @@ public class ByteUtilsTests
         byte swapped = ByteUtils.ReadUInt8(buffer, false);
         Assert.Equal(0x1, swapped);
     }
-    
+
     [Fact]
     public void WriteBigEndianUin16Test()
     {
@@ -23,7 +23,7 @@ public class ByteUtilsTests
         ushort swapped = ByteUtils.ReadUInt16(buffer, false);
         Assert.Equal(0x3412u, swapped);
     }
-    
+
     [Fact]
     public void WriteBigEndianUin32Test()
     {

@@ -1,6 +1,6 @@
-﻿// // SPDX-FileCopyrightText: 2025 Guus Kuiper
-// //
-// // SPDX-License-Identifier: MIT
+﻿// SPDX-FileCopyrightText: 2025 Guus Kuiper
+//
+// SPDX-License-Identifier: MIT
 
 namespace LibStored.Net.Tests;
 
@@ -16,7 +16,7 @@ public class BoolTests
         Variable<bool> b = store.GetVariable<bool>(270);
         Assert.False(b.Get());
     }
-    
+
     [Fact]
     public void WriteBoolTest()
     {
@@ -25,7 +25,7 @@ public class BoolTests
         b.Set(true);
         Assert.True(b.Get());
     }
-    
+
     [Fact]
     public void WriteNearBoolTest()
     {
@@ -37,15 +37,15 @@ public class BoolTests
         before.Set(0xff);
         after.Set(0xff);
         b.Set(true);
-        
+
         // Act
         b.Set(false);
-        
+
         // Assert
         Assert.Equal(0xff, before.Get());
         Assert.Equal(0xff, after.Get());
     }
-    
+
     [Fact]
     public void ReadBoolWriteNearTest()
     {
@@ -57,10 +57,10 @@ public class BoolTests
         b.Set(false);
         before.Set(0xff);
         after.Set(0xff);
-        
+
         // Act
         bool value = b.Get();
-        
+
         // Assert
         Assert.False(value);
     }
