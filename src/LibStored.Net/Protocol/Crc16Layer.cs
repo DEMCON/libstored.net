@@ -8,7 +8,8 @@ using Microsoft.Extensions.Logging;
 namespace LibStored.Net.Protocol;
 
 /// <summary>
-/// An 16-bit CRC is used with polynomial 0xBAAD as polynomial.
+/// A protocol layer that adds a 16-bit CRC (polynomial 0xBAAD) for message integrity.
+/// Calculates and verifies CRC values for encoded and decoded messages.
 /// </summary>
 public class Crc16Layer : ProtocolLayer
 {
@@ -44,12 +45,20 @@ public class Crc16Layer : ProtocolLayer
     private readonly ushort _init = 0xffff;
     private ushort _crc;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Crc16Layer"/> class.
+    /// </summary>
+    /// <param name="logger">Optional logger for CRC warnings.</param>
     public Crc16Layer(ILogger<Crc16Layer>? logger = null)
     {
         _logger = logger;
         _crc = _init; // Initialize CRC to the initial value
     }
 
+    /// <summary>
+    /// Decodes a buffer, verifying the CRC and passing valid data to the next layer.
+    /// </summary>
+    /// <param name="buffer">The buffer to decode, including CRC bytes.</param>
     public override void Decode(Span<byte> buffer)
     {
         if (buffer.Length < 2)
@@ -73,6 +82,11 @@ public class Crc16Layer : ProtocolLayer
         base.Decode(buffer.Slice(0, buffer.Length - 2));
     }
 
+    /// <summary>
+    /// Encodes a buffer, updating the CRC and appending it when the message is complete.
+    /// </summary>
+    /// <param name="buffer">The data to encode.</param>
+    /// <param name="last">Indicates if this is the last buffer in the message.</param>
     public override void Encode(ReadOnlySpan<byte> buffer, bool last)
     {
         foreach (byte b in buffer)

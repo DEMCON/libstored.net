@@ -6,6 +6,9 @@ using System.Buffers.Binary;
 
 namespace LibStored.Net;
 
+/// <summary>
+/// Utility methods for reading and writing primitive types to byte buffers with configurable endianness.
+/// </summary>
 public static class ByteUtils
 {
     /// <summary>

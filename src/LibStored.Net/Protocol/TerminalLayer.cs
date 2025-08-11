@@ -9,6 +9,10 @@ using Microsoft.Extensions.Logging;
 
 namespace LibStored.Net.Protocol;
 
+/// <summary>
+/// A protocol layer that wraps messages with terminal escape sequences and logs terminal messages.
+/// Handles segmentation, message boundaries, and non-debug data output.
+/// </summary>
 public class TerminalLayer : ProtocolLayer
 {
     private static readonly byte[] Start = [0x1b, 0x5f]; // Application Program Command (ESC _)
@@ -20,11 +24,16 @@ public class TerminalLayer : ProtocolLayer
     private List<byte> _data = [];
     private bool _inMessage;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TerminalLayer"/> class.
+    /// </summary>
+    /// <param name="logger">The logger to use for terminal messages.</param>
     public TerminalLayer(ILogger<TerminalLayer> logger)
     {
         _logger = logger;
     }
 
+    /// <inheritdoc />
     public override void Decode(Span<byte> buffer)
     {
         // TODO: look at cpp implementation using more efficient states.
@@ -96,6 +105,7 @@ public class TerminalLayer : ProtocolLayer
         }
     }
 
+    /// <inheritdoc />
     public override void Encode(ReadOnlySpan<byte> buffer, bool last)
     {
         int targetLength = buffer.Length + TerminalLayer.Start.Length + TerminalLayer.End.Length;
@@ -134,6 +144,10 @@ public class TerminalLayer : ProtocolLayer
         return span.Slice(0, count);
     }
 
+    /// <summary>
+    /// Handles non-debug data by logging and writing it to the console output.
+    /// </summary>
+    /// <param name="data">The non-debug data to output.</param>
     protected virtual void NonDebugData(ReadOnlySpan<byte> data)
     {
         if (data.IsEmpty)

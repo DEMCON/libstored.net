@@ -6,6 +6,10 @@ using System.Runtime.InteropServices;
 
 namespace LibStored.Net.Protocol;
 
+/// <summary>
+/// A protocol layer that segments messages into smaller chunks based on MTU and reassembles them on decode.
+/// Adds end and continue markers to indicate message boundaries.
+/// </summary>
 public class SegmentationLayer : ProtocolLayer
 {
     private const byte EndMarker = (byte)'E';
@@ -16,6 +20,10 @@ public class SegmentationLayer : ProtocolLayer
 
     private int _encoded;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SegmentationLayer"/> class.
+    /// </summary>
+    /// <param name="mtu">The maximum transmission unit (MTU) for segmentation. 0 means no limit.</param>
     public SegmentationLayer(int mtu = 0)
     {
         _mtu = mtu;

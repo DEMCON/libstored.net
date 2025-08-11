@@ -6,6 +6,9 @@ using System.Text;
 
 namespace LibStored.Net;
 
+/// <summary>
+/// Provides a protocol layer for debugging and interacting with mapped <see cref="Store"/> objects.
+/// </summary>
 public class Debugger : Protocol.ProtocolLayer
 {
     private const char CmdCapabilities = '?';
@@ -31,24 +34,41 @@ public class Debugger : Protocol.ProtocolLayer
     private string _versions;
     private const int _version = 2;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Debugger"/> class.
+    /// </summary>
+    /// <param name="identification">Optional identification string for the debugger.</param>
+    /// <param name="versions">Optional version string for the application.</param>
     public Debugger(string? identification = null, string versions = "")
     {
         _identification = identification;
         _versions = versions;
     }
 
+    /// <summary>
+    /// Gets or sets the identification string for this debugger instance.
+    /// </summary>
     public string? Identification
     {
         get => _identification;
         set => _identification = value;
     }
 
+    /// <summary>
+    /// Gets or sets the application-defined version string.
+    /// </summary>
     public string Versions
     {
         get => _versions;
         set => _versions = value;
     }
 
+
+    /// <summary>
+    /// Maps a <see cref="Store"/> to a specified name for debugging access.
+    /// </summary>
+    /// <param name="store">The store to map.</param>
+    /// <param name="name">Optional name for the store. If null, uses <see cref="Store.Name"/>.</param>
     public void Map(Store store, string? name = null)
     {
         if (string.IsNullOrEmpty(name))
@@ -63,8 +83,16 @@ public class Debugger : Protocol.ProtocolLayer
         _stores[name] = store;
     }
 
+    /// <summary>
+    /// Unmaps a previously mapped <see cref="Store"/> by name.
+    /// </summary>
+    /// <param name="name">The name of the store to unmap.</param>
     public void Unmap(string name) => _stores.Remove(name);
 
+    /// <summary>
+    /// Lists all debug variants in all mapped stores, invoking the specified action for each.
+    /// </summary>
+    /// <param name="action">The action to invoke for each variant, with the name and <see cref="DebugVariant"/>.</param>
     public void List(Action<string, DebugVariant> action)
     {
         foreach (KeyValuePair<string, Store> store in _stores)
@@ -72,7 +100,12 @@ public class Debugger : Protocol.ProtocolLayer
             store.Value.List(action, store.Key);
         }
     }
-    
+
+    /// <summary>
+    /// Finds a debug variant by its name.
+    /// </summary>
+    /// <param name="name">The name of the variant to find.</param>
+    /// <returns>The <see cref="DebugVariant"/> if found; otherwise, null.</returns>
     public DebugVariant? Find(string name) => Find(Encoding.ASCII.GetBytes(name));
 
     /// <inheritdoc />

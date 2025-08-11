@@ -32,6 +32,9 @@ internal struct DecodeUpdate
     }
 }
 
+/// <summary>
+/// Tracks and manages changes to a <see cref="Store"/>, supporting encoding and decoding of updates for synchronization.
+/// </summary>
 public class StoreJournal
 {
     private readonly Store _store;
@@ -39,6 +42,10 @@ public class StoreJournal
     private readonly Dictionary<Key, ObjectInfo> _changes;
     private Seq _seq = 1;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="StoreJournal"/> class for the specified store.
+    /// </summary>
+    /// <param name="store">The store to track changes for.</param>
     public StoreJournal(Store store)
     {
         _changes = new Dictionary<Key, ObjectInfo>(store.VariableCount);
@@ -52,16 +59,19 @@ public class StoreJournal
         };
     }
 
+    /// <summary>
+    /// Gets the current sequence number for the journal.
+    /// </summary>
     public Seq Seq => _seq;
 
     internal IEnumerable<KeyValuePair<Key, ObjectInfo>> Changes() => _changes;
 
     /// <summary>
-    /// Record a change.
+    /// Records a change for the specified key and size. Optionally inserts if new.
     /// </summary>
-    /// <param name="key"></param>
-    /// <param name="size">The size may change to strings for example.</param>
-    /// <param name="insertIfNew"></param>
+    /// <param name="key">The key of the changed object.</param>
+    /// <param name="size">The size of the changed object.</param>
+    /// <param name="insertIfNew">If true, inserts the change if the key is not present.</param>
     public void Changed(Key key, uint size, bool insertIfNew = true)
     {
         if (_changes.TryGetValue(key, out ObjectInfo? info))
@@ -81,6 +91,13 @@ public class StoreJournal
         }
     }
 
+    /// <summary>
+    /// Returns a span into the store's buffer for the specified key and length.
+    /// </summary>
+    /// <param name="key">The key offset in the buffer.</param>
+    /// <param name="len">The length of the span.</param>
+    /// <param name="ok">Set to false if the range is invalid.</param>
+    /// <returns>A span of bytes representing the requested buffer region.</returns>
     public Span<byte> KeyToBuffer(Key key, uint len, ref bool ok)
     {
         if (ok && len > 0 && key + len > GetBuffer().Length)
@@ -91,6 +108,12 @@ public class StoreJournal
         return _store.GetBuffer().Slice((int)key, (int)len);
     }
 
+    /// <summary>
+    /// Determines whether the specified key has changed since the given sequence number.
+    /// </summary>
+    /// <param name="key">The key to check.</param>
+    /// <param name="since">The sequence number to compare against.</param>
+    /// <returns>True if the key has changed since the sequence; otherwise, false.</returns>
     public bool HasChanged(Key key, Seq since)
     {
         if (!_changes.TryGetValue(key, out ObjectInfo? info))
@@ -101,8 +124,18 @@ public class StoreJournal
         return info.Seq >= since;
     }
 
+    /// <summary>
+    /// Encodes the store's hash value into the protocol layer.
+    /// </summary>
+    /// <param name="layer">The protocol layer to encode into.</param>
+    /// <param name="last">Indicates if this is the last buffer in the message.</param>
     public void EncodeHash(Protocol.ProtocolLayer layer, bool last) => StoreJournal.EncodeHash(layer, _store.Hash, last);
 
+    /// <summary>
+    /// Determines whether any key has changed since the given sequence number.
+    /// </summary>
+    /// <param name="since">The sequence number to compare against.</param>
+    /// <returns>True if any key has changed since the sequence; otherwise, false.</returns>
     public bool HasChanged(Seq since)
     {
         if (_changes.Count == 0)
@@ -114,11 +147,11 @@ public class StoreJournal
     }
 
     /// <summary>
-    /// Encode the full store's buffer.
+    /// Encodes the full store's buffer into the protocol layer.
     /// </summary>
-    /// <param name="layer"></param>
-    /// <param name="last"></param>
-    /// <returns></returns>
+    /// <param name="layer">The protocol layer to encode into.</param>
+    /// <param name="last">Indicates if this is the last buffer in the message.</param>
+    /// <returns>The new sequence number after encoding.</returns>
     public Seq EncodeBuffer(Protocol.ProtocolLayer layer, bool last)
     {
         try
@@ -136,10 +169,10 @@ public class StoreJournal
     }
 
     /// <summary>
-    /// Decodes to the full store's buffer.
+    /// Decodes the provided buffer into the store's buffer.
     /// </summary>
-    /// <param name="buffer"></param>
-    /// <returns></returns>
+    /// <param name="buffer">The buffer to decode from.</param>
+    /// <returns>The new sequence number after decoding, or 0 if the buffer is too small.</returns>
     public Seq DecodeBuffer(ReadOnlySpan<byte> buffer)
     {
         if (buffer.Length < GetBuffer().Length)
@@ -163,11 +196,11 @@ public class StoreJournal
     }
 
     /// <summary>
-    /// Decode and apply updates from a message.
+    /// Decodes and applies updates from a message buffer.
     /// </summary>
-    /// <param name="buffer"></param>
-    /// <param name="recordAll"></param>
-    /// <returns></returns>
+    /// <param name="buffer">The buffer containing updates.</param>
+    /// <param name="recordAll">If true, records all updates even if not present.</param>
+    /// <returns>The new sequence number after decoding, or 0 if an error occurred.</returns>
     public Seq DecodeUpdates(ReadOnlySpan<byte> buffer, bool recordAll)
     {
         bool ok = true;
@@ -211,6 +244,13 @@ public class StoreJournal
         return ok ? BumpSeq() : 0;
     }
 
+    /// <summary>
+    /// Encodes all updates since the specified sequence number into the buffer.
+    /// </summary>
+    /// <param name="buffer">The buffer to write updates into.</param>
+    /// <param name="since">The sequence number to filter updates.</param>
+    /// <param name="bytesWritten">Outputs the number of bytes written.</param>
+    /// <returns>The new sequence number after encoding.</returns>
     public Seq EncodeUpdates(Span<byte> buffer, Seq since, out int bytesWritten)
     {
         bytesWritten = 0;
@@ -227,6 +267,10 @@ public class StoreJournal
         return BumpSeq();
     }
 
+    /// <summary>
+    /// Gets the recommended buffer size for update operations.
+    /// </summary>
+    /// <returns>The size in bytes required for the update buffer.</returns>
     public int UpdateBufferSize() => GetBuffer().Length + _store.VariableCount * 8;
 
     private void EncodeUpdate(Span<byte> buffer, ObjectInfo info)

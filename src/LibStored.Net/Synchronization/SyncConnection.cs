@@ -9,13 +9,28 @@ using Seq = ulong;
 
 namespace LibStored.Net.Synchronization;
 
+/// <summary>
+/// Holds synchronization information for a <see cref="StoreJournal"/> in a <see cref="SyncConnection"/>.
+/// </summary>
 public class StoreInfo
 {
+    /// <summary>
+    /// Gets or sets the last known sequence number for the store.
+    /// </summary>
     public Seq Seq { get; set; }
+    /// <summary>
+    /// Gets or sets the outgoing ID for the store in the connection.
+    /// </summary>
     public Id IdOut { get; set; }
+    /// <summary>
+    /// Gets or sets a value indicating whether this store is a source in the connection.
+    /// </summary>
     public bool Source { get; set; }
 }
 
+/// <summary>
+/// Represents a protocol connection for synchronizing one or more <see cref="StoreJournal"/> instances.
+/// </summary>
 public class SyncConnection : Protocol.ProtocolLayer
 {
     // Microsoft documentation and the .NET runtime itself often use 256 or 512 bytes as a practical threshold for stackalloc.
@@ -32,16 +47,29 @@ public class SyncConnection : Protocol.ProtocolLayer
 
     private Id _inIdNext;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SyncConnection"/> class and wraps the specified protocol layer.
+    /// </summary>
+    /// <param name="synchronizer">The synchronizer managing the stores.</param>
+    /// <param name="connection">The protocol layer to wrap.</param>
     public SyncConnection(Synchronizer synchronizer, Protocol.ProtocolLayer connection) : this(synchronizer)
     {
         connection.Wrap(this);
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SyncConnection"/> class.
+    /// </summary>
+    /// <param name="synchronizer">The synchronizer managing the stores.</param>
     public SyncConnection(Synchronizer synchronizer)
     {
         _synchronizer = synchronizer;
     }
 
+    /// <summary>
+    /// Marks the specified store as a source and initiates synchronization.
+    /// </summary>
+    /// <param name="store">The store to mark as a source.</param>
     public void Source(StoreJournal store)
     {
         if (_stores.TryGetValue(store, out StoreInfo? info))
@@ -64,6 +92,10 @@ public class SyncConnection : Protocol.ProtocolLayer
         EncodeId(id, true);
     }
 
+    /// <summary>
+    /// Removes the specified store from the connection and sends a Bye message if needed.
+    /// </summary>
+    /// <param name="store">The store to remove.</param>
     public void Drop(StoreJournal store)
     {
         bool bye = false;
@@ -88,6 +120,11 @@ public class SyncConnection : Protocol.ProtocolLayer
         store.EncodeHash(this, true);
     }
 
+    /// <summary>
+    /// Processes and sends updates for the specified store if it has changed.
+    /// </summary>
+    /// <param name="store">The store to process.</param>
+    /// <returns>The new sequence number after processing, or 0 if no update was sent.</returns>
     public Seq Process(StoreJournal store)
     {
         if (!_stores.TryGetValue(store, out StoreInfo? info))
@@ -305,8 +342,16 @@ public class SyncConnection : Protocol.ProtocolLayer
         base.Decode(buffer);
     }
 
+    /// <summary>
+    /// Determines whether the specified store is currently being synchronized by this connection.
+    /// </summary>
+    /// <param name="journal">The store journal to check.</param>
+    /// <returns>True if the store is being synchronized; otherwise, false.</returns>
     public bool IsSynchronizing(StoreJournal journal) => _stores.ContainsKey(journal);
 
+    /// <summary>
+    /// Resets the connection, drops all non-source stores, and sends Hello messages for sources.
+    /// </summary>
     public override void Reset()
     {
         EncodeCmd(SyncConnection.Bye);

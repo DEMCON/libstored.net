@@ -6,22 +6,39 @@ using System.Runtime.InteropServices;
 
 namespace LibStored.Net.Protocol;
 
+/// <summary>
+/// A protocol layer that simulates loopback communication between two protocol layers.
+/// Provides bidirectional data transfer for testing or in-memory transport.
+/// </summary>
 public class LoopbackLayer : ProtocolLayer
 {
     private readonly LoopbackSingleLayer _a2b;
     private readonly LoopbackSingleLayer _b2a;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="LoopbackLayer"/> class, connecting two protocol layers.
+    /// </summary>
+    /// <param name="a">The first protocol layer.</param>
+    /// <param name="b">The second protocol layer.</param>
     public LoopbackLayer(ProtocolLayer a, ProtocolLayer b)
     {
         _a2b = new LoopbackSingleLayer(a, b);
         _b2a = new LoopbackSingleLayer(b, a);
     }
 
+    /// <summary>
+    /// Represents a single direction of loopback communication between two protocol layers.
+    /// </summary>
     public class LoopbackSingleLayer : ProtocolLayer
     {
         private readonly ProtocolLayer _to;
         private readonly List<byte> _buffer = [];
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LoopbackSingleLayer"/> class.
+        /// </summary>
+        /// <param name="from">The source protocol layer.</param>
+        /// <param name="to">The destination protocol layer.</param>
         public LoopbackSingleLayer(ProtocolLayer from, ProtocolLayer to)
         {
             _to = to;

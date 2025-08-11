@@ -6,10 +6,21 @@ using System.Runtime.InteropServices;
 
 namespace LibStored.Net.Protocol;
 
+/// <summary>
+/// A protocol layer that encodes and decodes ASCII escape sequences.
+/// Escapes non-printable ASCII bytes and the escape character itself for safe transmission.
+/// </summary>
 public class AsciiEscapeLayer : ProtocolLayer
 {
+    /// <summary>
+    /// The byte value used as the escape character (0x7f).
+    /// </summary>
     public const byte EscapeCharacter = 0x7f;
 
+    /// <summary>
+    /// Decodes a buffer containing ASCII escape sequences, removing escapes and restoring original bytes.
+    /// </summary>
+    /// <param name="buffer">The buffer to decode.</param>
     public override void Decode(Span<byte> buffer)
     {
         // Example decoding logic for ASCII escape sequences
@@ -50,6 +61,11 @@ public class AsciiEscapeLayer : ProtocolLayer
         base.Decode(resSpan);
     }
 
+    /// <summary>
+    /// Encodes a buffer, escaping non-printable ASCII bytes and the escape character.
+    /// </summary>
+    /// <param name="buffer">The buffer to encode.</param>
+    /// <param name="last">Indicates if this is the last buffer in the message.</param>
     public override void Encode(ReadOnlySpan<byte> buffer, bool last)
     {
         // Try to optimize the encoding by checking if we need to escape any characters

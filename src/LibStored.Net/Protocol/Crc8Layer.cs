@@ -7,7 +7,8 @@ using Microsoft.Extensions.Logging;
 namespace LibStored.Net.Protocol;
 
 /// <summary>
-/// An 8-bit CRC is used with polynomial 0xA6.
+/// A protocol layer that adds an 8-bit CRC (polynomial 0xA6) for message integrity.
+/// Calculates and verifies CRC values for encoded and decoded messages.
 /// </summary>
 public class Crc8Layer : ProtocolLayer
 {
@@ -37,12 +38,20 @@ public class Crc8Layer : ProtocolLayer
     private readonly byte _init = 0xff;
     private byte _crc;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Crc8Layer"/> class.
+    /// </summary>
+    /// <param name="logger">Optional logger for CRC warnings.</param>
     public Crc8Layer(ILogger<Crc8Layer>? logger = null)
     {
         _logger = logger;
         _crc = _init; // Initialize CRC to the initial value
     }
 
+    /// <summary>
+    /// Decodes a buffer, verifying the CRC and passing valid data to the next layer.
+    /// </summary>
+    /// <param name="buffer">The buffer to decode, including CRC byte.</param>
     public override void Decode(Span<byte> buffer)
     {
         if (buffer.IsEmpty)
@@ -66,6 +75,11 @@ public class Crc8Layer : ProtocolLayer
         base.Decode(buffer.Slice(0, buffer.Length - 1));
     }
 
+    /// <summary>
+    /// Encodes a buffer, updating the CRC and appending it when the message is complete.
+    /// </summary>
+    /// <param name="buffer">The data to encode.</param>
+    /// <param name="last">Indicates if this is the last buffer in the message.</param>
     public override void Encode(ReadOnlySpan<byte> buffer, bool last)
     {
         foreach (byte b in buffer)

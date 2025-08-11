@@ -4,15 +4,59 @@
 
 namespace LibStored.Net;
 
+/// <summary>
+/// Provides extension methods for the <see cref="Types"/> enum to query type characteristics and perform type mapping.
+/// </summary>
 public static class TypesExtensions
 {
+    /// <summary>
+    /// Determines whether the type has a fixed size.
+    /// </summary>
+    /// <param name="type">The type to check.</param>
+    /// <returns>True if the type is fixed size; otherwise, false.</returns>
     public static bool IsFixed(this Types type) => (type & Types.FlagFixed) != 0;
+
+    /// <summary>
+    /// Determines whether the type represents a function.
+    /// </summary>
+    /// <param name="type">The type to check.</param>
+    /// <returns>True if the type is a function; otherwise, false.</returns>
     public static bool IsFunction(this Types type) => (type & Types.FlagFunction) != 0;
+
+    /// <summary>
+    /// Determines whether the type is an integer type.
+    /// </summary>
+    /// <param name="type">The type to check.</param>
+    /// <returns>True if the type is an integer; otherwise, false.</returns>
     public static bool IsInt(this Types type) => (type & Types.FlagInt) != 0;
+
+    /// <summary>
+    /// Determines whether the type is signed.
+    /// </summary>
+    /// <param name="type">The type to check.</param>
+    /// <returns>True if the type is signed; otherwise, false.</returns>
     public static bool IsSigned(this Types type) => (type & Types.FlagSigned) != 0;
+
+    /// <summary>
+    /// Determines whether the type is a special type (undefined length).
+    /// </summary>
+    /// <param name="type">The type to check.</param>
+    /// <returns>True if the type is special; otherwise, false.</returns>
     public static bool IsSpecial(this Types type) => (type & Types.MaskFlags) == 0;
+
+    /// <summary>
+    /// Gets the size in bytes of the type, or 0 if not fixed size.
+    /// </summary>
+    /// <param name="type">The type to get the size of.</param>
+    /// <returns>The size in bytes, or 0 if not fixed size.</returns>
     public static int Size(this Types type) => !type.IsFixed() ? 0 : (int)(type & Types.MaskSize) + 1;
 
+    /// <summary>
+    /// Gets the <see cref="Types"/> value corresponding to the specified generic type parameter.
+    /// </summary>
+    /// <typeparam name="T">The type to map.</typeparam>
+    /// <returns>The corresponding <see cref="Types"/> value.</returns>
+    /// <exception cref="ArgumentException">Thrown if the type is not supported.</exception>
     public static Types GetType<T>()
     {
         Type t = typeof(T);

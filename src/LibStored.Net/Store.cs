@@ -8,14 +8,31 @@ using System.Text;
 
 namespace LibStored.Net;
 
+/// <summary>
+/// Contains metadata about a debug variant, including its type, offset, and size.
+/// </summary>
 public record DebugVariantInfo(Types Type, int Offset, int Size);
 
+/// <summary>
+/// Represents a base class for a store containing variables and supporting hooks and debug operations.
+/// </summary>
 public abstract class Store
 {
     private readonly Lock _lock = new();
 
+    /// <summary>
+    /// Gets the name of the store.
+    /// </summary>
     public abstract string Name { get; }
+
+    /// <summary>
+    /// Gets the hash of the store.
+    /// </summary>
     public abstract string Hash { get; }
+    
+    /// <summary>
+    /// Gets the number of variables in the store.
+    /// </summary>
     public abstract int VariableCount { get; }
 
     /// <summary>
@@ -52,8 +69,8 @@ public abstract class Store
     /// <summary>
     /// Find a variant by its path.
     /// </summary>
-    /// <param name="path"></param>
-    /// <returns></returns>
+    /// <param name="path">The path to the variant.</param>
+    /// <returns>The <see cref="DebugVariant"/> if found; otherwise, null.</returns>
     public DebugVariant? Find(string path)
     {
         // Skip until '/'
