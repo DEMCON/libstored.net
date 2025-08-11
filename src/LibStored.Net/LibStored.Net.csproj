@@ -14,7 +14,6 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <PackageIcon>libstored.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
         <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
         <PackageProjectUrl>https://github.com/DEMCON/libstored.net</PackageProjectUrl>
         <RepositoryUrl>https://github.com/DEMCON/libstored.net</RepositoryUrl>
