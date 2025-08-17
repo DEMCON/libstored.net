@@ -220,6 +220,26 @@ public class ProtocolTests
     }
 
     [Theory]
+    [InlineData("123", "123")]
+    [InlineData("123", "12", "3")]
+    [InlineData("123", "12", "3", "")]
+    public void BufferLayerEncodeTest(string expected, params string[] inputs)
+    {
+        Protocol.BufferLayer bufferLayer = new();
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(bufferLayer);
+
+        for (int i = 0; i < inputs.Length; i++)
+        {
+            string input = inputs[i];
+            Encode(bufferLayer, input, i == inputs.Length - 1);
+        }
+
+        Assert.Single(logging.Encoded);
+        Assert.Equal([expected], logging.Encoded);
+    }
+
+    [Theory]
     [InlineData("123E", "123")]
     [InlineData("E", "")]
     [InlineData("1234567E", "1234567")]
