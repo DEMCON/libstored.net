@@ -22,7 +22,8 @@ public class TerminalLayer : ProtocolLayer
 
     private bool _ignoreEscape = false;
     private List<byte> _data = [];
-    private bool _inMessage;
+    private bool _decodingMessage;
+    private bool _encodingMessage;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TerminalLayer"/> class.
@@ -42,7 +43,7 @@ public class TerminalLayer : ProtocolLayer
             return; // Nothing to decode
         }
 
-        if (_ignoreEscape && !_inMessage)
+        if (_ignoreEscape && !_decodingMessage)
         {
             NonDebugData(buffer);
             return;
@@ -59,7 +60,7 @@ public class TerminalLayer : ProtocolLayer
         while (true)
         {
             ReadOnlySpan<byte> span = CollectionsMarshal.AsSpan(_data);
-            if (!_inMessage)
+            if (!_decodingMessage)
             {
                 int startIndex = span.IndexOf(TerminalLayer.Start);
                 if (startIndex >= 0)
@@ -78,7 +79,7 @@ public class TerminalLayer : ProtocolLayer
                 }
 
                 _data = [.. span.Slice(startIndex + TerminalLayer.Start.Length)];
-                _inMessage = true; // Set the message state
+                _decodingMessage = true; // Set the message state
             }
             else
             {
@@ -99,7 +100,7 @@ public class TerminalLayer : ProtocolLayer
                 _logger.LogInformation("Received terminal message: {Message}", Encoding.ASCII.GetString(cleanedMessage));
 
                 _data = [.. span.Slice(endIndex + TerminalLayer.End.Length)];
-                _inMessage = false; // Reset the message state
+                _decodingMessage = false; // Reset the message state
                 base.Decode(cleanedMessage);
             }
         }
@@ -108,18 +109,22 @@ public class TerminalLayer : ProtocolLayer
     /// <inheritdoc />
     public override void Encode(ReadOnlySpan<byte> buffer, bool last)
     {
-        int targetLength = buffer.Length + TerminalLayer.Start.Length + TerminalLayer.End.Length;
-        byte[] res = ArrayPool<byte>.Shared.Rent(targetLength);
-
-        Span<byte> span = res.AsSpan(0, targetLength);
-        TerminalLayer.Start.CopyTo(span.Slice(0, TerminalLayer.Start.Length)); // Copy start sequence
-        buffer.CopyTo(span.Slice(TerminalLayer.Start.Length, buffer.Length)); // Copy the actual data
-        TerminalLayer.End.CopyTo(span.Slice(TerminalLayer.Start.Length + buffer.Length, TerminalLayer.End.Length)); // Copy end sequence
+        if (!_encodingMessage)
+        {
+            // Add start sequence if not already encoding a message
+            base.Encode(TerminalLayer.Start, false);
+            _encodingMessage = true;
+        }
 
         _ignoreEscape = false;
-        base.Encode(span, last);
+        base.Encode(buffer, false);
 
-        ArrayPool<byte>.Shared.Return(res, clearArray: true);
+        if (last)
+        {
+            // Add end sequence if this is the last part of the message
+            base.Encode(TerminalLayer.End, true);
+            _encodingMessage = false; // Reset encoding state
+        }
     }
 
     /// <inheritdoc />

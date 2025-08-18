@@ -58,14 +58,19 @@ public class ProtocolTests
     }
 
     [Theory]
-    [InlineData("123", "\u001b_123\u001b\\")]
-    public void TerminalEncodeTest(string input, string expected)
+    [InlineData( "\u001b_123\u001b\\", "123")]
+    [InlineData( "\u001b_123\u001b\\", "1", "2", "3")]
+    public void TerminalEncodeTest(string expected, params string[] inputs)
     {
         Protocol.TerminalLayer term = new(NullLogger<Protocol.TerminalLayer>.Instance);
         Protocol.LoggingLayer logging = new();
         logging.Wrap(term);
 
-        Encode(term, input);
+        for (int i = 0; i < inputs.Length; i++)
+        {
+            string input = inputs[i];
+            Encode(term, input, i == inputs.Length - 1);
+        }
 
         Assert.Single(logging.Encoded);
         Assert.Equal([expected], logging.Encoded);
