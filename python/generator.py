@@ -63,16 +63,20 @@ class MetaProtocol(Protocol):
 
 class MetaProtocolEncoder(json.JSONEncoder):
     def default(self, obj):
-        if isinstance(obj, MetaObjectMeta):
-            return obj._asdict()
-        elif isinstance(obj, MetaProtocol):
-            return {
-                'name': obj.name,
-                'hash': obj.hash,
-                'functions': [f._asdict() for f in obj.functions],
-                'variables': [v._asdict() for v in obj.variables]
-            }
-        return super().default(obj)
+            try:
+                if isinstance(obj, MetaObjectMeta):
+                    return obj._asdict()
+            except RuntimeError as e:
+                # Handle StopIteration raised as RuntimeError in Protocol __instancecheck__
+                pass
+            if isinstance(obj, MetaProtocol):
+                return {
+                    'name': obj.name,
+                    'hash': obj.hash,
+                    'functions': [f._asdict() for f in obj.functions],
+                    'variables': [v._asdict() for v in obj.variables]
+                }
+            return super().default(obj)
 
 def cstr(s):
     bs = str(s).encode()
