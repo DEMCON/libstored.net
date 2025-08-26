@@ -81,7 +81,7 @@ pip install -r requirements.txt
 Call the generator script to creat a C# store that implements the `Store` abstract class, which can then be mapped to the `Synchronizer` and `Debugger` in LibStored.Net.
 
 ```bash
-python generator.py -f <name>Meta.py -o output_dir
+python generator.py -m <name>Meta.py -o output_dir
 ```
 
 ### Thread safety
@@ -150,7 +150,7 @@ using (NetMQPoller poller = [socket])
 Connect to the debugger using the [libstored.gui](https://github.com/DEMCON/libstored/tree/master/python) on the port that is exposed.
 
 ```bash
-python3 -m libstored.gui -p 5555
+python -m libstored.gui -p 5555
 ```
 
 ## Compatibility
