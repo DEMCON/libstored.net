@@ -128,26 +128,6 @@ public class ProtocolTests
         Assert.Equal(expectedDebug, debugMessage);
     }
 
-        using MemoryStream ms = new();
-        using StreamWriter writer = new(ms);
-        Console.SetOut(writer);
-
-        Protocol.TerminalLayer term = new(NullLogger<Protocol.TerminalLayer>.Instance);
-        Protocol.LoggingLayer logging = new();
-        term.Wrap(logging);
-
-        Decode(term, inputFst);
-        Decode(term, inputSnd);
-
-        writer.Flush();
-        byte[] debug = ms.ToArray();
-        string debugMessage = ProtocolTests.String(debug);
-
-        Assert.Single(logging.Decoded);
-        Assert.Equal([expected], logging.Decoded);
-        Assert.Equal(expectedDebug, debugMessage);
-    }
-
     [Theory]
     [InlineData("", "\xff")]
     [InlineData("1", "1\x5e")]
