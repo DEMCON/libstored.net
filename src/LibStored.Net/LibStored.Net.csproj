@@ -42,4 +42,10 @@
         <None Include="..\..\LICENSE.md" Pack="true" PackagePath="" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\LibStored.Net.Generator\LibStored.Net.Generator.csproj"
+                        ReferenceOutputAssembly="false"
+                        PackAsAnalyzer="true" />
+    </ItemGroup>
+
 </Project>
