@@ -101,15 +101,11 @@ public class ProtocolTests
         Assert.Equal(expectedDebug, debugMessage);
     }
 
-    [Fact]
-    public void TerminalSplitDecodeTest()
+    [Theory]
+    [InlineData("abcdef", "123456", "123\u001b_abc", "def\u001b\\456")]
+    [InlineData("abc", "12", "1","\u001b","_","a", "b", "c", "\u001b","\\", "2")]
+    public void TerminalSplitDecodeTest(string expected, string expectedDebug, params string[] inputs)
     {
-        string inputFst = "123\u001b_abc";
-        string inputSnd = "def\u001b\\456";
-
-        string expected = "abcdef";
-        string expectedDebug = "123456";
-
         using MemoryStream ms = new();
         using StreamWriter writer = new(ms);
         Console.SetOut(writer);
@@ -118,8 +114,10 @@ public class ProtocolTests
         Protocol.LoggingLayer logging = new();
         term.Wrap(logging);
 
-        Decode(term, inputFst);
-        Decode(term, inputSnd);
+        foreach (string input in inputs)
+        {
+            Decode(term, input);
+        }
 
         writer.Flush();
         byte[] debug = ms.ToArray();

@@ -12,11 +12,14 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 builder.AddDockerComposeEnvironment("docker-compose");
 
+const string libstoredVersion = "1.8.0";
 var sync = builder.AddDockerfile("libstored", ".", "Dockerfile")
     .WithImage("demcon/libstored")
-    .WithImageTag("1.7.x")
+    .WithImageTag(libstoredVersion)
+    .WithBuildArg("LIBSTORED_VERSION", libstoredVersion)
     .WithEndpoint(targetPort: 5555, name: "sync", protocol: ProtocolType.Tcp)
     .WithEndpoint(targetPort: 5556, name: "debug", protocol: ProtocolType.Tcp)
+    .WithLifetime(ContainerLifetime.Persistent)
     ;
 
 var client = builder.AddProject<Projects.LibStored_Net_Example_Console>("client")

@@ -258,39 +258,6 @@ public class Debugger : Protocol.ProtocolLayer
         }
     }
 
-    private static Span<byte> EncodeHex2(Span<byte> data)
-    {
-        Span<byte> reversed = stackalloc byte[data.Length];
-        data.CopyTo(reversed);
-        reversed = reversed.TrimEnd((byte)0b0);
-        if (!BitConverter.IsLittleEndian)
-        {
-            //BinaryPrimitives.ReverseEndianness();
-            reversed.Reverse(); // Reverse the byte order to match network byte order (big-endian)
-        }
-
-        // Try to convert the reversed bytes to a hex bytes, efficiently
-        // This is a more efficient way to convert bytes to hex without using string operations
-        // It uses stackalloc for temporary storage and avoids unnecessary allocations
-        Span<char> hexChars = stackalloc char[reversed.Length * 2];
-        if (!Convert.TryToHexStringLower(reversed, hexChars, out int written))
-        {
-            throw new InvalidOperationException("Failed to encode hex string");
-        }
-
-        hexChars = hexChars.Slice(0, written);
-
-        // Cant stackalloc byte[] here since this will be the result, so we use a new byte array
-        Span<byte> res = new byte[hexChars.Length];
-        int resWritten = Encoding.UTF8.GetBytes(hexChars, res);
-        res = res.Slice(0, resWritten);
-
-        // Convert the hex characters to bytes, not that efficiently
-        string hex = Convert.ToHexStringLower(reversed);
-        Span<byte> hexBytes = Encoding.UTF8.GetBytes(hex);
-        return hexBytes;
-    }
-
     private static Span<byte> EncodeHex(Span<byte> data, Types type, bool shorten = true)
     {
         if (data.IsEmpty)
@@ -314,9 +281,6 @@ public class Debugger : Protocol.ProtocolLayer
         // Fixed types are revered. Int types are also trimmed to remove leading '0's.
         if (type.IsFixed())
         {
-            // Remove
-            Debugger.EncodeHex2(data);
-
             for (int i = 0; i < len; i++)
             {
                 byte b = data[i];
