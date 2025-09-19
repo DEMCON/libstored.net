@@ -2,7 +2,6 @@
 // 
 // SPDX-License-Identifier: MIT
 
-using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Extensions.Logging;
@@ -96,8 +95,6 @@ public class TerminalLayer : ProtocolLayer
 
                 // Remove carriage return ('\r' if present)
                 Span<byte> cleanedMessage = TerminalLayer.Remove(message, 0x0d);
-
-                _logger.LogInformation("Received terminal message: {Message}", Encoding.ASCII.GetString(cleanedMessage));
 
                 _data = [.. span.Slice(endIndex + TerminalLayer.End.Length)];
                 _decodingMessage = false; // Reset the message state
