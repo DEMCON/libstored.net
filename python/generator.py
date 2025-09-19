@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-FileCopyrightText: 2025 Guus Kuiper
-# 
+#
 # SPDX-License-Identifier: MIT
 
 import argparse
@@ -11,6 +11,7 @@ import sys
 import struct
 import types
 import json
+import base64
 from typing import Iterable, Protocol, runtime_checkable
 
 @runtime_checkable
@@ -70,12 +71,24 @@ class MetaProtocolEncoder(json.JSONEncoder):
                 # Handle StopIteration raised as RuntimeError in Protocol __instancecheck__
                 pass
             if isinstance(obj, MetaProtocol):
-                return {
+                d = {
                     'name': obj.name,
                     'hash': obj.hash,
                     'functions': [f._asdict() for f in obj.functions],
-                    'variables': [v._asdict() for v in obj.variables]
                 }
+                vs = []
+                for v in obj.variables:
+                    vd = v._asdict()
+                    if v.init is not None:
+                        init = encode(v)
+                        padding = v.size - len(init)
+                        init += bytes([0] * padding)  # Fill with zeros until the offset
+                        # little endian hex list
+                        b64 = base64.b64encode(init).decode('ascii')
+                        vd['init'] = b64
+                    vs.append(vd)
+                d['variables'] = vs
+                return d
             return super().default(obj)
 
 def cstr(s):
@@ -208,7 +221,7 @@ def generate(meta : MetaProtocol, tmpl_filename : str) -> tuple[str, str]:
     # Validate the meta object
     if not isinstance(meta, MetaProtocol):
         raise TypeError("Expected a MetaProtocol instance")
-    
+
     if not isinstance(next(meta.variables), MetaObjectMeta):
         raise TypeError("Expected a MetaObjectMeta instances")
 
@@ -236,7 +249,7 @@ def generate_cs_meta_py(meta_py_code: str) -> str:
     """
     Generates a C# store file from the provided python meta source code.
     """
-    
+
     # Load the class from the source code
     cls = load_class_from_source(meta_py_code)
     if cls is None:
@@ -256,7 +269,7 @@ def main():
     parser = argparse.ArgumentParser(description='Generator using store meta data')
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
-    parser.add_argument('-m', '--meta', type=str, default=os.path.join(script_dir, 'ExampleMetaMeta.py'), help='path to <store>Meta.py as input', dest="meta")
+    parser.add_argument('-m', '--meta', type=str, default=os.path.join(script_dir, 'TestStoreMeta.py'), help='path to <store>Meta.py as input', dest="meta")
     parser.add_argument('-t', '--template', type=str, default=os.path.join(script_dir, 'store.cs.tmpl'), help='path to jinja2 template META is to be applied to', dest="template")
     parser.add_argument('-o', '--output', type=str, help='output file for jinja2 generated content', dest="output")
 
@@ -278,10 +291,10 @@ def main():
     output_dir = os.path.dirname(output_name)
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
-    
+
     with open(output_name, 'w') as f:
         f.write(cs)
-    
+
     with open(output_name + '.json', 'w') as jf:
         jf.write(json)
 
