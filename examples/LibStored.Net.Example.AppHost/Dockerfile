@@ -1,4 +1,10 @@
+# Add ARG for libstored version
+ARG LIBSTORED_VERSION=1.8.0
+
 FROM ubuntu:22.04 as builder
+
+# Use the ARG after FROM
+ARG LIBSTORED_VERSION
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -27,20 +33,12 @@ RUN apt-get update && \
 
 WORKDIR /tmp
 
-# RUN wget https://github.com/DEMCON/libstored/archive/refs/tags/v1.7.1.tar.gz && \
-#     tar -xzf v1.7.1.tar.gz --transform='s/libstored-1.7.1/libstored/' && \
-#     rm v1.7.1.tar.gz && \
-#     cd libstored && \
-#     dist/ubuntu/bootstrap.sh && \
-#     dist/ubuntu/build.sh Debug examples zmq make notest
-
-# The commit that add the Dealer to SyncZmqLayer layer
-RUN wget https://github.com/DEMCON/libstored/archive/a8a5b6613876511ed886733660b515c1f67f57db.tar.gz && \
-    tar -xzf a8a5b6613876511ed886733660b515c1f67f57db.tar.gz --transform='s/libstored-a8a5b6613876511ed886733660b515c1f67f57db/libstored/' && \
-    rm a8a5b6613876511ed886733660b515c1f67f57db.tar.gz && \
-    cd libstored && \
-    dist/ubuntu/bootstrap.sh && \
-    dist/ubuntu/build.sh Debug examples zmq make notest
+RUN wget https://github.com/DEMCON/libstored/archive/refs/tags/v${LIBSTORED_VERSION}.tar.gz && \
+     tar -xzf v${LIBSTORED_VERSION}.tar.gz --transform="s/libstored-${LIBSTORED_VERSION}/libstored/" && \
+     rm v${LIBSTORED_VERSION}.tar.gz && \
+     cd libstored && \
+     dist/ubuntu/bootstrap.sh && \
+     dist/ubuntu/build.sh Debug examples zmq make notest
 
 # Create production image
 FROM ubuntu:22.04
