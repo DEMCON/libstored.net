@@ -145,14 +145,20 @@ def csprop(cname: str) -> str:
     # Split by underscores, capitalize each part, and join
     parts = cname.split('_')
     prefix = '_' if not parts[0] else ''
-    return prefix + ''.join(part.capitalize() for part in cname.split('_'))
+    return prefix + ''.join(capitalize_first(part) for part in cname.split('_'))
 
 def csfield(cname: str) -> str:
     # Split by underscores, capitalize each part except the first, then join and prefix with '_'
     parts = cname.split('_')
     prefix = '_' if not parts[0] else ''
-    field_name = parts[0] + ''.join(part.capitalize() for part in parts[1:])
+    field_name = parts[0] + ''.join(capitalize_first(part) for part in parts[1:])
     return f'{prefix}_{field_name}'
+
+def capitalize_first(s: str) -> str:
+    """
+    Capitalizes only the first character of the string, leaving the rest unchanged.
+    """
+    return s[:1].upper() + s[1:] if s else s
 
 def is_variable(o):
     return not o.isfunction and o.type != 'blob' and o.type != 'string'
