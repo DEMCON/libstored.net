@@ -17,132 +17,132 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     private readonly global::System.Collections.Generic.Dictionary<string, global::LibStored.Net.DebugVariantInfo> _debugDirectory = [];
 
     private readonly global::LibStored.Net.StoreVariant<string> _initString;
-    private readonly global::LibStored.Net.StoreVariant<double> _doubleAmpGain;
-    private readonly global::LibStored.Net.StoreVariant<int> _initDecimal;
-    private readonly global::LibStored.Net.StoreVariant<int> _initNegative;
-    private readonly global::LibStored.Net.StoreVariant<int> _initHex;
-    private readonly global::LibStored.Net.StoreVariant<int> _initBin;
-    private readonly global::LibStored.Net.StoreVariant<float> _initFloat1;
-    private readonly global::LibStored.Net.StoreVariant<float> _initFloat314;
-    private readonly global::LibStored.Net.StoreVariant<float> _initFloat4000;
-    private readonly global::LibStored.Net.StoreVariant<float> _initFloatNan;
-    private readonly global::LibStored.Net.StoreVariant<float> _initFloatInf;
-    private readonly global::LibStored.Net.StoreVariant<float> _initFloatNegInf;
-    private readonly global::LibStored.Net.StoreVariant<float> _arraySingle;
-    private readonly global::LibStored.Net.StoreVariant<float> _ampGain;
-    private readonly global::LibStored.Net.StoreVariant<float> _ampOffset;
-    private readonly global::LibStored.Net.StoreVariant<float> _ampLow;
-    private readonly global::LibStored.Net.StoreVariant<float> _ampHigh;
-    private readonly global::LibStored.Net.StoreVariant<float> _ampOverride;
-    private readonly global::LibStored.Net.StoreVariant<float> _smallAmpGain;
-    private readonly global::LibStored.Net.StoreVariant<float> _smallAmpOverride;
-    private readonly global::LibStored.Net.StoreVariant<float> _ambiguousAmpGain;
-    private readonly global::LibStored.Net.StoreVariant<bool> _initTrue;
-    private readonly global::LibStored.Net.StoreVariant<bool> _initBool10;
-    private readonly global::LibStored.Net.StoreVariant<bool> _arrayBool0;
-    private readonly global::LibStored.Net.StoreVariant<bool> _arrayBool1;
-    private readonly global::LibStored.Net.StoreVariant<bool> _ampEnable;
+    private readonly global::LibStored.Net.StoreVariable<double> _doubleAmpGain;
+    private readonly global::LibStored.Net.StoreVariable<int> _initDecimal;
+    private readonly global::LibStored.Net.StoreVariable<int> _initNegative;
+    private readonly global::LibStored.Net.StoreVariable<int> _initHex;
+    private readonly global::LibStored.Net.StoreVariable<int> _initBin;
+    private readonly global::LibStored.Net.StoreVariable<float> _initFloat1;
+    private readonly global::LibStored.Net.StoreVariable<float> _initFloat314;
+    private readonly global::LibStored.Net.StoreVariable<float> _initFloat4000;
+    private readonly global::LibStored.Net.StoreVariable<float> _initFloatNan;
+    private readonly global::LibStored.Net.StoreVariable<float> _initFloatInf;
+    private readonly global::LibStored.Net.StoreVariable<float> _initFloatNegInf;
+    private readonly global::LibStored.Net.StoreVariable<float> _arraySingle;
+    private readonly global::LibStored.Net.StoreVariable<float> _ampGain;
+    private readonly global::LibStored.Net.StoreVariable<float> _ampOffset;
+    private readonly global::LibStored.Net.StoreVariable<float> _ampLow;
+    private readonly global::LibStored.Net.StoreVariable<float> _ampHigh;
+    private readonly global::LibStored.Net.StoreVariable<float> _ampOverride;
+    private readonly global::LibStored.Net.StoreVariable<float> _smallAmpGain;
+    private readonly global::LibStored.Net.StoreVariable<float> _smallAmpOverride;
+    private readonly global::LibStored.Net.StoreVariable<float> _ambiguousAmpGain;
+    private readonly global::LibStored.Net.StoreVariable<bool> _initTrue;
+    private readonly global::LibStored.Net.StoreVariable<bool> _initBool10;
+    private readonly global::LibStored.Net.StoreVariable<bool> _arrayBool0;
+    private readonly global::LibStored.Net.StoreVariable<bool> _arrayBool1;
+    private readonly global::LibStored.Net.StoreVariable<bool> _ampEnable;
     private readonly global::LibStored.Net.StoreVariant<string> _defaultString;
-    private readonly global::LibStored.Net.StoreVariant<long> _defaultInt64;
-    private readonly global::LibStored.Net.StoreVariant<ulong> _defaultUint64;
-    private readonly global::LibStored.Net.StoreVariant<double> _defaultDouble;
-    private readonly global::LibStored.Net.StoreVariant<ulong> _defaultPtr64;
+    private readonly global::LibStored.Net.StoreVariable<long> _defaultInt64;
+    private readonly global::LibStored.Net.StoreVariable<ulong> _defaultUint64;
+    private readonly global::LibStored.Net.StoreVariable<double> _defaultDouble;
+    private readonly global::LibStored.Net.StoreVariable<ulong> _defaultPtr64;
     private readonly global::LibStored.Net.StoreVariant<string> _initStringEmpty;
     private readonly global::LibStored.Net.StoreVariant<byte[]> _defaultBlob;
-    private readonly global::LibStored.Net.StoreVariant<int> _defaultInt32;
-    private readonly global::LibStored.Net.StoreVariant<uint> _defaultUint32;
-    private readonly global::LibStored.Net.StoreVariant<float> _defaultFloat;
-    private readonly global::LibStored.Net.StoreVariant<uint> _defaultPtr32;
-    private readonly global::LibStored.Net.StoreVariant<float> _initFloat0;
+    private readonly global::LibStored.Net.StoreVariable<int> _defaultInt32;
+    private readonly global::LibStored.Net.StoreVariable<uint> _defaultUint32;
+    private readonly global::LibStored.Net.StoreVariable<float> _defaultFloat;
+    private readonly global::LibStored.Net.StoreVariable<uint> _defaultPtr32;
+    private readonly global::LibStored.Net.StoreVariable<float> _initFloat0;
     private readonly global::LibStored.Net.StoreVariant<string> _arrayString0;
     private readonly global::LibStored.Net.StoreVariant<string> _arrayString1;
     private readonly global::LibStored.Net.StoreVariant<string> _arrayString2;
-    private readonly global::LibStored.Net.StoreVariant<int> _scopeInnerInt;
-    private readonly global::LibStored.Net.StoreVariant<float> _valueWithUnitKmS;
-    private readonly global::LibStored.Net.StoreVariant<float> _valueWithComplexUnitJSM2;
-    private readonly global::LibStored.Net.StoreVariant<float> _valueWithAbiguousUnitMS;
-    private readonly global::LibStored.Net.StoreVariant<float> _valueWithAbiguousUnitMH;
-    private readonly global::LibStored.Net.StoreVariant<float> _ampInput;
-    private readonly global::LibStored.Net.StoreVariant<float> _ampOutput;
-    private readonly global::LibStored.Net.StoreVariant<float> _smallAmpOutput;
-    private readonly global::LibStored.Net.StoreVariant<float> _ambiguousAmpOutput;
-    private readonly global::LibStored.Net.StoreVariant<short> _defaultInt16;
-    private readonly global::LibStored.Net.StoreVariant<ushort> _defaultUint16;
-    private readonly global::LibStored.Net.StoreVariant<sbyte> _defaultInt8;
-    private readonly global::LibStored.Net.StoreVariant<byte> _defaultUint8;
-    private readonly global::LibStored.Net.StoreVariant<bool> _defaultBool;
-    private readonly global::LibStored.Net.StoreVariant<bool> _initFalse;
-    private readonly global::LibStored.Net.StoreVariant<bool> _initBool0;
-    private readonly global::LibStored.Net.StoreVariant<bool> _arrayBool2;
-    private readonly global::LibStored.Net.StoreVariant<bool> _scopeInnerBool;
-    private readonly global::LibStored.Net.StoreVariant<bool> _someOtherScopeSomeOtherInnerBool;
-    private readonly global::LibStored.Net.StoreVariant<bool> _ambiguousAmpEnable;
+    private readonly global::LibStored.Net.StoreVariable<int> _scopeInnerInt;
+    private readonly global::LibStored.Net.StoreVariable<float> _valueWithUnitKmS;
+    private readonly global::LibStored.Net.StoreVariable<float> _valueWithComplexUnitJSM2;
+    private readonly global::LibStored.Net.StoreVariable<float> _valueWithAbiguousUnitMS;
+    private readonly global::LibStored.Net.StoreVariable<float> _valueWithAbiguousUnitMH;
+    private readonly global::LibStored.Net.StoreVariable<float> _ampInput;
+    private readonly global::LibStored.Net.StoreVariable<float> _ampOutput;
+    private readonly global::LibStored.Net.StoreVariable<float> _smallAmpOutput;
+    private readonly global::LibStored.Net.StoreVariable<float> _ambiguousAmpOutput;
+    private readonly global::LibStored.Net.StoreVariable<short> _defaultInt16;
+    private readonly global::LibStored.Net.StoreVariable<ushort> _defaultUint16;
+    private readonly global::LibStored.Net.StoreVariable<sbyte> _defaultInt8;
+    private readonly global::LibStored.Net.StoreVariable<byte> _defaultUint8;
+    private readonly global::LibStored.Net.StoreVariable<bool> _defaultBool;
+    private readonly global::LibStored.Net.StoreVariable<bool> _initFalse;
+    private readonly global::LibStored.Net.StoreVariable<bool> _initBool0;
+    private readonly global::LibStored.Net.StoreVariable<bool> _arrayBool2;
+    private readonly global::LibStored.Net.StoreVariable<bool> _scopeInnerBool;
+    private readonly global::LibStored.Net.StoreVariable<bool> _someOtherScopeSomeOtherInnerBool;
+    private readonly global::LibStored.Net.StoreVariable<bool> _ambiguousAmpEnable;
 
     public TestStore()
     {
         TestStore.InitialBuffer.AsSpan().CopyTo(_data.AsSpan());
 
         _initString = new global::LibStored.Net.StoreVariant<string>(0, 8, this);
-        _doubleAmpGain = new global::LibStored.Net.StoreVariant<double>(16, 8, this);
-        _initDecimal = new global::LibStored.Net.StoreVariant<int>(24, 4, this);
-        _initNegative = new global::LibStored.Net.StoreVariant<int>(28, 4, this);
-        _initHex = new global::LibStored.Net.StoreVariant<int>(32, 4, this);
-        _initBin = new global::LibStored.Net.StoreVariant<int>(36, 4, this);
-        _initFloat1 = new global::LibStored.Net.StoreVariant<float>(40, 4, this);
-        _initFloat314 = new global::LibStored.Net.StoreVariant<float>(44, 4, this);
-        _initFloat4000 = new global::LibStored.Net.StoreVariant<float>(48, 4, this);
-        _initFloatNan = new global::LibStored.Net.StoreVariant<float>(52, 4, this);
-        _initFloatInf = new global::LibStored.Net.StoreVariant<float>(56, 4, this);
-        _initFloatNegInf = new global::LibStored.Net.StoreVariant<float>(60, 4, this);
-        _arraySingle = new global::LibStored.Net.StoreVariant<float>(64, 4, this);
-        _ampGain = new global::LibStored.Net.StoreVariant<float>(68, 4, this);
-        _ampOffset = new global::LibStored.Net.StoreVariant<float>(72, 4, this);
-        _ampLow = new global::LibStored.Net.StoreVariant<float>(76, 4, this);
-        _ampHigh = new global::LibStored.Net.StoreVariant<float>(80, 4, this);
-        _ampOverride = new global::LibStored.Net.StoreVariant<float>(84, 4, this);
-        _smallAmpGain = new global::LibStored.Net.StoreVariant<float>(88, 4, this);
-        _smallAmpOverride = new global::LibStored.Net.StoreVariant<float>(92, 4, this);
-        _ambiguousAmpGain = new global::LibStored.Net.StoreVariant<float>(96, 4, this);
-        _initTrue = new global::LibStored.Net.StoreVariant<bool>(100, 1, this);
-        _initBool10 = new global::LibStored.Net.StoreVariant<bool>(101, 1, this);
-        _arrayBool0 = new global::LibStored.Net.StoreVariant<bool>(102, 1, this);
-        _arrayBool1 = new global::LibStored.Net.StoreVariant<bool>(103, 1, this);
-        _ampEnable = new global::LibStored.Net.StoreVariant<bool>(104, 1, this);
+        _doubleAmpGain = new global::LibStored.Net.StoreVariable<double>(16, 8, this);
+        _initDecimal = new global::LibStored.Net.StoreVariable<int>(24, 4, this);
+        _initNegative = new global::LibStored.Net.StoreVariable<int>(28, 4, this);
+        _initHex = new global::LibStored.Net.StoreVariable<int>(32, 4, this);
+        _initBin = new global::LibStored.Net.StoreVariable<int>(36, 4, this);
+        _initFloat1 = new global::LibStored.Net.StoreVariable<float>(40, 4, this);
+        _initFloat314 = new global::LibStored.Net.StoreVariable<float>(44, 4, this);
+        _initFloat4000 = new global::LibStored.Net.StoreVariable<float>(48, 4, this);
+        _initFloatNan = new global::LibStored.Net.StoreVariable<float>(52, 4, this);
+        _initFloatInf = new global::LibStored.Net.StoreVariable<float>(56, 4, this);
+        _initFloatNegInf = new global::LibStored.Net.StoreVariable<float>(60, 4, this);
+        _arraySingle = new global::LibStored.Net.StoreVariable<float>(64, 4, this);
+        _ampGain = new global::LibStored.Net.StoreVariable<float>(68, 4, this);
+        _ampOffset = new global::LibStored.Net.StoreVariable<float>(72, 4, this);
+        _ampLow = new global::LibStored.Net.StoreVariable<float>(76, 4, this);
+        _ampHigh = new global::LibStored.Net.StoreVariable<float>(80, 4, this);
+        _ampOverride = new global::LibStored.Net.StoreVariable<float>(84, 4, this);
+        _smallAmpGain = new global::LibStored.Net.StoreVariable<float>(88, 4, this);
+        _smallAmpOverride = new global::LibStored.Net.StoreVariable<float>(92, 4, this);
+        _ambiguousAmpGain = new global::LibStored.Net.StoreVariable<float>(96, 4, this);
+        _initTrue = new global::LibStored.Net.StoreVariable<bool>(100, 1, this);
+        _initBool10 = new global::LibStored.Net.StoreVariable<bool>(101, 1, this);
+        _arrayBool0 = new global::LibStored.Net.StoreVariable<bool>(102, 1, this);
+        _arrayBool1 = new global::LibStored.Net.StoreVariable<bool>(103, 1, this);
+        _ampEnable = new global::LibStored.Net.StoreVariable<bool>(104, 1, this);
         _defaultString = new global::LibStored.Net.StoreVariant<string>(112, 10, this);
-        _defaultInt64 = new global::LibStored.Net.StoreVariant<long>(128, 8, this);
-        _defaultUint64 = new global::LibStored.Net.StoreVariant<ulong>(136, 8, this);
-        _defaultDouble = new global::LibStored.Net.StoreVariant<double>(144, 8, this);
-        _defaultPtr64 = new global::LibStored.Net.StoreVariant<ulong>(152, 8, this);
+        _defaultInt64 = new global::LibStored.Net.StoreVariable<long>(128, 8, this);
+        _defaultUint64 = new global::LibStored.Net.StoreVariable<ulong>(136, 8, this);
+        _defaultDouble = new global::LibStored.Net.StoreVariable<double>(144, 8, this);
+        _defaultPtr64 = new global::LibStored.Net.StoreVariable<ulong>(152, 8, this);
         _initStringEmpty = new global::LibStored.Net.StoreVariant<string>(160, 8, this);
         _defaultBlob = new global::LibStored.Net.StoreVariant<byte[]>(176, 5, this);
-        _defaultInt32 = new global::LibStored.Net.StoreVariant<int>(184, 4, this);
-        _defaultUint32 = new global::LibStored.Net.StoreVariant<uint>(188, 4, this);
-        _defaultFloat = new global::LibStored.Net.StoreVariant<float>(192, 4, this);
-        _defaultPtr32 = new global::LibStored.Net.StoreVariant<uint>(196, 4, this);
-        _initFloat0 = new global::LibStored.Net.StoreVariant<float>(200, 4, this);
+        _defaultInt32 = new global::LibStored.Net.StoreVariable<int>(184, 4, this);
+        _defaultUint32 = new global::LibStored.Net.StoreVariable<uint>(188, 4, this);
+        _defaultFloat = new global::LibStored.Net.StoreVariable<float>(192, 4, this);
+        _defaultPtr32 = new global::LibStored.Net.StoreVariable<uint>(196, 4, this);
+        _initFloat0 = new global::LibStored.Net.StoreVariable<float>(200, 4, this);
         _arrayString0 = new global::LibStored.Net.StoreVariant<string>(204, 4, this);
         _arrayString1 = new global::LibStored.Net.StoreVariant<string>(212, 4, this);
         _arrayString2 = new global::LibStored.Net.StoreVariant<string>(220, 4, this);
-        _scopeInnerInt = new global::LibStored.Net.StoreVariant<int>(228, 4, this);
-        _valueWithUnitKmS = new global::LibStored.Net.StoreVariant<float>(232, 4, this);
-        _valueWithComplexUnitJSM2 = new global::LibStored.Net.StoreVariant<float>(236, 4, this);
-        _valueWithAbiguousUnitMS = new global::LibStored.Net.StoreVariant<float>(240, 4, this);
-        _valueWithAbiguousUnitMH = new global::LibStored.Net.StoreVariant<float>(244, 4, this);
-        _ampInput = new global::LibStored.Net.StoreVariant<float>(248, 4, this);
-        _ampOutput = new global::LibStored.Net.StoreVariant<float>(252, 4, this);
-        _smallAmpOutput = new global::LibStored.Net.StoreVariant<float>(256, 4, this);
-        _ambiguousAmpOutput = new global::LibStored.Net.StoreVariant<float>(260, 4, this);
-        _defaultInt16 = new global::LibStored.Net.StoreVariant<short>(264, 2, this);
-        _defaultUint16 = new global::LibStored.Net.StoreVariant<ushort>(266, 2, this);
-        _defaultInt8 = new global::LibStored.Net.StoreVariant<sbyte>(268, 1, this);
-        _defaultUint8 = new global::LibStored.Net.StoreVariant<byte>(269, 1, this);
-        _defaultBool = new global::LibStored.Net.StoreVariant<bool>(270, 1, this);
-        _initFalse = new global::LibStored.Net.StoreVariant<bool>(271, 1, this);
-        _initBool0 = new global::LibStored.Net.StoreVariant<bool>(272, 1, this);
-        _arrayBool2 = new global::LibStored.Net.StoreVariant<bool>(273, 1, this);
-        _scopeInnerBool = new global::LibStored.Net.StoreVariant<bool>(274, 1, this);
-        _someOtherScopeSomeOtherInnerBool = new global::LibStored.Net.StoreVariant<bool>(275, 1, this);
-        _ambiguousAmpEnable = new global::LibStored.Net.StoreVariant<bool>(276, 1, this);
+        _scopeInnerInt = new global::LibStored.Net.StoreVariable<int>(228, 4, this);
+        _valueWithUnitKmS = new global::LibStored.Net.StoreVariable<float>(232, 4, this);
+        _valueWithComplexUnitJSM2 = new global::LibStored.Net.StoreVariable<float>(236, 4, this);
+        _valueWithAbiguousUnitMS = new global::LibStored.Net.StoreVariable<float>(240, 4, this);
+        _valueWithAbiguousUnitMH = new global::LibStored.Net.StoreVariable<float>(244, 4, this);
+        _ampInput = new global::LibStored.Net.StoreVariable<float>(248, 4, this);
+        _ampOutput = new global::LibStored.Net.StoreVariable<float>(252, 4, this);
+        _smallAmpOutput = new global::LibStored.Net.StoreVariable<float>(256, 4, this);
+        _ambiguousAmpOutput = new global::LibStored.Net.StoreVariable<float>(260, 4, this);
+        _defaultInt16 = new global::LibStored.Net.StoreVariable<short>(264, 2, this);
+        _defaultUint16 = new global::LibStored.Net.StoreVariable<ushort>(266, 2, this);
+        _defaultInt8 = new global::LibStored.Net.StoreVariable<sbyte>(268, 1, this);
+        _defaultUint8 = new global::LibStored.Net.StoreVariable<byte>(269, 1, this);
+        _defaultBool = new global::LibStored.Net.StoreVariable<bool>(270, 1, this);
+        _initFalse = new global::LibStored.Net.StoreVariable<bool>(271, 1, this);
+        _initBool0 = new global::LibStored.Net.StoreVariable<bool>(272, 1, this);
+        _arrayBool2 = new global::LibStored.Net.StoreVariable<bool>(273, 1, this);
+        _scopeInnerBool = new global::LibStored.Net.StoreVariable<bool>(274, 1, this);
+        _someOtherScopeSomeOtherInnerBool = new global::LibStored.Net.StoreVariable<bool>(275, 1, this);
+        _ambiguousAmpEnable = new global::LibStored.Net.StoreVariable<bool>(276, 1, this);
 
         _debugDirectory.Add("/init string", new global::LibStored.Net.DebugVariantInfo(Types.String, 0, 8));
         _debugDirectory.Add("/double amp/gain", new global::LibStored.Net.DebugVariantInfo(Types.Double, 16, 8));
@@ -230,8 +230,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public double DoubleAmpGain
     {
-        get => StoreVariantExtensions.Get(_doubleAmpGain);
-        set => StoreVariantExtensions.Set(_doubleAmpGain, value);
+        get => _doubleAmpGain.Get();
+        set => _doubleAmpGain.Set(value);
     }
 
     /// <summary>
@@ -239,8 +239,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public int InitDecimal
     {
-        get => StoreVariantExtensions.Get(_initDecimal);
-        set => StoreVariantExtensions.Set(_initDecimal, value);
+        get => _initDecimal.Get();
+        set => _initDecimal.Set(value);
     }
 
     /// <summary>
@@ -248,8 +248,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public int InitNegative
     {
-        get => StoreVariantExtensions.Get(_initNegative);
-        set => StoreVariantExtensions.Set(_initNegative, value);
+        get => _initNegative.Get();
+        set => _initNegative.Set(value);
     }
 
     /// <summary>
@@ -257,8 +257,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public int InitHex
     {
-        get => StoreVariantExtensions.Get(_initHex);
-        set => StoreVariantExtensions.Set(_initHex, value);
+        get => _initHex.Get();
+        set => _initHex.Set(value);
     }
 
     /// <summary>
@@ -266,8 +266,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public int InitBin
     {
-        get => StoreVariantExtensions.Get(_initBin);
-        set => StoreVariantExtensions.Set(_initBin, value);
+        get => _initBin.Get();
+        set => _initBin.Set(value);
     }
 
     /// <summary>
@@ -275,8 +275,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float InitFloat1
     {
-        get => StoreVariantExtensions.Get(_initFloat1);
-        set => StoreVariantExtensions.Set(_initFloat1, value);
+        get => _initFloat1.Get();
+        set => _initFloat1.Set(value);
     }
 
     /// <summary>
@@ -284,8 +284,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float InitFloat314
     {
-        get => StoreVariantExtensions.Get(_initFloat314);
-        set => StoreVariantExtensions.Set(_initFloat314, value);
+        get => _initFloat314.Get();
+        set => _initFloat314.Set(value);
     }
 
     /// <summary>
@@ -293,8 +293,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float InitFloat4000
     {
-        get => StoreVariantExtensions.Get(_initFloat4000);
-        set => StoreVariantExtensions.Set(_initFloat4000, value);
+        get => _initFloat4000.Get();
+        set => _initFloat4000.Set(value);
     }
 
     /// <summary>
@@ -302,8 +302,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float InitFloatNan
     {
-        get => StoreVariantExtensions.Get(_initFloatNan);
-        set => StoreVariantExtensions.Set(_initFloatNan, value);
+        get => _initFloatNan.Get();
+        set => _initFloatNan.Set(value);
     }
 
     /// <summary>
@@ -311,8 +311,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float InitFloatInf
     {
-        get => StoreVariantExtensions.Get(_initFloatInf);
-        set => StoreVariantExtensions.Set(_initFloatInf, value);
+        get => _initFloatInf.Get();
+        set => _initFloatInf.Set(value);
     }
 
     /// <summary>
@@ -320,8 +320,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float InitFloatNegInf
     {
-        get => StoreVariantExtensions.Get(_initFloatNegInf);
-        set => StoreVariantExtensions.Set(_initFloatNegInf, value);
+        get => _initFloatNegInf.Get();
+        set => _initFloatNegInf.Set(value);
     }
 
     /// <summary>
@@ -329,8 +329,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float ArraySingle
     {
-        get => StoreVariantExtensions.Get(_arraySingle);
-        set => StoreVariantExtensions.Set(_arraySingle, value);
+        get => _arraySingle.Get();
+        set => _arraySingle.Set(value);
     }
 
     /// <summary>
@@ -338,8 +338,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float AmpGain
     {
-        get => StoreVariantExtensions.Get(_ampGain);
-        set => StoreVariantExtensions.Set(_ampGain, value);
+        get => _ampGain.Get();
+        set => _ampGain.Set(value);
     }
 
     /// <summary>
@@ -347,8 +347,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float AmpOffset
     {
-        get => StoreVariantExtensions.Get(_ampOffset);
-        set => StoreVariantExtensions.Set(_ampOffset, value);
+        get => _ampOffset.Get();
+        set => _ampOffset.Set(value);
     }
 
     /// <summary>
@@ -356,8 +356,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float AmpLow
     {
-        get => StoreVariantExtensions.Get(_ampLow);
-        set => StoreVariantExtensions.Set(_ampLow, value);
+        get => _ampLow.Get();
+        set => _ampLow.Set(value);
     }
 
     /// <summary>
@@ -365,8 +365,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float AmpHigh
     {
-        get => StoreVariantExtensions.Get(_ampHigh);
-        set => StoreVariantExtensions.Set(_ampHigh, value);
+        get => _ampHigh.Get();
+        set => _ampHigh.Set(value);
     }
 
     /// <summary>
@@ -374,8 +374,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float AmpOverride
     {
-        get => StoreVariantExtensions.Get(_ampOverride);
-        set => StoreVariantExtensions.Set(_ampOverride, value);
+        get => _ampOverride.Get();
+        set => _ampOverride.Set(value);
     }
 
     /// <summary>
@@ -383,8 +383,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float SmallAmpGain
     {
-        get => StoreVariantExtensions.Get(_smallAmpGain);
-        set => StoreVariantExtensions.Set(_smallAmpGain, value);
+        get => _smallAmpGain.Get();
+        set => _smallAmpGain.Set(value);
     }
 
     /// <summary>
@@ -392,8 +392,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float SmallAmpOverride
     {
-        get => StoreVariantExtensions.Get(_smallAmpOverride);
-        set => StoreVariantExtensions.Set(_smallAmpOverride, value);
+        get => _smallAmpOverride.Get();
+        set => _smallAmpOverride.Set(value);
     }
 
     /// <summary>
@@ -401,8 +401,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float AmbiguousAmpGain
     {
-        get => StoreVariantExtensions.Get(_ambiguousAmpGain);
-        set => StoreVariantExtensions.Set(_ambiguousAmpGain, value);
+        get => _ambiguousAmpGain.Get();
+        set => _ambiguousAmpGain.Set(value);
     }
 
     /// <summary>
@@ -410,8 +410,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public bool InitTrue
     {
-        get => StoreVariantExtensions.Get(_initTrue);
-        set => StoreVariantExtensions.Set(_initTrue, value);
+        get => _initTrue.Get();
+        set => _initTrue.Set(value);
     }
 
     /// <summary>
@@ -419,8 +419,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public bool InitBool10
     {
-        get => StoreVariantExtensions.Get(_initBool10);
-        set => StoreVariantExtensions.Set(_initBool10, value);
+        get => _initBool10.Get();
+        set => _initBool10.Set(value);
     }
 
     /// <summary>
@@ -428,8 +428,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public bool ArrayBool0
     {
-        get => StoreVariantExtensions.Get(_arrayBool0);
-        set => StoreVariantExtensions.Set(_arrayBool0, value);
+        get => _arrayBool0.Get();
+        set => _arrayBool0.Set(value);
     }
 
     /// <summary>
@@ -437,8 +437,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public bool ArrayBool1
     {
-        get => StoreVariantExtensions.Get(_arrayBool1);
-        set => StoreVariantExtensions.Set(_arrayBool1, value);
+        get => _arrayBool1.Get();
+        set => _arrayBool1.Set(value);
     }
 
     /// <summary>
@@ -446,8 +446,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public bool AmpEnable
     {
-        get => StoreVariantExtensions.Get(_ampEnable);
-        set => StoreVariantExtensions.Set(_ampEnable, value);
+        get => _ampEnable.Get();
+        set => _ampEnable.Set(value);
     }
 
     /// <summary>
@@ -464,8 +464,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public long DefaultInt64
     {
-        get => StoreVariantExtensions.Get(_defaultInt64);
-        set => StoreVariantExtensions.Set(_defaultInt64, value);
+        get => _defaultInt64.Get();
+        set => _defaultInt64.Set(value);
     }
 
     /// <summary>
@@ -473,8 +473,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public ulong DefaultUint64
     {
-        get => StoreVariantExtensions.Get(_defaultUint64);
-        set => StoreVariantExtensions.Set(_defaultUint64, value);
+        get => _defaultUint64.Get();
+        set => _defaultUint64.Set(value);
     }
 
     /// <summary>
@@ -482,8 +482,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public double DefaultDouble
     {
-        get => StoreVariantExtensions.Get(_defaultDouble);
-        set => StoreVariantExtensions.Set(_defaultDouble, value);
+        get => _defaultDouble.Get();
+        set => _defaultDouble.Set(value);
     }
 
     /// <summary>
@@ -491,8 +491,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public ulong DefaultPtr64
     {
-        get => StoreVariantExtensions.Get(_defaultPtr64);
-        set => StoreVariantExtensions.Set(_defaultPtr64, value);
+        get => _defaultPtr64.Get();
+        set => _defaultPtr64.Set(value);
     }
 
     /// <summary>
@@ -518,8 +518,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public int DefaultInt32
     {
-        get => StoreVariantExtensions.Get(_defaultInt32);
-        set => StoreVariantExtensions.Set(_defaultInt32, value);
+        get => _defaultInt32.Get();
+        set => _defaultInt32.Set(value);
     }
 
     /// <summary>
@@ -527,8 +527,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public uint DefaultUint32
     {
-        get => StoreVariantExtensions.Get(_defaultUint32);
-        set => StoreVariantExtensions.Set(_defaultUint32, value);
+        get => _defaultUint32.Get();
+        set => _defaultUint32.Set(value);
     }
 
     /// <summary>
@@ -536,8 +536,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float DefaultFloat
     {
-        get => StoreVariantExtensions.Get(_defaultFloat);
-        set => StoreVariantExtensions.Set(_defaultFloat, value);
+        get => _defaultFloat.Get();
+        set => _defaultFloat.Set(value);
     }
 
     /// <summary>
@@ -545,8 +545,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public uint DefaultPtr32
     {
-        get => StoreVariantExtensions.Get(_defaultPtr32);
-        set => StoreVariantExtensions.Set(_defaultPtr32, value);
+        get => _defaultPtr32.Get();
+        set => _defaultPtr32.Set(value);
     }
 
     /// <summary>
@@ -554,8 +554,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float InitFloat0
     {
-        get => StoreVariantExtensions.Get(_initFloat0);
-        set => StoreVariantExtensions.Set(_initFloat0, value);
+        get => _initFloat0.Get();
+        set => _initFloat0.Set(value);
     }
 
     /// <summary>
@@ -590,8 +590,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public int ScopeInnerInt
     {
-        get => StoreVariantExtensions.Get(_scopeInnerInt);
-        set => StoreVariantExtensions.Set(_scopeInnerInt, value);
+        get => _scopeInnerInt.Get();
+        set => _scopeInnerInt.Set(value);
     }
 
     /// <summary>
@@ -599,8 +599,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float ValueWithUnitKmS
     {
-        get => StoreVariantExtensions.Get(_valueWithUnitKmS);
-        set => StoreVariantExtensions.Set(_valueWithUnitKmS, value);
+        get => _valueWithUnitKmS.Get();
+        set => _valueWithUnitKmS.Set(value);
     }
 
     /// <summary>
@@ -608,8 +608,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float ValueWithComplexUnitJSM2
     {
-        get => StoreVariantExtensions.Get(_valueWithComplexUnitJSM2);
-        set => StoreVariantExtensions.Set(_valueWithComplexUnitJSM2, value);
+        get => _valueWithComplexUnitJSM2.Get();
+        set => _valueWithComplexUnitJSM2.Set(value);
     }
 
     /// <summary>
@@ -617,8 +617,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float ValueWithAbiguousUnitMS
     {
-        get => StoreVariantExtensions.Get(_valueWithAbiguousUnitMS);
-        set => StoreVariantExtensions.Set(_valueWithAbiguousUnitMS, value);
+        get => _valueWithAbiguousUnitMS.Get();
+        set => _valueWithAbiguousUnitMS.Set(value);
     }
 
     /// <summary>
@@ -626,8 +626,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float ValueWithAbiguousUnitMH
     {
-        get => StoreVariantExtensions.Get(_valueWithAbiguousUnitMH);
-        set => StoreVariantExtensions.Set(_valueWithAbiguousUnitMH, value);
+        get => _valueWithAbiguousUnitMH.Get();
+        set => _valueWithAbiguousUnitMH.Set(value);
     }
 
     /// <summary>
@@ -635,8 +635,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float AmpInput
     {
-        get => StoreVariantExtensions.Get(_ampInput);
-        set => StoreVariantExtensions.Set(_ampInput, value);
+        get => _ampInput.Get();
+        set => _ampInput.Set(value);
     }
 
     /// <summary>
@@ -644,8 +644,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float AmpOutput
     {
-        get => StoreVariantExtensions.Get(_ampOutput);
-        set => StoreVariantExtensions.Set(_ampOutput, value);
+        get => _ampOutput.Get();
+        set => _ampOutput.Set(value);
     }
 
     /// <summary>
@@ -653,8 +653,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float SmallAmpOutput
     {
-        get => StoreVariantExtensions.Get(_smallAmpOutput);
-        set => StoreVariantExtensions.Set(_smallAmpOutput, value);
+        get => _smallAmpOutput.Get();
+        set => _smallAmpOutput.Set(value);
     }
 
     /// <summary>
@@ -662,8 +662,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public float AmbiguousAmpOutput
     {
-        get => StoreVariantExtensions.Get(_ambiguousAmpOutput);
-        set => StoreVariantExtensions.Set(_ambiguousAmpOutput, value);
+        get => _ambiguousAmpOutput.Get();
+        set => _ambiguousAmpOutput.Set(value);
     }
 
     /// <summary>
@@ -671,8 +671,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public short DefaultInt16
     {
-        get => StoreVariantExtensions.Get(_defaultInt16);
-        set => StoreVariantExtensions.Set(_defaultInt16, value);
+        get => _defaultInt16.Get();
+        set => _defaultInt16.Set(value);
     }
 
     /// <summary>
@@ -680,8 +680,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public ushort DefaultUint16
     {
-        get => StoreVariantExtensions.Get(_defaultUint16);
-        set => StoreVariantExtensions.Set(_defaultUint16, value);
+        get => _defaultUint16.Get();
+        set => _defaultUint16.Set(value);
     }
 
     /// <summary>
@@ -689,8 +689,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public sbyte DefaultInt8
     {
-        get => StoreVariantExtensions.Get(_defaultInt8);
-        set => StoreVariantExtensions.Set(_defaultInt8, value);
+        get => _defaultInt8.Get();
+        set => _defaultInt8.Set(value);
     }
 
     /// <summary>
@@ -698,8 +698,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public byte DefaultUint8
     {
-        get => StoreVariantExtensions.Get(_defaultUint8);
-        set => StoreVariantExtensions.Set(_defaultUint8, value);
+        get => _defaultUint8.Get();
+        set => _defaultUint8.Set(value);
     }
 
     /// <summary>
@@ -707,8 +707,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public bool DefaultBool
     {
-        get => StoreVariantExtensions.Get(_defaultBool);
-        set => StoreVariantExtensions.Set(_defaultBool, value);
+        get => _defaultBool.Get();
+        set => _defaultBool.Set(value);
     }
 
     /// <summary>
@@ -716,8 +716,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public bool InitFalse
     {
-        get => StoreVariantExtensions.Get(_initFalse);
-        set => StoreVariantExtensions.Set(_initFalse, value);
+        get => _initFalse.Get();
+        set => _initFalse.Set(value);
     }
 
     /// <summary>
@@ -725,8 +725,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public bool InitBool0
     {
-        get => StoreVariantExtensions.Get(_initBool0);
-        set => StoreVariantExtensions.Set(_initBool0, value);
+        get => _initBool0.Get();
+        set => _initBool0.Set(value);
     }
 
     /// <summary>
@@ -734,8 +734,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public bool ArrayBool2
     {
-        get => StoreVariantExtensions.Get(_arrayBool2);
-        set => StoreVariantExtensions.Set(_arrayBool2, value);
+        get => _arrayBool2.Get();
+        set => _arrayBool2.Set(value);
     }
 
     /// <summary>
@@ -743,8 +743,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public bool ScopeInnerBool
     {
-        get => StoreVariantExtensions.Get(_scopeInnerBool);
-        set => StoreVariantExtensions.Set(_scopeInnerBool, value);
+        get => _scopeInnerBool.Get();
+        set => _scopeInnerBool.Set(value);
     }
 
     /// <summary>
@@ -752,8 +752,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public bool SomeOtherScopeSomeOtherInnerBool
     {
-        get => StoreVariantExtensions.Get(_someOtherScopeSomeOtherInnerBool);
-        set => StoreVariantExtensions.Set(_someOtherScopeSomeOtherInnerBool, value);
+        get => _someOtherScopeSomeOtherInnerBool.Get();
+        set => _someOtherScopeSomeOtherInnerBool.Set(value);
     }
 
     /// <summary>
@@ -761,8 +761,8 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// </summary>
     public bool AmbiguousAmpEnable
     {
-        get => StoreVariantExtensions.Get(_ambiguousAmpEnable);
-        set => StoreVariantExtensions.Set(_ambiguousAmpEnable, value);
+        get => _ambiguousAmpEnable.Get();
+        set => _ambiguousAmpEnable.Set(value);
     }
 
     /// <summary>

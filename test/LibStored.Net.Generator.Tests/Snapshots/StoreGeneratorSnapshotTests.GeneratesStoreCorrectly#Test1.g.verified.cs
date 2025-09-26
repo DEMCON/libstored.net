@@ -16,15 +16,15 @@ public class Test1 : global::LibStored.Net.Store, global::System.ComponentModel.
 
     private readonly global::System.Collections.Generic.Dictionary<string, global::LibStored.Net.DebugVariantInfo> _debugDirectory = [];
 
-    private readonly global::LibStored.Net.StoreVariant<int> _variable1;
-    private readonly global::LibStored.Net.StoreVariant<double> _variable2;
+    private readonly global::LibStored.Net.StoreVariable<int> _variable1;
+    private readonly global::LibStored.Net.StoreVariable<double> _variable2;
 
     public Test1()
     {
         Test1.InitialBuffer.AsSpan().CopyTo(_data.AsSpan());
 
-        _variable1 = new global::LibStored.Net.StoreVariant<int>(0, 4, this);
-        _variable2 = new global::LibStored.Net.StoreVariant<double>(4, 8, this);
+        _variable1 = new global::LibStored.Net.StoreVariable<int>(0, 4, this);
+        _variable2 = new global::LibStored.Net.StoreVariable<double>(4, 8, this);
 
         _debugDirectory.Add("/Variable 1", new global::LibStored.Net.DebugVariantInfo(Types.Int32, 0, 4));
         _debugDirectory.Add("/Variable 2", new global::LibStored.Net.DebugVariantInfo(Types.Double, 4, 8));
@@ -44,8 +44,8 @@ public class Test1 : global::LibStored.Net.Store, global::System.ComponentModel.
     /// </summary>
     public int Variable1
     {
-        get => StoreVariantExtensions.Get(_variable1);
-        set => StoreVariantExtensions.Set(_variable1, value);
+        get => _variable1.Get();
+        set => _variable1.Set(value);
     }
 
     /// <summary>
@@ -53,8 +53,8 @@ public class Test1 : global::LibStored.Net.Store, global::System.ComponentModel.
     /// </summary>
     public double Variable2
     {
-        get => StoreVariantExtensions.Get(_variable2);
-        set => StoreVariantExtensions.Set(_variable2, value);
+        get => _variable2.Get();
+        set => _variable2.Set(value);
     }
 
     /// <summary>

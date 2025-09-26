@@ -28,7 +28,7 @@ public static class ScribanGenerator
             private readonly global::System.Collections.Generic.Dictionary<string, global::LibStored.Net.DebugVariantInfo> _debugDirectory = [];
 
         {{~ for o in store.variables ~}}
-        {{~ if o.is_variable ~}}
+        {{~ if o.type | is_variable ~}}
             private readonly global::LibStored.Net.StoreVariable<{{o.type|cs_types}}> {{o.cname|cs_field}};
         {{~ else ~}}
             private readonly global::LibStored.Net.StoreVariant<{{o.type|cs_types}}> {{o.cname|cs_field}};
@@ -40,7 +40,7 @@ public static class ScribanGenerator
                 {{store.name}}.InitialBuffer.AsSpan().CopyTo(_data.AsSpan());
 
         {{~ for o in store.variables ~}}
-        {{~ if o.is_variable ~}}
+        {{~ if o.type | is_variable ~}}
                 {{o.cname|cs_field}} = new global::LibStored.Net.StoreVariable<{{o.type|cs_types}}>({{o.offset}}, {{o.size}}, this);
         {{~ else ~}}
                 {{o.cname|cs_field}} = new global::LibStored.Net.StoreVariant<{{o.type|cs_types}}>({{o.offset}}, {{o.size}}, this);
@@ -67,7 +67,7 @@ public static class ScribanGenerator
             /// </summary>
             public {{o.type|cs_types}} {{o.cname|cs_prop}}
             {
-        {{~ if o.is_variable ~}}
+        {{~ if o.type | is_variable ~}}
                 get => {{o.cname|cs_field}}.Get();
                 set => {{o.cname|cs_field}}.Set(value);
         {{~ else ~}}

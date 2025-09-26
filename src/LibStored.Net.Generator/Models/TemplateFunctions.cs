@@ -21,7 +21,7 @@ public static class TemplateFunctions
         "string" => "string",
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
     };
-    
+
     public static string CseTypes(string type) => type switch
     {
         "bool" => "Types.Bool",
@@ -41,25 +41,31 @@ public static class TemplateFunctions
         "string" => "Types.String",
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
     };
-    
-    public static string CsField(string type) 
+
+    public static string CsField(string type)
     {
         string[] parts = type.Split('_');
         string prefix = parts.Length == 0 ? "_" : string.Empty;
         string field = $"{parts[0]}{string.Join("", parts.Skip(1).Select(ToUpperFirstLetter))}";
         return $"{prefix}_{field}";
     }
-    
+
     public static string CsProp(string type)
     {
         string[] parts = type.Split('_');
         string prefix = parts.Length == 0 ? "_" : string.Empty;
         return $"{prefix}{string.Join("", parts.Select(ToUpperFirstLetter))}";
     }
-    
+
+    public static bool IsVariable(string type) => type switch
+    {
+        "blob" or "string" => false,
+        _ => true
+    };
+
     private static string ToUpperFirstLetter(string value) => value switch
     {
         "" => "",
         _ => char.ToUpper(value[0]) + value.Substring(1)
     };
-} 
+}
