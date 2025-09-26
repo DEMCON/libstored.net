@@ -8,7 +8,7 @@ namespace LibStored.Net.Generator;
 
 public static class ScribanGenerator
 {
-    private const string StoreTemplate = 
+    private const string StoreTemplate =
         """
         #nullable enable
 
@@ -65,14 +65,14 @@ public static class ScribanGenerator
             /// <summary>
             /// {{o.name}}.
             /// </summary>
-            public {{o.type|cs_types}} {{o.cname|cs_prop}} 
-            { 
+            public {{o.type|cs_types}} {{o.cname|cs_prop}}
+            {
         {{~ if o.is_variable ~}}
-                get => {{o.cname|cs_field}}.Get(); 
-                set => {{o.cname|cs_field}}.Set(value); 
+                get => {{o.cname|cs_field}}.Get();
+                set => {{o.cname|cs_field}}.Set(value);
         {{~ else ~}}
-                get => StoreVariantExtensions.Get({{o.cname|cs_field}}); 
-                set => StoreVariantExtensions.Set({{o.cname|cs_field}}, value); 
+                get => StoreVariantExtensions.Get({{o.cname|cs_field}});
+                set => StoreVariantExtensions.Set({{o.cname|cs_field}}, value);
         {{~ end ~}}
             }
 
@@ -102,7 +102,7 @@ public static class ScribanGenerator
         }
 
         """;
-    
+
     public static string GenerateSource(StoreModel model, string filename)
     {
         Template template = Template.Parse(StoreTemplate);
@@ -124,7 +124,7 @@ public static class ScribanGenerator
         TemplateVariable[] variables = model.Variables
             .OrderBy(x => x.Offset)
             .Select(Map).ToArray();
-        
+
         TemplateObject store = new()
         {
             Name = model.Name,
@@ -133,7 +133,7 @@ public static class ScribanGenerator
             Init = Encode(variables),
             Variables = variables,
         };
-        
+
         scriptObject["store"] = store;
 
         TemplateContext context = new();
@@ -142,7 +142,7 @@ public static class ScribanGenerator
         string? result = template.Render(context);
         return result;
     }
-    
+
     private static int Size(TemplateVariable[] variables) => variables
         .OrderBy(x => x.Offset)
         .Select(x => x.Offset + x.Size)
@@ -166,10 +166,10 @@ public static class ScribanGenerator
                     bytes.Add(0);
                 }
             }
-            
+
             bytes.AddRange(variable.Value);
         }
-        
+
         return string.Join(", ", bytes.Select(b => $"0x{b:X2}"));
     }
 
@@ -184,5 +184,6 @@ public static class ScribanGenerator
         Value = Decode(x.Init)
     };
 
+    // Base64 or use HexString, although convert.FromHexString is not in netstandard2.0.
     private static byte[]? Decode(string? init) => init is null ? null : Convert.FromBase64String(init);
 }

@@ -219,550 +219,550 @@ public class TestStore : global::LibStored.Net.Store, global::System.ComponentMo
     /// <summary>
     /// init string.
     /// </summary>
-    public string InitString 
-    { 
-        get => StoreVariantExtensions.Get(_initString); 
-        set => StoreVariantExtensions.Set(_initString, value); 
+    public string InitString
+    {
+        get => StoreVariantExtensions.Get(_initString);
+        set => StoreVariantExtensions.Set(_initString, value);
     }
 
     /// <summary>
     /// double amp/gain.
     /// </summary>
-    public double DoubleAmpGain 
-    { 
-        get => StoreVariantExtensions.Get(_doubleAmpGain); 
-        set => StoreVariantExtensions.Set(_doubleAmpGain, value); 
+    public double DoubleAmpGain
+    {
+        get => StoreVariantExtensions.Get(_doubleAmpGain);
+        set => StoreVariantExtensions.Set(_doubleAmpGain, value);
     }
 
     /// <summary>
     /// init decimal.
     /// </summary>
-    public int InitDecimal 
-    { 
-        get => StoreVariantExtensions.Get(_initDecimal); 
-        set => StoreVariantExtensions.Set(_initDecimal, value); 
+    public int InitDecimal
+    {
+        get => StoreVariantExtensions.Get(_initDecimal);
+        set => StoreVariantExtensions.Set(_initDecimal, value);
     }
 
     /// <summary>
     /// init negative.
     /// </summary>
-    public int InitNegative 
-    { 
-        get => StoreVariantExtensions.Get(_initNegative); 
-        set => StoreVariantExtensions.Set(_initNegative, value); 
+    public int InitNegative
+    {
+        get => StoreVariantExtensions.Get(_initNegative);
+        set => StoreVariantExtensions.Set(_initNegative, value);
     }
 
     /// <summary>
     /// init hex.
     /// </summary>
-    public int InitHex 
-    { 
-        get => StoreVariantExtensions.Get(_initHex); 
-        set => StoreVariantExtensions.Set(_initHex, value); 
+    public int InitHex
+    {
+        get => StoreVariantExtensions.Get(_initHex);
+        set => StoreVariantExtensions.Set(_initHex, value);
     }
 
     /// <summary>
     /// init bin.
     /// </summary>
-    public int InitBin 
-    { 
-        get => StoreVariantExtensions.Get(_initBin); 
-        set => StoreVariantExtensions.Set(_initBin, value); 
+    public int InitBin
+    {
+        get => StoreVariantExtensions.Get(_initBin);
+        set => StoreVariantExtensions.Set(_initBin, value);
     }
 
     /// <summary>
     /// init float 1.
     /// </summary>
-    public float InitFloat1 
-    { 
-        get => StoreVariantExtensions.Get(_initFloat1); 
-        set => StoreVariantExtensions.Set(_initFloat1, value); 
+    public float InitFloat1
+    {
+        get => StoreVariantExtensions.Get(_initFloat1);
+        set => StoreVariantExtensions.Set(_initFloat1, value);
     }
 
     /// <summary>
     /// init float 3.14.
     /// </summary>
-    public float InitFloat314 
-    { 
-        get => StoreVariantExtensions.Get(_initFloat314); 
-        set => StoreVariantExtensions.Set(_initFloat314, value); 
+    public float InitFloat314
+    {
+        get => StoreVariantExtensions.Get(_initFloat314);
+        set => StoreVariantExtensions.Set(_initFloat314, value);
     }
 
     /// <summary>
     /// init float -4000.
     /// </summary>
-    public float InitFloat4000 
-    { 
-        get => StoreVariantExtensions.Get(_initFloat4000); 
-        set => StoreVariantExtensions.Set(_initFloat4000, value); 
+    public float InitFloat4000
+    {
+        get => StoreVariantExtensions.Get(_initFloat4000);
+        set => StoreVariantExtensions.Set(_initFloat4000, value);
     }
 
     /// <summary>
     /// init float nan.
     /// </summary>
-    public float InitFloatNan 
-    { 
-        get => StoreVariantExtensions.Get(_initFloatNan); 
-        set => StoreVariantExtensions.Set(_initFloatNan, value); 
+    public float InitFloatNan
+    {
+        get => StoreVariantExtensions.Get(_initFloatNan);
+        set => StoreVariantExtensions.Set(_initFloatNan, value);
     }
 
     /// <summary>
     /// init float inf.
     /// </summary>
-    public float InitFloatInf 
-    { 
-        get => StoreVariantExtensions.Get(_initFloatInf); 
-        set => StoreVariantExtensions.Set(_initFloatInf, value); 
+    public float InitFloatInf
+    {
+        get => StoreVariantExtensions.Get(_initFloatInf);
+        set => StoreVariantExtensions.Set(_initFloatInf, value);
     }
 
     /// <summary>
     /// init float neg inf.
     /// </summary>
-    public float InitFloatNegInf 
-    { 
-        get => StoreVariantExtensions.Get(_initFloatNegInf); 
-        set => StoreVariantExtensions.Set(_initFloatNegInf, value); 
+    public float InitFloatNegInf
+    {
+        get => StoreVariantExtensions.Get(_initFloatNegInf);
+        set => StoreVariantExtensions.Set(_initFloatNegInf, value);
     }
 
     /// <summary>
     /// array single.
     /// </summary>
-    public float ArraySingle 
-    { 
-        get => StoreVariantExtensions.Get(_arraySingle); 
-        set => StoreVariantExtensions.Set(_arraySingle, value); 
+    public float ArraySingle
+    {
+        get => StoreVariantExtensions.Get(_arraySingle);
+        set => StoreVariantExtensions.Set(_arraySingle, value);
     }
 
     /// <summary>
     /// amp/gain.
     /// </summary>
-    public float AmpGain 
-    { 
-        get => StoreVariantExtensions.Get(_ampGain); 
-        set => StoreVariantExtensions.Set(_ampGain, value); 
+    public float AmpGain
+    {
+        get => StoreVariantExtensions.Get(_ampGain);
+        set => StoreVariantExtensions.Set(_ampGain, value);
     }
 
     /// <summary>
     /// amp/offset.
     /// </summary>
-    public float AmpOffset 
-    { 
-        get => StoreVariantExtensions.Get(_ampOffset); 
-        set => StoreVariantExtensions.Set(_ampOffset, value); 
+    public float AmpOffset
+    {
+        get => StoreVariantExtensions.Get(_ampOffset);
+        set => StoreVariantExtensions.Set(_ampOffset, value);
     }
 
     /// <summary>
     /// amp/low.
     /// </summary>
-    public float AmpLow 
-    { 
-        get => StoreVariantExtensions.Get(_ampLow); 
-        set => StoreVariantExtensions.Set(_ampLow, value); 
+    public float AmpLow
+    {
+        get => StoreVariantExtensions.Get(_ampLow);
+        set => StoreVariantExtensions.Set(_ampLow, value);
     }
 
     /// <summary>
     /// amp/high.
     /// </summary>
-    public float AmpHigh 
-    { 
-        get => StoreVariantExtensions.Get(_ampHigh); 
-        set => StoreVariantExtensions.Set(_ampHigh, value); 
+    public float AmpHigh
+    {
+        get => StoreVariantExtensions.Get(_ampHigh);
+        set => StoreVariantExtensions.Set(_ampHigh, value);
     }
 
     /// <summary>
     /// amp/override.
     /// </summary>
-    public float AmpOverride 
-    { 
-        get => StoreVariantExtensions.Get(_ampOverride); 
-        set => StoreVariantExtensions.Set(_ampOverride, value); 
+    public float AmpOverride
+    {
+        get => StoreVariantExtensions.Get(_ampOverride);
+        set => StoreVariantExtensions.Set(_ampOverride, value);
     }
 
     /// <summary>
     /// small amp/gain.
     /// </summary>
-    public float SmallAmpGain 
-    { 
-        get => StoreVariantExtensions.Get(_smallAmpGain); 
-        set => StoreVariantExtensions.Set(_smallAmpGain, value); 
+    public float SmallAmpGain
+    {
+        get => StoreVariantExtensions.Get(_smallAmpGain);
+        set => StoreVariantExtensions.Set(_smallAmpGain, value);
     }
 
     /// <summary>
     /// small amp/override.
     /// </summary>
-    public float SmallAmpOverride 
-    { 
-        get => StoreVariantExtensions.Get(_smallAmpOverride); 
-        set => StoreVariantExtensions.Set(_smallAmpOverride, value); 
+    public float SmallAmpOverride
+    {
+        get => StoreVariantExtensions.Get(_smallAmpOverride);
+        set => StoreVariantExtensions.Set(_smallAmpOverride, value);
     }
 
     /// <summary>
     /// ambiguous amp/gain.
     /// </summary>
-    public float AmbiguousAmpGain 
-    { 
-        get => StoreVariantExtensions.Get(_ambiguousAmpGain); 
-        set => StoreVariantExtensions.Set(_ambiguousAmpGain, value); 
+    public float AmbiguousAmpGain
+    {
+        get => StoreVariantExtensions.Get(_ambiguousAmpGain);
+        set => StoreVariantExtensions.Set(_ambiguousAmpGain, value);
     }
 
     /// <summary>
     /// init true.
     /// </summary>
-    public bool InitTrue 
-    { 
-        get => StoreVariantExtensions.Get(_initTrue); 
-        set => StoreVariantExtensions.Set(_initTrue, value); 
+    public bool InitTrue
+    {
+        get => StoreVariantExtensions.Get(_initTrue);
+        set => StoreVariantExtensions.Set(_initTrue, value);
     }
 
     /// <summary>
     /// init bool 10.
     /// </summary>
-    public bool InitBool10 
-    { 
-        get => StoreVariantExtensions.Get(_initBool10); 
-        set => StoreVariantExtensions.Set(_initBool10, value); 
+    public bool InitBool10
+    {
+        get => StoreVariantExtensions.Get(_initBool10);
+        set => StoreVariantExtensions.Set(_initBool10, value);
     }
 
     /// <summary>
     /// array bool[0].
     /// </summary>
-    public bool ArrayBool0 
-    { 
-        get => StoreVariantExtensions.Get(_arrayBool0); 
-        set => StoreVariantExtensions.Set(_arrayBool0, value); 
+    public bool ArrayBool0
+    {
+        get => StoreVariantExtensions.Get(_arrayBool0);
+        set => StoreVariantExtensions.Set(_arrayBool0, value);
     }
 
     /// <summary>
     /// array bool[1].
     /// </summary>
-    public bool ArrayBool1 
-    { 
-        get => StoreVariantExtensions.Get(_arrayBool1); 
-        set => StoreVariantExtensions.Set(_arrayBool1, value); 
+    public bool ArrayBool1
+    {
+        get => StoreVariantExtensions.Get(_arrayBool1);
+        set => StoreVariantExtensions.Set(_arrayBool1, value);
     }
 
     /// <summary>
     /// amp/enable.
     /// </summary>
-    public bool AmpEnable 
-    { 
-        get => StoreVariantExtensions.Get(_ampEnable); 
-        set => StoreVariantExtensions.Set(_ampEnable, value); 
+    public bool AmpEnable
+    {
+        get => StoreVariantExtensions.Get(_ampEnable);
+        set => StoreVariantExtensions.Set(_ampEnable, value);
     }
 
     /// <summary>
     /// default string.
     /// </summary>
-    public string DefaultString 
-    { 
-        get => StoreVariantExtensions.Get(_defaultString); 
-        set => StoreVariantExtensions.Set(_defaultString, value); 
+    public string DefaultString
+    {
+        get => StoreVariantExtensions.Get(_defaultString);
+        set => StoreVariantExtensions.Set(_defaultString, value);
     }
 
     /// <summary>
     /// default int64.
     /// </summary>
-    public long DefaultInt64 
-    { 
-        get => StoreVariantExtensions.Get(_defaultInt64); 
-        set => StoreVariantExtensions.Set(_defaultInt64, value); 
+    public long DefaultInt64
+    {
+        get => StoreVariantExtensions.Get(_defaultInt64);
+        set => StoreVariantExtensions.Set(_defaultInt64, value);
     }
 
     /// <summary>
     /// default uint64.
     /// </summary>
-    public ulong DefaultUint64 
-    { 
-        get => StoreVariantExtensions.Get(_defaultUint64); 
-        set => StoreVariantExtensions.Set(_defaultUint64, value); 
+    public ulong DefaultUint64
+    {
+        get => StoreVariantExtensions.Get(_defaultUint64);
+        set => StoreVariantExtensions.Set(_defaultUint64, value);
     }
 
     /// <summary>
     /// default double.
     /// </summary>
-    public double DefaultDouble 
-    { 
-        get => StoreVariantExtensions.Get(_defaultDouble); 
-        set => StoreVariantExtensions.Set(_defaultDouble, value); 
+    public double DefaultDouble
+    {
+        get => StoreVariantExtensions.Get(_defaultDouble);
+        set => StoreVariantExtensions.Set(_defaultDouble, value);
     }
 
     /// <summary>
     /// default ptr64.
     /// </summary>
-    public ulong DefaultPtr64 
-    { 
-        get => StoreVariantExtensions.Get(_defaultPtr64); 
-        set => StoreVariantExtensions.Set(_defaultPtr64, value); 
+    public ulong DefaultPtr64
+    {
+        get => StoreVariantExtensions.Get(_defaultPtr64);
+        set => StoreVariantExtensions.Set(_defaultPtr64, value);
     }
 
     /// <summary>
     /// init string empty.
     /// </summary>
-    public string InitStringEmpty 
-    { 
-        get => StoreVariantExtensions.Get(_initStringEmpty); 
-        set => StoreVariantExtensions.Set(_initStringEmpty, value); 
+    public string InitStringEmpty
+    {
+        get => StoreVariantExtensions.Get(_initStringEmpty);
+        set => StoreVariantExtensions.Set(_initStringEmpty, value);
     }
 
     /// <summary>
     /// default blob.
     /// </summary>
-    public byte[] DefaultBlob 
-    { 
-        get => StoreVariantExtensions.Get(_defaultBlob); 
-        set => StoreVariantExtensions.Set(_defaultBlob, value); 
+    public byte[] DefaultBlob
+    {
+        get => StoreVariantExtensions.Get(_defaultBlob);
+        set => StoreVariantExtensions.Set(_defaultBlob, value);
     }
 
     /// <summary>
     /// default int32.
     /// </summary>
-    public int DefaultInt32 
-    { 
-        get => StoreVariantExtensions.Get(_defaultInt32); 
-        set => StoreVariantExtensions.Set(_defaultInt32, value); 
+    public int DefaultInt32
+    {
+        get => StoreVariantExtensions.Get(_defaultInt32);
+        set => StoreVariantExtensions.Set(_defaultInt32, value);
     }
 
     /// <summary>
     /// default uint32.
     /// </summary>
-    public uint DefaultUint32 
-    { 
-        get => StoreVariantExtensions.Get(_defaultUint32); 
-        set => StoreVariantExtensions.Set(_defaultUint32, value); 
+    public uint DefaultUint32
+    {
+        get => StoreVariantExtensions.Get(_defaultUint32);
+        set => StoreVariantExtensions.Set(_defaultUint32, value);
     }
 
     /// <summary>
     /// default float.
     /// </summary>
-    public float DefaultFloat 
-    { 
-        get => StoreVariantExtensions.Get(_defaultFloat); 
-        set => StoreVariantExtensions.Set(_defaultFloat, value); 
+    public float DefaultFloat
+    {
+        get => StoreVariantExtensions.Get(_defaultFloat);
+        set => StoreVariantExtensions.Set(_defaultFloat, value);
     }
 
     /// <summary>
     /// default ptr32.
     /// </summary>
-    public uint DefaultPtr32 
-    { 
-        get => StoreVariantExtensions.Get(_defaultPtr32); 
-        set => StoreVariantExtensions.Set(_defaultPtr32, value); 
+    public uint DefaultPtr32
+    {
+        get => StoreVariantExtensions.Get(_defaultPtr32);
+        set => StoreVariantExtensions.Set(_defaultPtr32, value);
     }
 
     /// <summary>
     /// init float 0.
     /// </summary>
-    public float InitFloat0 
-    { 
-        get => StoreVariantExtensions.Get(_initFloat0); 
-        set => StoreVariantExtensions.Set(_initFloat0, value); 
+    public float InitFloat0
+    {
+        get => StoreVariantExtensions.Get(_initFloat0);
+        set => StoreVariantExtensions.Set(_initFloat0, value);
     }
 
     /// <summary>
     /// array string[0].
     /// </summary>
-    public string ArrayString0 
-    { 
-        get => StoreVariantExtensions.Get(_arrayString0); 
-        set => StoreVariantExtensions.Set(_arrayString0, value); 
+    public string ArrayString0
+    {
+        get => StoreVariantExtensions.Get(_arrayString0);
+        set => StoreVariantExtensions.Set(_arrayString0, value);
     }
 
     /// <summary>
     /// array string[1].
     /// </summary>
-    public string ArrayString1 
-    { 
-        get => StoreVariantExtensions.Get(_arrayString1); 
-        set => StoreVariantExtensions.Set(_arrayString1, value); 
+    public string ArrayString1
+    {
+        get => StoreVariantExtensions.Get(_arrayString1);
+        set => StoreVariantExtensions.Set(_arrayString1, value);
     }
 
     /// <summary>
     /// array string[2].
     /// </summary>
-    public string ArrayString2 
-    { 
-        get => StoreVariantExtensions.Get(_arrayString2); 
-        set => StoreVariantExtensions.Set(_arrayString2, value); 
+    public string ArrayString2
+    {
+        get => StoreVariantExtensions.Get(_arrayString2);
+        set => StoreVariantExtensions.Set(_arrayString2, value);
     }
 
     /// <summary>
     /// scope/inner int.
     /// </summary>
-    public int ScopeInnerInt 
-    { 
-        get => StoreVariantExtensions.Get(_scopeInnerInt); 
-        set => StoreVariantExtensions.Set(_scopeInnerInt, value); 
+    public int ScopeInnerInt
+    {
+        get => StoreVariantExtensions.Get(_scopeInnerInt);
+        set => StoreVariantExtensions.Set(_scopeInnerInt, value);
     }
 
     /// <summary>
     /// value with unit (km/s).
     /// </summary>
-    public float ValueWithUnitKmS 
-    { 
-        get => StoreVariantExtensions.Get(_valueWithUnitKmS); 
-        set => StoreVariantExtensions.Set(_valueWithUnitKmS, value); 
+    public float ValueWithUnitKmS
+    {
+        get => StoreVariantExtensions.Get(_valueWithUnitKmS);
+        set => StoreVariantExtensions.Set(_valueWithUnitKmS, value);
     }
 
     /// <summary>
     /// value with complex unit (J/s/m^2).
     /// </summary>
-    public float ValueWithComplexUnitJSM2 
-    { 
-        get => StoreVariantExtensions.Get(_valueWithComplexUnitJSM2); 
-        set => StoreVariantExtensions.Set(_valueWithComplexUnitJSM2, value); 
+    public float ValueWithComplexUnitJSM2
+    {
+        get => StoreVariantExtensions.Get(_valueWithComplexUnitJSM2);
+        set => StoreVariantExtensions.Set(_valueWithComplexUnitJSM2, value);
     }
 
     /// <summary>
     /// value with abiguous unit (m/s).
     /// </summary>
-    public float ValueWithAbiguousUnitMS 
-    { 
-        get => StoreVariantExtensions.Get(_valueWithAbiguousUnitMS); 
-        set => StoreVariantExtensions.Set(_valueWithAbiguousUnitMS, value); 
+    public float ValueWithAbiguousUnitMS
+    {
+        get => StoreVariantExtensions.Get(_valueWithAbiguousUnitMS);
+        set => StoreVariantExtensions.Set(_valueWithAbiguousUnitMS, value);
     }
 
     /// <summary>
     /// value with abiguous unit (m/h).
     /// </summary>
-    public float ValueWithAbiguousUnitMH 
-    { 
-        get => StoreVariantExtensions.Get(_valueWithAbiguousUnitMH); 
-        set => StoreVariantExtensions.Set(_valueWithAbiguousUnitMH, value); 
+    public float ValueWithAbiguousUnitMH
+    {
+        get => StoreVariantExtensions.Get(_valueWithAbiguousUnitMH);
+        set => StoreVariantExtensions.Set(_valueWithAbiguousUnitMH, value);
     }
 
     /// <summary>
     /// amp/input.
     /// </summary>
-    public float AmpInput 
-    { 
-        get => StoreVariantExtensions.Get(_ampInput); 
-        set => StoreVariantExtensions.Set(_ampInput, value); 
+    public float AmpInput
+    {
+        get => StoreVariantExtensions.Get(_ampInput);
+        set => StoreVariantExtensions.Set(_ampInput, value);
     }
 
     /// <summary>
     /// amp/output.
     /// </summary>
-    public float AmpOutput 
-    { 
-        get => StoreVariantExtensions.Get(_ampOutput); 
-        set => StoreVariantExtensions.Set(_ampOutput, value); 
+    public float AmpOutput
+    {
+        get => StoreVariantExtensions.Get(_ampOutput);
+        set => StoreVariantExtensions.Set(_ampOutput, value);
     }
 
     /// <summary>
     /// small amp/output.
     /// </summary>
-    public float SmallAmpOutput 
-    { 
-        get => StoreVariantExtensions.Get(_smallAmpOutput); 
-        set => StoreVariantExtensions.Set(_smallAmpOutput, value); 
+    public float SmallAmpOutput
+    {
+        get => StoreVariantExtensions.Get(_smallAmpOutput);
+        set => StoreVariantExtensions.Set(_smallAmpOutput, value);
     }
 
     /// <summary>
     /// ambiguous amp/output.
     /// </summary>
-    public float AmbiguousAmpOutput 
-    { 
-        get => StoreVariantExtensions.Get(_ambiguousAmpOutput); 
-        set => StoreVariantExtensions.Set(_ambiguousAmpOutput, value); 
+    public float AmbiguousAmpOutput
+    {
+        get => StoreVariantExtensions.Get(_ambiguousAmpOutput);
+        set => StoreVariantExtensions.Set(_ambiguousAmpOutput, value);
     }
 
     /// <summary>
     /// default int16.
     /// </summary>
-    public short DefaultInt16 
-    { 
-        get => StoreVariantExtensions.Get(_defaultInt16); 
-        set => StoreVariantExtensions.Set(_defaultInt16, value); 
+    public short DefaultInt16
+    {
+        get => StoreVariantExtensions.Get(_defaultInt16);
+        set => StoreVariantExtensions.Set(_defaultInt16, value);
     }
 
     /// <summary>
     /// default uint16.
     /// </summary>
-    public ushort DefaultUint16 
-    { 
-        get => StoreVariantExtensions.Get(_defaultUint16); 
-        set => StoreVariantExtensions.Set(_defaultUint16, value); 
+    public ushort DefaultUint16
+    {
+        get => StoreVariantExtensions.Get(_defaultUint16);
+        set => StoreVariantExtensions.Set(_defaultUint16, value);
     }
 
     /// <summary>
     /// default int8.
     /// </summary>
-    public sbyte DefaultInt8 
-    { 
-        get => StoreVariantExtensions.Get(_defaultInt8); 
-        set => StoreVariantExtensions.Set(_defaultInt8, value); 
+    public sbyte DefaultInt8
+    {
+        get => StoreVariantExtensions.Get(_defaultInt8);
+        set => StoreVariantExtensions.Set(_defaultInt8, value);
     }
 
     /// <summary>
     /// default uint8.
     /// </summary>
-    public byte DefaultUint8 
-    { 
-        get => StoreVariantExtensions.Get(_defaultUint8); 
-        set => StoreVariantExtensions.Set(_defaultUint8, value); 
+    public byte DefaultUint8
+    {
+        get => StoreVariantExtensions.Get(_defaultUint8);
+        set => StoreVariantExtensions.Set(_defaultUint8, value);
     }
 
     /// <summary>
     /// default bool.
     /// </summary>
-    public bool DefaultBool 
-    { 
-        get => StoreVariantExtensions.Get(_defaultBool); 
-        set => StoreVariantExtensions.Set(_defaultBool, value); 
+    public bool DefaultBool
+    {
+        get => StoreVariantExtensions.Get(_defaultBool);
+        set => StoreVariantExtensions.Set(_defaultBool, value);
     }
 
     /// <summary>
     /// init false.
     /// </summary>
-    public bool InitFalse 
-    { 
-        get => StoreVariantExtensions.Get(_initFalse); 
-        set => StoreVariantExtensions.Set(_initFalse, value); 
+    public bool InitFalse
+    {
+        get => StoreVariantExtensions.Get(_initFalse);
+        set => StoreVariantExtensions.Set(_initFalse, value);
     }
 
     /// <summary>
     /// init bool 0.
     /// </summary>
-    public bool InitBool0 
-    { 
-        get => StoreVariantExtensions.Get(_initBool0); 
-        set => StoreVariantExtensions.Set(_initBool0, value); 
+    public bool InitBool0
+    {
+        get => StoreVariantExtensions.Get(_initBool0);
+        set => StoreVariantExtensions.Set(_initBool0, value);
     }
 
     /// <summary>
     /// array bool[2].
     /// </summary>
-    public bool ArrayBool2 
-    { 
-        get => StoreVariantExtensions.Get(_arrayBool2); 
-        set => StoreVariantExtensions.Set(_arrayBool2, value); 
+    public bool ArrayBool2
+    {
+        get => StoreVariantExtensions.Get(_arrayBool2);
+        set => StoreVariantExtensions.Set(_arrayBool2, value);
     }
 
     /// <summary>
     /// scope/inner bool.
     /// </summary>
-    public bool ScopeInnerBool 
-    { 
-        get => StoreVariantExtensions.Get(_scopeInnerBool); 
-        set => StoreVariantExtensions.Set(_scopeInnerBool, value); 
+    public bool ScopeInnerBool
+    {
+        get => StoreVariantExtensions.Get(_scopeInnerBool);
+        set => StoreVariantExtensions.Set(_scopeInnerBool, value);
     }
 
     /// <summary>
     /// some other scope/some other inner bool.
     /// </summary>
-    public bool SomeOtherScopeSomeOtherInnerBool 
-    { 
-        get => StoreVariantExtensions.Get(_someOtherScopeSomeOtherInnerBool); 
-        set => StoreVariantExtensions.Set(_someOtherScopeSomeOtherInnerBool, value); 
+    public bool SomeOtherScopeSomeOtherInnerBool
+    {
+        get => StoreVariantExtensions.Get(_someOtherScopeSomeOtherInnerBool);
+        set => StoreVariantExtensions.Set(_someOtherScopeSomeOtherInnerBool, value);
     }
 
     /// <summary>
     /// ambiguous amp/enable.
     /// </summary>
-    public bool AmbiguousAmpEnable 
-    { 
-        get => StoreVariantExtensions.Get(_ambiguousAmpEnable); 
-        set => StoreVariantExtensions.Set(_ambiguousAmpEnable, value); 
+    public bool AmbiguousAmpEnable
+    {
+        get => StoreVariantExtensions.Get(_ambiguousAmpEnable);
+        set => StoreVariantExtensions.Set(_ambiguousAmpEnable, value);
     }
 
     /// <summary>

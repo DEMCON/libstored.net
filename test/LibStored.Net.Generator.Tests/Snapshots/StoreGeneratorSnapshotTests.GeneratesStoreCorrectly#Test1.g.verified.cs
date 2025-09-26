@@ -42,19 +42,19 @@ public class Test1 : global::LibStored.Net.Store, global::System.ComponentModel.
     /// <summary>
     /// Variable 1.
     /// </summary>
-    public int Variable1 
-    { 
-        get => StoreVariantExtensions.Get(_variable1); 
-        set => StoreVariantExtensions.Set(_variable1, value); 
+    public int Variable1
+    {
+        get => StoreVariantExtensions.Get(_variable1);
+        set => StoreVariantExtensions.Set(_variable1, value);
     }
 
     /// <summary>
     /// Variable 2.
     /// </summary>
-    public double Variable2 
-    { 
-        get => StoreVariantExtensions.Get(_variable2); 
-        set => StoreVariantExtensions.Set(_variable2, value); 
+    public double Variable2
+    {
+        get => StoreVariantExtensions.Get(_variable2);
+        set => StoreVariantExtensions.Set(_variable2, value);
     }
 
     /// <summary>

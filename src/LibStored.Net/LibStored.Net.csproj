@@ -2,27 +2,14 @@
 
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
+
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
-        <Authors>Guus Kuiper</Authors>
-        <Description>The C# implementation of libstored.</Description>
-        <Copyright>Copyright Guus Kuiper</Copyright>
         <IsPackable>true</IsPackable>
-        <PackageTags>libstored</PackageTags>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
         <PackageIcon>libstored.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-        <PackageProjectUrl>https://github.com/DEMCON/libstored.net</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/DEMCON/libstored.net</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
-        <PublishRepositoryUrl>true</PublishRepositoryUrl>
-        <IncludeSymbols>true</IncludeSymbols>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-        <Deterministic>true</Deterministic>
-        <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
     </PropertyGroup>
 
     <ItemGroup>
@@ -30,6 +17,7 @@
         <PackageReference Include="NetMQ" Version="4.0.2.1" />
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
         <PackageReference Include="MinVer" Version="6.0.0" PrivateAssets="All" />
+        <PackageReference Include="System.Text.Json" Version="9.0.8" GeneratePathProperty="true" />
     </ItemGroup>
 
     <ItemGroup>
@@ -46,6 +34,11 @@
       <ProjectReference Include="..\LibStored.Net.Generator\LibStored.Net.Generator.csproj"
                         ReferenceOutputAssembly="false"
                         PackAsAnalyzer="true" />
+
+      <None Include="$(PkgSystem_Text_Json)\lib\netstandard2.0\System.Text.Json.dll"
+            Pack="true"
+            PackagePath="analyzers/dotnet/cs"
+            Visible="false" />
     </ItemGroup>
 
 </Project>
