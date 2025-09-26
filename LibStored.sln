@@ -34,6 +34,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibStored.Net.Generator", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibStored.Net.Generator.Tests", "test\LibStored.Net.Generator.Tests\LibStored.Net.Generator.Tests.csproj", "{D3450810-34F7-20F3-7C17-C8E7F975C695}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibStored.Net.IntegrationTests", "test\LibStored.Net.IntegrationTests\LibStored.Net.IntegrationTests.csproj", "{1E9F515B-E242-4DE7-92C3-C5A9426384B5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -76,6 +78,10 @@ Global
 		{D3450810-34F7-20F3-7C17-C8E7F975C695}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D3450810-34F7-20F3-7C17-C8E7F975C695}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D3450810-34F7-20F3-7C17-C8E7F975C695}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E9F515B-E242-4DE7-92C3-C5A9426384B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E9F515B-E242-4DE7-92C3-C5A9426384B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E9F515B-E242-4DE7-92C3-C5A9426384B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E9F515B-E242-4DE7-92C3-C5A9426384B5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -90,6 +96,7 @@ Global
 		{1451235F-A1E2-46F8-9569-D05F410D6710} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{E2A68B89-C05B-4541-BE1B-60168D8F22DA} = {F3C175CF-2AB6-4493-8D7D-81F0979D54AF}
 		{D3450810-34F7-20F3-7C17-C8E7F975C695} = {D2F48995-E5F9-403E-ACAE-FF5E449A3C73}
+		{1E9F515B-E242-4DE7-92C3-C5A9426384B5} = {D2F48995-E5F9-403E-ACAE-FF5E449A3C73}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F03561E8-8AEE-48D6-ADFA-9E1F6FBB1F2A}
