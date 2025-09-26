@@ -39,4 +39,12 @@
             Visible="false" />
     </ItemGroup>
 
+    <!-- After packing, write the version to a file in artifacts for the NugetIntegrationTests -->
+    <Target Name="WriteVersionFile" AfterTargets="Pack">
+        <WriteLinesToFile
+            File="$(ArtifactsRoot)\version.txt"
+            Lines="$(Version)"
+            Overwrite="true" />
+    </Target>
+
 </Project>

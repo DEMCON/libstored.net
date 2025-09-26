@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <MinVerVerbosity>diagnostic</MinVerVerbosity>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <!-- 👇 Add the temporary package -->
+  <ItemGroup>
+    <PackageReference Include="LibStored.Net" Version="$(LibStoredNetVersion)" />
+  </ItemGroup>
+
+  <!-- 👇 Link in all the files from the integration test project, so we run the same tests -->
+  <ItemGroup>
+    <Compile Include="..\LibStored.Net.IntegrationTests\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="..\LibStored.Net.IntegrationTests\TestStore.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+</Project>

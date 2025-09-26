@@ -29,5 +29,6 @@
 
   <PropertyGroup>
     <CustomMSBuildRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'msbuild'))</CustomMSBuildRoot>
+    <ArtifactsRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'artifacts'))</ArtifactsRoot>
   </PropertyGroup>
 </Project>
