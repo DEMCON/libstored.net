@@ -181,9 +181,37 @@ public static class ScribanGenerator
         Type = x.Type,
         Offset = x.Offset,
         Size = x.Size,
-        Value = Decode(x.Init)
+        Value = DecodeHex(x.Init)
     };
 
-    // Base64 or use HexString, although convert.FromHexString is not in netstandard2.0.
+    /// <summary>
+    /// Decodes a base64-encoded string to a byte array.
+    /// </summary>
+    /// <param name="init"></param>
+    /// <returns></returns>
     private static byte[]? Decode(string? init) => init is null ? null : Convert.FromBase64String(init);
+
+    /// <summary>
+    /// Decodes a hex-encoded string (e.g., "0A1B2C" or "0a1b2c") to a byte array.
+    /// The input string must have even length and contain only valid hex digits.
+    /// </summary>
+    private static byte[]? DecodeHex(string? hex)
+    {
+        if (string.IsNullOrEmpty(hex))
+        {
+            return null;
+        }
+
+        if (hex.Length % 2 != 0)
+        {
+            throw new ArgumentException("Hex string must have an even length.", nameof(hex));
+        }
+
+        byte[] bytes = new byte[hex.Length / 2];
+        for (int i = 0; i < hex.Length; i += 2)
+        {
+            bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+        }
+        return bytes;
+    }
 }

@@ -12,6 +12,7 @@ public class GenerateTestStore
     public void TestStoreCreated()
     {
         Type storeType = typeof(Store);
+        
         // Use reflection
         List<Type> types = Assembly.GetExecutingAssembly()
             .GetTypes()

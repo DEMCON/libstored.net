@@ -1,0 +1,16 @@
+﻿{
+  Diagnostics: [
+    {
+      Message: Store could not be deserialized: File: TestStore.json | Message: Hex string must have an even length. (Parameter 'hex'),
+      Severity: Error,
+      Descriptor: {
+        Id: STRO002,
+        Title: Store could not be generated,
+        MessageFormat: Store could not be deserialized: File: {0} | Message: {1},
+        Category: Generator,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
+    }
+  ]
+}

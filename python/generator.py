@@ -84,8 +84,8 @@ class MetaProtocolEncoder(json.JSONEncoder):
                         padding = v.size - len(init)
                         init += bytes([0] * padding)  # Fill with zeros until the offset
                         # little endian hex list
-                        b64 = base64.b64encode(init).decode('ascii')
-                        vd['init'] = b64
+                        hex = init.hex()
+                        vd['init'] = hex
                     vs.append(vd)
                 d['variables'] = vs
                 return d
