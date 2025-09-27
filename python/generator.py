@@ -269,7 +269,7 @@ def main():
     parser = argparse.ArgumentParser(description='Generator using store meta data')
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
-    parser.add_argument('-m', '--meta', type=str, default=os.path.join(script_dir, 'TestStoreMeta.py'), help='path to <store>Meta.py as input', dest="meta")
+    parser.add_argument('-m', '--meta', type=str, default=os.path.join(script_dir, 'ExampleMetaMeta.py'), help='path to <store>Meta.py as input', dest="meta")
     parser.add_argument('-t', '--template', type=str, default=os.path.join(script_dir, 'store.cs.tmpl'), help='path to jinja2 template META is to be applied to', dest="template")
     parser.add_argument('-o', '--output', type=str, help='output file for jinja2 generated content', dest="output")
 
