@@ -1,9 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <IsPackable>true</IsPackable>
-  </PropertyGroup>
-
   <!-- 👇 Add the temporary package -->
   <ItemGroup>
     <PackageReference Include="LibStored.Net" Version="$(LibStoredNetVersion)" />
