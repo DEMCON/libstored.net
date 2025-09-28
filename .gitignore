@@ -14,3 +14,7 @@ __pycache__/
 
 # Ignore generated source files
 *.g.cs
+
+# Artifacts
+artifacts/
+packages/

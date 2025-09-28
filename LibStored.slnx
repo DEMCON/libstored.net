@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/examples/">
+    <Project Path="examples/LibStored.Net.DebugClient/LibStored.Net.DebugClient.csproj" />
+    <Project Path="examples/LibStored.Net.Example.AppHost/LibStored.Net.Example.AppHost.csproj" />
+    <Project Path="examples/LibStored.Net.Example.Console/LibStored.Net.Example.Console.csproj" />
+    <Project Path="examples/LibStored.Net.Example.ServiceDefaults/LibStored.Net.Example.ServiceDefaults.csproj" />
+    <Project Path="examples/LibStored.Net.Example/LibStored.Net.Example.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/LibStored.Net.Generator/LibStored.Net.Generator.csproj" />
+    <Project Path="src/LibStored.Net/LibStored.Net.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/LibStored.Net.Generator.Tests/LibStored.Net.Generator.Tests.csproj" />
+    <Project Path="test/LibStored.Net.IntegrationTests/LibStored.Net.IntegrationTests.csproj" />
+    <Project Path="test/LibStored.Net.Tests/LibStored.Net.Tests.csproj" />
+  </Folder>
+</Solution>

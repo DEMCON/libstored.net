@@ -1,0 +1,4 @@
+﻿<Project>
+  <Import Project="$(CustomMSBuildRoot)generatorProjects.targets" Condition="'$(IsGeneratorProject)' == 'true'" />
+  <Import Project="$(CustomMSBuildRoot)packaging.targets" Condition="'$(IsPackable)' == 'true' and '$(MSBuildProjectExtension)' != '.pkgproj'" />
+</Project>

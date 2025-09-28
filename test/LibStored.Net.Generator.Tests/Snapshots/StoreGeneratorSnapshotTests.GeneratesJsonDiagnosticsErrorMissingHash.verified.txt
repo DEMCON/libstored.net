@@ -1,0 +1,16 @@
+﻿{
+  Diagnostics: [
+    {
+      Message: Store could not be deserialized: Path: $ | LineNumber: 2 | BytePositionInLine: 0,
+      Severity: Error,
+      Descriptor: {
+        Id: STRO001,
+        Title: Store could not be deserialized,
+        MessageFormat: Store could not be deserialized: Path: {0} | LineNumber: {1} | BytePositionInLine: {2},
+        Category: Deserialization,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
+    }
+  ]
+}

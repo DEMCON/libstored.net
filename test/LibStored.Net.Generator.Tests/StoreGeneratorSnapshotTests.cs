@@ -1,0 +1,79 @@
+﻿
+using System.Text.Json;
+
+namespace LibStored.Net.Generator.Tests;
+
+public class StoreGeneratorSnapshotTests
+{
+    [Fact]
+    public async Task GeneratesStoreCorrectly()
+    {
+        StoreModel model = new()
+        {
+            Name = "Test1",
+            Hash = "1234",
+            Variables = [
+                new Variables
+                {
+                    Name = "Variable 1",
+                    Cname = "variable_1",
+                    Type = "int32",
+                    Offset = 0,
+                    Size = 4,
+                    Init = "2A000000"
+                },
+                new Variables
+                {
+                    Name = "Variable 2",
+                    Cname = "variable_2",
+                    Type = "double",
+                    Offset = 4,
+                    Size = 8
+                }
+            ]
+        };
+        string json = JsonSerializer.Serialize(model);
+        await TestHelper.VerifyAdditionalText(json);
+    }
+
+    [Fact]
+    public async Task GeneratesTestStoreCorrectly()
+    {
+        string json = await File.ReadAllTextAsync("TestStore.json");
+        await TestHelper.VerifyAdditionalText(json);
+    }
+
+    [Fact]
+    public async Task GeneratesJsonDiagnosticsErrorMissingHash()
+    {
+        string json = """
+                      {
+                        "name": "asd",
+                      }
+                      """;
+        await TestHelper.VerifyAdditionalText(json);
+    }
+
+    [Fact]
+    public async Task GeneratesJsonDiagnosticsInvalidInit()
+    {
+        string json = """
+                      {
+                        "name": "asd",
+                        "hash": "qwe",
+                        "variables": [
+                          {
+                             "name": "init var",
+                             "cname": "init_var",
+                             "type": "int32",
+                             "ctype": "int32_t",
+                             "size": 4,
+                             "offset": 0,
+                             "init": "bad"
+                          }
+                        ]
+                      }
+                      """;
+        await TestHelper.VerifyAdditionalText(json);
+    }
+}

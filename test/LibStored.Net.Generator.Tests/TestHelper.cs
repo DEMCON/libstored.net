@@ -1,0 +1,58 @@
+﻿using System.Collections.Immutable;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+
+namespace LibStored.Net.Generator.Tests;
+
+public static class TestHelper
+{
+    public static Task Verify(string source)
+    {
+        // Parse the provided string into a C# syntax tree
+        SyntaxTree syntaxTree  = CSharpSyntaxTree.ParseText(source);
+        
+        // Create a Roslyn compilation for the syntax tree.
+        CSharpCompilation compilation = CSharpCompilation.Create(
+            assemblyName: "Tests",
+            syntaxTrees: [syntaxTree]);
+        
+        // Create an instance of our EnumGenerator incremental source generator
+        StoreGenerator generator = new();
+        
+        // The GeneratorDriver is used to run our generator against a compilation
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
+        
+        // Run the source generator!
+        driver = driver.RunGenerators(compilation);
+        
+        // Use verify to snapshot test the source generator output!
+        return Verifier.Verify(driver)
+            .UseDirectory("Snapshots");
+    }
+    
+    public static Task VerifyAdditionalText(string text)
+    {
+        // Parse the provided string into a C# AdditionalText
+        AdditionalText additionalText = new CustomAdditionalText("TestStore.json", text);
+        ImmutableArray<AdditionalText> additionalTexts = [additionalText];
+        
+        // Create a Roslyn compilation for the syntax tree.
+        CSharpCompilation compilation = CSharpCompilation.Create(
+            assemblyName: "Tests",
+            syntaxTrees: []);
+        
+        // Create an instance of our EnumGenerator incremental source generator
+        StoreGenerator generator = new();
+        
+        // The GeneratorDriver is used to run our generator against a compilation
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator)
+            .AddAdditionalTexts(additionalTexts);
+        
+        // Run the source generator!
+        driver = driver.RunGenerators(compilation);
+        
+        // Use verify to snapshot test the source generator output!
+        return Verifier.Verify(driver)
+            .UseDirectory("Snapshots");
+    }
+}

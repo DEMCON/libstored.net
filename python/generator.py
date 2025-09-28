@@ -84,8 +84,8 @@ class MetaProtocolEncoder(json.JSONEncoder):
                         padding = v.size - len(init)
                         init += bytes([0] * padding)  # Fill with zeros until the offset
                         # little endian hex list
-                        b64 = base64.b64encode(init).decode('ascii')
-                        vd['init'] = b64
+                        hex = init.hex()
+                        vd['init'] = hex
                     vs.append(vd)
                 d['variables'] = vs
                 return d
@@ -275,7 +275,7 @@ def main():
     parser = argparse.ArgumentParser(description='Generator using store meta data')
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
-    parser.add_argument('-m', '--meta', type=str, default=os.path.join(script_dir, 'TestStoreMeta.py'), help='path to <store>Meta.py as input', dest="meta")
+    parser.add_argument('-m', '--meta', type=str, default=os.path.join(script_dir, 'ExampleMetaMeta.py'), help='path to <store>Meta.py as input', dest="meta")
     parser.add_argument('-t', '--template', type=str, default=os.path.join(script_dir, 'store.cs.tmpl'), help='path to jinja2 template META is to be applied to', dest="template")
     parser.add_argument('-o', '--output', type=str, help='output file for jinja2 generated content', dest="output")
 
