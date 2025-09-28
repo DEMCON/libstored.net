@@ -202,7 +202,7 @@ public static class ScribanGenerator
             return null;
         }
 
-        if (hex.Length % 2 != 0)
+        if (hex!.Length % 2 != 0)
         {
             throw new ArgumentException("Hex string must have an even length.", nameof(hex));
         }
