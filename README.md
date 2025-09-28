@@ -118,7 +118,7 @@ Currently, C# stored are created manually by running a Python script using the M
 A C# Source Generator could automate this process of converting the store data structure to a C# class, using the hash, names, types, offset and
 sizes of all objects in the store.
 
-A C# SourceGenerator could generate the stores automatically during compile-time of the C# application using this library. The input of the source generated is the `.rtf` / `.csv` / `Meta.py`, or parse the actual store definition in `.st` files. Maybe [libstored](demcon.github.io/libstored) can be extended to generate a language agnostic `.json` file with the store definition, which can be used by the C# SourceGenerator to generate the store class. The `.json` file would be the easiest to implement since its easy to parse and can contain all relevant store data.
+A C# Source Generator could generate the stores automatically during compile-time of the C# application using this library. The input of the source generated is the `.rtf` / `.csv` / `Meta.py`, or parse the actual store definition in `.st` files. Maybe [libstored](demcon.github.io/libstored) can be extended to generate a language agnostic `.json` file with the store definition, which can be used by the C# Source Generator to generate the store class. The `.json` file would be the easiest to implement since its easy to parse and can contain all relevant store data. The Source Generator that transform a `*.Store.json` has been implemented, as described in the [README.md](src/LibStored.Net.Generator/README.md).
 
 Another option is to create a template file for the C# version of the store in [libstored](demcon.github.io/libstored).
 
