@@ -1,5 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2025 Guus Kuiper
-// 
+//
 // SPDX-License-Identifier: MIT
 
 using System.Text;
@@ -335,8 +335,8 @@ public class ProtocolTests
 
         Assert.Equal([expected], logging.Decoded);
     }
-    
-    
+
+
     [Fact]
     public void LoopBackTest()
     {
@@ -365,6 +365,6 @@ public class ProtocolTests
         layer.Decode(bytes);
     }
 
-    private static byte[] Bytes(string data) => Encoding.Latin1.GetBytes(data);
-    private static string String(byte[] data) => Encoding.Latin1.GetString(data);
+    internal static byte[] Bytes(string data) => Encoding.Latin1.GetBytes(data);
+    internal static string String(byte[] data) => Encoding.Latin1.GetString(data);
 }
