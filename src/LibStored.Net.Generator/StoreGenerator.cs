@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Reflection;
 using Microsoft.CodeAnalysis;
 using System.Text.Json;
 
@@ -15,12 +16,16 @@ public class StoreGenerator : IIncrementalGenerator
             .Select((text, token) => new JsonFile(text.Path, text.GetText(token)?.ToString()))
             .Where(file => file.Source is not null)!
             .Collect();
-            
+
         context.RegisterSourceOutput(stores, GenerateCode);
     }
 
     private void GenerateCode(SourceProductionContext context, ImmutableArray<JsonFile> stores)
     {
+        string version = typeof(StoreGenerator)
+            .Assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "unknown";
+
         foreach (JsonFile store in stores)
         {
             var options = new JsonSerializerOptions
@@ -36,7 +41,7 @@ public class StoreGenerator : IIncrementalGenerator
                 }
 
                 string fileName = Path.GetFileName(store.Path);
-                string source = ScribanGenerator.GenerateSource(model, fileName);
+                string source = ScribanGenerator.GenerateSource(model, fileName, version);
                 context.AddSource($"{model.Name}.g.cs", source);
             }
             catch (JsonException jex)
