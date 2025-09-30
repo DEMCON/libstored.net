@@ -10,38 +10,10 @@ namespace LibStored.Net.Tests;
 
 public class HooksTests
 {
-    private class DefaultHooks : IHooks
-    {
-        private readonly Store _store;
-
-        public DefaultHooks(Store store)
-        {
-            _store = store;
-        }
-
-        public void EntryX(Types type, ReadOnlySpan<byte> buffer) { }
-
-        public void ExitX(Types type, ReadOnlySpan<byte> buffer, bool changed)
-        {
-            if (changed)
-            {
-                uint key = _store.BufferToKey(buffer);
-                _store.Changed((int)key);
-            }
-        }
-
-        public void EntryRO(Types type, ReadOnlySpan<byte> buffer) { }
-
-        public void ExitRO(Types type, ReadOnlySpan<byte> buffer) { }
-
-        public void Changed(Types type, ReadOnlySpan<byte> buffer) { }
-    }
-
     [Fact]
     public void ChangedTest()
     {
         TestStore store = new();
-        store.Hooks = new DefaultHooks(store);
         List<PropertyChangedEventArgs> changed = [];
         store.PropertyChanged += (_, e) => changed.Add(e);
 

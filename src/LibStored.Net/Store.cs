@@ -152,6 +152,11 @@ public abstract class Store
     {
         try
         {
+            if (changed)
+            {
+                uint key = BufferToKey(buffer);
+                Changed((int)key);
+            }
             Hooks?.ExitX(type, buffer, changed);
         }
         finally
