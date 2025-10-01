@@ -71,4 +71,23 @@ public class HooksTests
         Assert.Equal(5, changed1.Count); // Local updates
         Assert.Equal(2, changed2.Count); // Because of Update
     }
+
+    [Fact]
+    public void ChangedWriteRecursionTest()
+    {
+        TestStore store = new();
+        store.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(TestStore.DefaultInt32))
+            {
+                // Force a write during the change notification of another write
+                store.DefaultInt16++; 
+            }
+        };
+
+
+        Assert.Equal(0, store.DefaultInt16);
+        store.DefaultInt32 = 1;
+        Assert.Equal(1, store.DefaultInt16);
+    }
 }
