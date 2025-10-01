@@ -39,4 +39,65 @@ public class ArqLayerTests
         top.Encode(" 6"u8, true);
         Assert.Equal(ProtocolTests.String([0x02, .." 6"u8]), bottom.Encoded[6]);
     }
+
+    [Fact]
+    public void RetransmitTest()
+    {
+        Protocol.LoggingLayer top = new();
+        Protocol.ArqLayer arq = new();
+        arq.Wrap(top);
+        Protocol.LoggingLayer bottom = new();
+        bottom.Wrap(arq);
+
+        bottom.Decode([0xff]);
+        // Ignored
+        bottom.Decode([0x40]);
+        Assert.Equal(ProtocolTests.String([0x80, 0x40]), bottom.Encoded[0]);
+
+        bottom.Decode([0x40]);
+        Assert.Equal(ProtocolTests.String([0x80, 0x40]), bottom.Encoded[1]);
+
+        top.Flush();
+        // Retransmit
+        Assert.Equal(ProtocolTests.String([0x40]), bottom.Encoded[2]);
+
+        bottom.Decode([0x80]);
+        top.Flush();
+        // No retransmit
+        Assert.Equal(3, bottom.Encoded.Count);
+
+        top.Clear();
+        bottom.Clear();
+
+        top.Encode(" 1"u8, true);
+        Assert.Equal(ProtocolTests.String([0x01, .." 1"u8]), bottom.Encoded[0]);
+
+        top.Encode(" 2"u8, true);
+        // Triggers retransmit of 1
+        Assert.Equal(ProtocolTests.String([0x01, .." 1"u8]), bottom.Encoded[1]);
+
+        top.Flush();
+        // Retransmit
+        Assert.Equal(ProtocolTests.String([0x01, .." 1"u8]), bottom.Encoded[2]);
+
+        bottom.Decode([0x81]);
+        Assert.Equal(ProtocolTests.String([0x02, .." 2"u8]), bottom.Encoded[3]);
+
+        // Wrong ack
+        bottom.Decode([0x83]);
+        Assert.Equal(4, bottom.Encoded.Count);
+        bottom.Decode([0x82]);
+
+        top.Clear();
+        bottom.Clear();
+
+        bottom.Decode([0x01, .." 3"u8]);
+        Assert.Equal(ProtocolTests.String([0x81]), bottom.Encoded[0]); // Assume lost
+
+        bottom.Decode([0x01, .." 3"u8]);
+        Assert.Equal(ProtocolTests.String([0x81]), bottom.Encoded[1]);
+
+        bottom.Decode([0x02, .." 4"u8]);
+        Assert.Equal(ProtocolTests.String([0x82]), bottom.Encoded[2]);
+    }
 }
