@@ -16,10 +16,27 @@ public class ArqLayerTests
         bottom.Wrap(arq);
 
         top.Flush();
-        bottom.Decode([0x80, 0x40]);
-        // TODO: ack this and test the ack is send
 
-        string expected = ProtocolTests.String([0x40]);
-        Assert.Equal([expected], bottom.Encoded);
+        Assert.Equal(ProtocolTests.String([0x40]), bottom.Encoded[0]);
+        bottom.Decode([0x80, 0x40]);
+        Assert.Equal(ProtocolTests.String([0x80]), bottom.Encoded[1]);
+
+        bottom.Decode([0x01, .." 1"u8]);
+        Assert.Equal(" 1", top.Decoded[0]);
+        Assert.Equal(ProtocolTests.String([0x81]), bottom.Encoded[2]);
+
+        bottom.Decode([0x02, .." 2"u8]);
+        Assert.Equal(" 2", top.Decoded[1]);
+        Assert.Equal(ProtocolTests.String([0x82]), bottom.Encoded[3]);
+
+        top.Encode(" 3"u8, true);
+        Assert.Equal(ProtocolTests.String([0x01, .." 3"u8]), bottom.Encoded[4]);
+
+        bottom.Decode([0x81, 0x03, .." 5"u8]);
+        Assert.Equal(" 5", top.Decoded[2]);
+        Assert.Equal(ProtocolTests.String([0x83]), bottom.Encoded[5]);
+
+        top.Encode(" 6"u8, true);
+        Assert.Equal(ProtocolTests.String([0x02, .." 6"u8]), bottom.Encoded[6]);
     }
 }
