@@ -53,7 +53,7 @@ public class ArqEventArgs : EventArgs
 public class ArqLayer : ProtocolLayer
 {
     /// <summary>
-    /// Number of successive retransmits before the event is emitted. 
+    /// Number of successive retransmits before the event is emitted.
     /// </summary>
     public const int RetransmitCallbackThreshold = 10;
 
@@ -62,7 +62,7 @@ public class ArqLayer : ProtocolLayer
     private const byte SeqMask = 0x3F;
 
     private readonly int _maxEncodeBufferSize;
-    private readonly Queue<byte[]> _encodeQueue = new();
+    private readonly LinkedList<byte[]> _encodeQueue = new();
     private readonly List<byte> _buffer = [];
 
     private int _encodeQueueBytes;
@@ -84,7 +84,7 @@ public class ArqLayer : ProtocolLayer
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public event EventHandler<ArqEventArgs>? EventOccurred;
 
@@ -164,7 +164,7 @@ public class ArqLayer : ProtocolLayer
             byte header = buffer[0];
             if ((header & AckFlag) != 0)
             {
-                if (WaitingForAck() && (header & SeqMask) == (_encodeQueue.Peek()[0] & SeqMask))
+                if (WaitingForAck() && (header & SeqMask) == (_encodeQueue.First()[0] & SeqMask))
                 {
                     PopEncodeQueue();
                     _retransmits = 0;
@@ -196,15 +196,23 @@ public class ArqLayer : ProtocolLayer
                 // Unexpected reset
                 Event(ArqEvent.Reconnect);
 
+                // Send ack
                 _recvSeq = NextSeq(0);
-
                 response[responseLen++] = AckFlag;
 
-                if (!reconnect)
+                // Also reset our send seq.
+                if (!reconnect && (_encodeQueueBytes == 0 || _encodeQueue.First()[0] != NopFlag))
                 {
-                    // TODO:
-                    // Inject a reset message in the queue
-                    // Reset the send seq
+                    // Insert at front of queue.
+                    PushEncodeQueueRaw([NopFlag], false);
+                    _sendSeq = NextSeq(0);
+
+                    // Re-encode existing outbound messages.
+                    foreach (byte[] bytes in _encodeQueue.Skip(1))
+                    {
+                        bytes[0] = (byte)((bytes[0] & ~SeqMask) | _sendSeq);
+                        _sendSeq = NextSeq(_sendSeq);
+                    }
                 }
 
                 doTransmit = true;
@@ -300,7 +308,7 @@ public class ArqLayer : ProtocolLayer
         }
 
         Debug.Assert(WaitingForAck());
-        base.Encode(_encodeQueue.Peek(), true);
+        base.Encode(_encodeQueue.First(), true);
         return true;
     }
 
@@ -310,18 +318,26 @@ public class ArqLayer : ProtocolLayer
         PushEncodeQueueRaw(bytes);
     }
 
-    private void PushEncodeQueueRaw(byte[] bytes)
+    private void PushEncodeQueueRaw(byte[] bytes, bool back = true)
     {
-        _encodeQueue.Enqueue(bytes);
+        if (back)
+        {
+            _encodeQueue.AddLast(bytes);
+        }
+        else
+        {
+            _encodeQueue.AddFirst(bytes);
+        }
+
         _sendSeq = NextSeq(_sendSeq);
         _encodeQueueBytes += bytes.Length;
     }
 
     private void PopEncodeQueue()
     {
-        byte[] item = _encodeQueue.Peek();
+        byte[] item = _encodeQueue.First();
         _encodeQueueBytes -= item.Length;
-        _encodeQueue.Dequeue();
+        _encodeQueue.RemoveFirst();
     }
 
     private bool WaitingForAck() => _encodeQueue.Count != 0;

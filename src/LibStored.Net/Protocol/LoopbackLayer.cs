@@ -1,8 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2025 Guus Kuiper
-// 
+//
 // SPDX-License-Identifier: MIT
-
-using System.Runtime.InteropServices;
 
 namespace LibStored.Net.Protocol;
 
@@ -55,9 +53,9 @@ public class LoopbackLayer : ProtocolLayer
 
             if (last)
             {
-                Span<byte> b = CollectionsMarshal.AsSpan(_buffer);
-                _to.Decode(b);
+                byte[] b = _buffer.ToArray();
                 _buffer.Clear();
+                _to.Decode(b);
             }
         }
     }

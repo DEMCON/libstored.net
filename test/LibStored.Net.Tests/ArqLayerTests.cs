@@ -166,4 +166,87 @@ public class ArqLayerTests
         }
         Assert.Equal(ArqEvent.Retransmit, lastEvent);
     }
+
+    [Fact]
+    public void ReconnectTest()
+    {
+        LoggingLayer top = new();
+        ArqLayer arq = new();
+        arq.Wrap(top);
+        LoggingLayer bottom = new();
+        bottom.Wrap(arq);
+
+        bottom.Decode([0x80, 0x40]);
+        bottom.Clear();
+
+        top.Encode(" 1"u8, true);
+        Assert.Equal(ProtocolTests.String([0x01, .." 1"u8]), bottom.Encoded[0]);
+        bottom.Decode([0x81]);
+
+        top.Encode(" 2"u8, true);
+        Assert.Equal(ProtocolTests.String([0x02, .." 2"u8]), bottom.Encoded[1]);
+        bottom.Decode([0x82]);
+
+        bottom.Decode([0x40]);
+        Assert.Equal(ProtocolTests.String([0x80, 0x40]), bottom.Encoded[2]);
+
+        top.Encode(" 3"u8, true);
+        Assert.Equal(ProtocolTests.String([0x40]), bottom.Encoded[3]); // Retransmit
+
+        bottom.Decode([0x40]);
+        Assert.Equal(ProtocolTests.String([0x80, 0x40]), bottom.Encoded[4]); // Reconnect
+
+        // Separate ack/reset does not fully reconnect; expect reset.
+        bottom.Decode([0xC0]);
+        Assert.Equal(ProtocolTests.String([0x01, .." 3"u8]), bottom.Encoded[5]);
+        bottom.Decode([0x40]);
+        Assert.Equal(ProtocolTests.String([0x80, 0x40]), bottom.Encoded[6]); // Full reset again
+
+        // In same message, reconnection completes.
+        bottom.Decode([0xC0, 0x40]);
+        Assert.Equal(ProtocolTests.String([0x80, 0x01, .." 3"u8]), bottom.Encoded[7]);
+        bottom.Decode([0x81]);
+
+        top.Encode(" 4"u8, true);
+        Assert.Equal(ProtocolTests.String([0x02, .." 4"u8]), bottom.Encoded[8]);
+        bottom.Decode([0x82]);
+
+        top.Encode(" 5"u8, true);
+        Assert.Equal(ProtocolTests.String([0x03, .." 5"u8]), bottom.Encoded[9]);
+        bottom.Decode([0x40]);
+        Assert.Equal(ProtocolTests.String([0x80, 0x40]), bottom.Encoded[10]); // Full reset again
+        bottom.Decode([0x80]);
+        Assert.Equal(ProtocolTests.String([0x01, .." 5"u8]), bottom.Encoded[11]);
+    }
+
+    [Fact]
+    public void Reconnect2Test()
+    {
+        LoggingLayer la = new();
+        ArqLayer a = new();
+        a.Wrap(la);
+
+        LoggingLayer lb = new();
+        ArqLayer b = new();
+        b.Wrap(lb);
+
+        LoopbackLayer l = new(a, b);
+
+        la.Encode(" 1"u8, true);
+        Assert.Equal(" 1", lb.Decoded[0]);
+
+        la.Encode(" 2"u8, true);
+        Assert.Equal(" 2", lb.Decoded[1]);
+
+        lb.Encode(" 3"u8, true);
+        Assert.Equal(" 3", la.Decoded[0]);
+
+        la.Reset();
+
+        lb.Encode(" 4"u8, true);
+        Assert.Equal(" 4", la.Decoded[1]);
+
+        la.Encode(" 5"u8, true);
+        Assert.Equal(" 5", lb.Decoded[2]);
+    }
 }
