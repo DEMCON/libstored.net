@@ -150,7 +150,7 @@ public class ArqLayerTests
         bottom.Decode([0x01]);
         bottom.Clear();
 
-        Assert.Equal(ArqEvent.None, lastEvent);
+        Assert.Equal(ArqEvent.Connected, lastEvent);
         bottom.Decode([0x40]);
         Assert.Equal(ArqEvent.Reconnect, lastEvent);
 

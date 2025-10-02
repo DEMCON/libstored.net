@@ -27,7 +27,11 @@ public enum ArqEvent
     /// <summary>
     /// <see cref="ArqLayer.RetransmitCallbackThreshold"/> has been reached on the current message.
     /// </summary>
-    Retransmit
+    Retransmit,
+    /// <summary>
+    /// A connection has been establised.
+    /// </summary>
+    Connected,
 }
 
 /// <summary>
@@ -67,6 +71,8 @@ public class ArqLayer : ProtocolLayer
 
     private int _encodeQueueBytes;
     private bool _encoding;
+    private bool _pauseTransmit;
+    private bool _didTransmit;
     private byte _sendSeq;
     private byte _recvSeq;
     private byte _retransmits;
@@ -97,6 +103,8 @@ public class ArqLayer : ProtocolLayer
         }
 
         _encoding = false;
+        _pauseTransmit = false;
+        _didTransmit = false;
         _retransmits = 0;
         _sendSeq = 0;
         _recvSeq = 0;
@@ -174,7 +182,8 @@ public class ArqLayer : ProtocolLayer
                     if ((header & SeqMask) == 0)
                     {
                         reconnect = true;
-                        // TODO: Add Connected() or new Reconnected event
+                        // Libstored uses a method, here an event is used.
+                        Event(ArqEvent.Connected);
                     }
                 }
 
@@ -254,13 +263,25 @@ public class ArqLayer : ProtocolLayer
 
         if (doDecode)
         {
-            // TODO add transmit pause logic
+            Debug.Assert(!_pauseTransmit);
+            _pauseTransmit = true;
+
+            _didTransmit = false;
+            // Decode and queue only
             base.Decode(buffer);
+            if (_didTransmit)
+            {
+                doTransmit = true;
+            }
+
+            Debug.Assert(_pauseTransmit);
+            _pauseTransmit = false;
         }
 
         if (responseLen > 0)
         {
             base.Encode(response.Slice(0,responseLen), !doTransmit);
+            _didTransmit = true;
         }
 
         if (doTransmit)
@@ -268,6 +289,7 @@ public class ArqLayer : ProtocolLayer
             if (!Transmit() && responseLen > 0)
             {
                 base.Encode([], true);
+                _didTransmit = true;
             }
         }
     }
@@ -294,6 +316,17 @@ public class ArqLayer : ProtocolLayer
     {
         if (_encodeQueue.Count == 0)
         {
+            // Nothing to send.
+            // This is also the case _buffer is being filled.
+            return false;
+        }
+
+        // Update administration first, in case encode() has some recursive call back to decode()/encode().
+        _didTransmit = true;
+
+        if (_pauseTransmit)
+        {
+            // Only queue for now.
             return false;
         }
 
