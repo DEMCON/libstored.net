@@ -2,26 +2,74 @@
 //
 // SPDX-License-Identifier: MIT
 
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace LibStored.Net.Protocol;
+
+/// <summary>
+/// Event for the ARQ layer
+/// </summary>
+public enum ArqEvent
+{
+    /// <summary>
+    /// None
+    /// </summary>
+    None,
+    /// <summary>
+    ///  An unexpected reset message has been received.
+    /// </summary>
+    Reconnect,
+    /// <summary>
+    /// The maximum buffer capacity has passed.
+    /// </summary>
+    EncodeBufferOverflow,
+    /// <summary>
+    /// <see cref="ArqLayer.RetransmitCallbackThreshold"/> has been reached on the current message.
+    /// </summary>
+    Retransmit
+}
+
+/// <summary>
+/// Provides data for events related to ARQ (Automatic Repeat reQuest) operations.
+/// </summary>
+public class ArqEventArgs : EventArgs
+{
+    /// <summary>
+    /// Event
+    /// </summary>
+    public ArqEvent Event { get; }
+
+    /// <summary>
+    /// Initializes a new instance of the ArqEventArgs class with the specified event information.
+    /// </summary>
+    /// <param name="evt">The event data associated with this instance.</param>
+    public ArqEventArgs(ArqEvent evt) => Event = evt;
+}
 
 /// <summary>
 /// Automatic Repeat Request layer
 /// </summary>
 public class ArqLayer : ProtocolLayer
 {
+    /// <summary>
+    /// Number of successive retransmits before the event is emitted. 
+    /// </summary>
+    public const int RetransmitCallbackThreshold = 10;
+
     private const byte NopFlag = 0x40;
     private const byte AckFlag = 0x80;
     private const byte SeqMask = 0x3F;
 
     private readonly int _maxEncodeBufferSize;
-    private Queue<byte[]> _encodeQueue = new();
+    private readonly Queue<byte[]> _encodeQueue = new();
+    private readonly List<byte> _buffer = [];
+
     private int _encodeQueueBytes;
     private bool _encoding;
-    private readonly List<byte> _buffer = [];
     private byte _sendSeq;
     private byte _recvSeq;
+    private byte _retransmits;
 
     /// <summary>
     /// Create the layer.
@@ -32,6 +80,11 @@ public class ArqLayer : ProtocolLayer
         _maxEncodeBufferSize = maxEncodeBufferSize;
         KeepAlive();
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public event EventHandler<ArqEventArgs>? EventOccurred;
 
     /// <inheritdoc/>
     public override bool Flush()
@@ -45,8 +98,7 @@ public class ArqLayer : ProtocolLayer
     {
         if (_maxEncodeBufferSize > 0 && _maxEncodeBufferSize < _encodeQueueBytes + buffer.Length + 1 )
         {
-            // Overflow
-            // TODO: trigger event
+            Event(ArqEvent.EncodeBufferOverflow);
         }
 
         if (!_encoding)
@@ -94,6 +146,8 @@ public class ArqLayer : ProtocolLayer
                 if (WaitingForAck() && (header & SeqMask) == (_encodeQueue.Peek()[0] & SeqMask))
                 {
                     PopEncodeQueue();
+                    _retransmits = 0;
+
                     doTransmit = true;
 
                     if ((header & SeqMask) == 0)
@@ -119,6 +173,8 @@ public class ArqLayer : ProtocolLayer
             else if ((header & SeqMask) == 0)
             {
                 // Unexpected reset
+                Event(ArqEvent.Reconnect);
+
                 _recvSeq = NextSeq(0);
 
                 response[responseLen++] = AckFlag;
@@ -212,6 +268,17 @@ public class ArqLayer : ProtocolLayer
             return false;
         }
 
+        if (_retransmits < byte.MaxValue)
+        {
+            _retransmits++;
+        }
+
+        if (_retransmits >= RetransmitCallbackThreshold)
+        {
+            Event(ArqEvent.Retransmit);
+        }
+
+        Debug.Assert(WaitingForAck());
         base.Encode(_encodeQueue.Peek(), true);
         return true;
     }
@@ -243,4 +310,6 @@ public class ArqLayer : ProtocolLayer
         byte newSeq = (byte)((seq + 1) & SeqMask);
         return newSeq == 0 ? (byte)1 : newSeq;
     }
+
+    private void Event(ArqEvent @event) => EventOccurred?.Invoke(this, new ArqEventArgs(@event));
 }
