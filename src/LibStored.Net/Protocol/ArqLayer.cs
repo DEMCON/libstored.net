@@ -78,6 +78,8 @@ public class ArqLayer : ProtocolLayer
     public ArqLayer(int maxEncodeBufferSize = 0)
     {
         _maxEncodeBufferSize = maxEncodeBufferSize;
+
+        // Empty encode with seq 0, which indicates a reset message.
         KeepAlive();
     }
 
@@ -85,6 +87,25 @@ public class ArqLayer : ProtocolLayer
     /// 
     /// </summary>
     public event EventHandler<ArqEventArgs>? EventOccurred;
+
+    /// <inheritdoc />
+    public override void Reset()
+    {
+        while (_encodeQueue.Count > 0)
+        {
+            PopEncodeQueue();
+        }
+
+        _encoding = false;
+        _retransmits = 0;
+        _sendSeq = 0;
+        _recvSeq = 0;
+        _buffer.Clear();
+
+        base.Reset();
+
+        KeepAlive();
+    }
 
     /// <inheritdoc/>
     public override bool Flush()
@@ -153,7 +174,7 @@ public class ArqLayer : ProtocolLayer
                     if ((header & SeqMask) == 0)
                     {
                         reconnect = true;
-                        // Connected()
+                        // TODO: Add Connected() or new Reconnected event
                     }
                 }
 
