@@ -24,11 +24,9 @@ class MetaObjectMeta(Protocol):
         self.type = type
         self.ctype = ctype
         self.size = size
-        self.isfunction = isfunction
-        self.f = f
         self.offset = offset
-        self.init = init
-        self.axi = axi
+        self.isfunction = isfunction
+
 
     def _asdict(self) -> dict:
         ...
@@ -74,20 +72,43 @@ class MetaProtocolEncoder(json.JSONEncoder):
                 d = {
                     'name': obj.name,
                     'hash': obj.hash,
-                    'functions': [f._asdict() for f in obj.functions],
+                    'init': '',
                 }
+
+                fs = []
+                for f in obj.functions:
+                    fd = {
+                        'name': f.name,
+                        'cname': f.cname,
+                        'type': f.type,
+                        'size': f.size,
+                        'function': f.f,
+                    }
+                    fs.append(fd)
+                d['functions'] = fs
+
                 vs = []
-                for v in obj.variables:
-                    vd = v._asdict()
+                buffer_init = ''
+                buffer_length = 0
+                for v in sorted(obj.variables, key=lambda x: x.offset):
+                    vd = {
+                        'name': v.name,
+                        'cname': v.cname,
+                        'type': v.type,
+                        'size': v.size,
+                        'offset': v.offset,
+                    }
                     if v.init is not None:
-                        init = encode(v)
-                        padding = v.size - len(init)
-                        init += bytes([0] * padding)  # Fill with zeros until the offset
+                        padding = v.offset - buffer_length
+                        init = bytes([0] * padding)  # Fill with zeros until the offset
+                        init += encode(v)
+                        buffer_length += len(init)
                         # little endian hex list
                         hex = init.hex()
-                        vd['init'] = hex
+                        buffer_init += hex
                     vs.append(vd)
                 d['variables'] = vs
+                d['init'] = buffer_init
                 return d
             return super().default(obj)
 
