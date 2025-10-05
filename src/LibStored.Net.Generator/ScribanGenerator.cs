@@ -6,7 +6,7 @@ using Scriban.Runtime;
 
 namespace LibStored.Net.Generator;
 
-public static class ScribanGenerator
+internal static class ScribanGenerator
 {
     private const string StoreTemplate =
         """
@@ -109,7 +109,7 @@ public static class ScribanGenerator
 
         """;
 
-    public static string GenerateSource(StoreModel model, string filename, string version)
+    internal static string GenerateSource(StoreModel model, string filename, string version)
     {
         Template template = Template.Parse(StoreTemplate);
         if (template.HasErrors)

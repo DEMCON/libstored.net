@@ -2,7 +2,7 @@
 
 namespace LibStored.Net.Generator;
 
-public class StoreModel
+internal class StoreModel
 {
     [JsonRequired]
     public string Name { get; set; } = string.Empty;
@@ -14,7 +14,7 @@ public class StoreModel
     public Variables[] Variables { get; set; } = [];
 }
 
-public class Functions
+internal class Functions
 {
     public string Name { get; set; } = string.Empty;
     public string Cname { get; set; } = string.Empty;
@@ -23,7 +23,7 @@ public class Functions
     public int Function { get; set; }
 }
 
-public class Variables
+internal class Variables
 {
     [JsonRequired]
     public string Name { get; set; } = string.Empty;

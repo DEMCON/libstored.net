@@ -1,6 +1,6 @@
 ﻿namespace LibStored.Net.Generator.Models;
 
-public class TemplateVariable
+internal class TemplateVariable
 {
     public string Type { get; set; } = string.Empty;
     public string Cname { get; set; } = string.Empty;

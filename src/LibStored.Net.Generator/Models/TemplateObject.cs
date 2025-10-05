@@ -1,6 +1,6 @@
 ﻿namespace LibStored.Net.Generator.Models;
 
-public class TemplateObject
+internal class TemplateObject
 {
     public string Name { get; set; } = "";
     public string Hash { get; set; } = "";

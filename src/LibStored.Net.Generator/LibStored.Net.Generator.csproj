@@ -33,4 +33,8 @@
         <PackageScribanIncludeSource>true</PackageScribanIncludeSource>
     </PropertyGroup>
 
+    <ItemGroup>
+        <InternalsVisibleTo Include="$(AssemblyName).Tests" />
+    </ItemGroup>
+
 </Project>

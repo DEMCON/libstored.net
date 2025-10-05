@@ -1,6 +1,6 @@
 ﻿namespace LibStored.Net.Generator.Models;
 
-public static class TemplateFunctions
+internal static class TemplateFunctions
 {
     public static string CsTypes(string type) => type switch
     {
