@@ -76,8 +76,8 @@ namespace LibStored.Net.Example.Console
             {
                 string value = args.PropertyName switch
                 {
-                    nameof(ExampleSync1.I) => store.Store().I.Get().ToString(),
-                    nameof(ExampleSync1.D) => store.Store().D.Get().ToString(CultureInfo.InvariantCulture),
+                    nameof(ExampleSync1.I) => store.Store().I.ToString(),
+                    nameof(ExampleSync1.D) => store.Store().D.ToString(CultureInfo.InvariantCulture),
                     _ => string.Empty,
                 };
                 _logger.LogInformation("Property changed: {PropertyName} = {Value}", args.PropertyName, value);
@@ -145,7 +145,7 @@ namespace LibStored.Net.Example.Console
                     int bytesReceived = syncLayer.ReceiveAll();
                     _logger.LogTrace("Sync Received {Bytes} bytes", bytesReceived);
 
-                    int number = store.Store().I.Get();
+                    int number = store.Store().I;
                     _logger.LogInformation("I: {Number}", number);
                 };
             }
@@ -162,9 +162,9 @@ namespace LibStored.Net.Example.Console
                     // Only the server should increment the number
                     if (connectionStringServer is not null && connectionStringClient is null)
                     {
-                        int number = store.Store().I.Get();
+                        int number = store.Store().I;
                         int newNumber = number + 1;
-                        store.Store().I.Set(newNumber);
+                        store.Store().I = newNumber;
                         _logger.LogInformation("I set to: {Number}", newNumber);
                     }
 
@@ -172,9 +172,9 @@ namespace LibStored.Net.Example.Console
                     if (connectionStringServer is not null && connectionStringClient is not null)
                     {
                         // increment from the middle node.
-                        double fraction = store.Store().D.Get();
+                        double fraction = store.Store().D;
                         fraction++;
-                        store.Store().D.Set(fraction);
+                        store.Store().D = fraction;
                         _logger.LogInformation("D set to: {Number}", fraction);
                     }
                 };

@@ -10,8 +10,24 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- When using the LibStored.Net the LibStored.Net.Generator is already included. So this reference is not needed. -->
+    <ProjectReference Include="..\..\src\LibStored.Net.Generator\LibStored.Net.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\LibStored.Net\LibStored.Net.csproj" />
     <ProjectReference Include="..\LibStored.Net.Example.ServiceDefaults\LibStored.Net.Example.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Exclude the output of source generators from the compilation -->
+    <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="Stores\*Store.json" />
   </ItemGroup>
 
 </Project>
