@@ -21,10 +21,12 @@ HostApplicationBuilder builder = Host.CreateApplicationBuilder();
 builder.AddServiceDefaults();
 builder.Logging.SetMinimumLevel(LogLevel.Debug);
 
-builder.Services.AddTransient<Debugger>();
-builder.Services.AddTransient<LoggerLayer>();
-builder.Services.AddTransient<BufferLayer>();
+builder.Services.AddLibStoredProtocolLayers();
 
+builder.Services.AddOpenTelemetry()
+    .WithTracing(x => x.AddSource(OpenTelemetryLayer.ActivitySourceName))
+    .WithMetrics(x => x.AddMeter(OpenTelemetryLayer.MeterName))
+    ;
 
 builder.Services.AddHostedService<App>();
 
@@ -209,6 +211,7 @@ namespace LibStored.Net.Example.Console
                     })
                     .Add<BufferLayer>()
                     .Add<LoggerLayer>()
+                    .Add<OpenTelemetryLayer>()
                     .Add<DebugZeroMQLayer>(new DebugZeroMQLayer(debugSocket))
                     .Build();
             }
@@ -223,8 +226,11 @@ namespace LibStored.Net.Example.Console
                 LoggerLayer debugLogging = new(_loggerFactory.CreateLogger<LoggerLayer>());
                 debugLogging.Wrap(buffer);
 
+                OpenTelemetryLayer telemetry = new();
+                telemetry.Wrap(debugLogging);
+
                 DebugZeroMQLayer debugLayer = new DebugZeroMQLayer(debugSocket);
-                debugLayer.Wrap(debugLogging);
+                debugLayer.Wrap(telemetry);
 
                 stack = ProtocolBuilder.ProtocolStack.Traverse(debugger);
             }
@@ -237,9 +243,10 @@ namespace LibStored.Net.Example.Console
             if (useBuilder)
             {
                 syncStack = ProtocolBuilder.Create(_services)
-                    .Add<SyncConnection>(synchronizer.CreateConnectionLayer())
+                    .Add(synchronizer)
                     .Add<BufferLayer>()
                     .Add<LoggerLayer>()
+                    .Add<OpenTelemetryLayer>()
                     .Add<SyncZeroMQLayer>(new SyncZeroMQLayer(socket))
                     .Build();
             }
@@ -250,8 +257,11 @@ namespace LibStored.Net.Example.Console
                 LoggerLayer logging = new(_loggerFactory.CreateLogger<LoggerLayer>());
                 logging.Wrap(buffer);
 
+                OpenTelemetryLayer telemetry = new();
+                telemetry.Wrap(logging);
+
                 SyncZeroMQLayer sync = new(socket);
-                sync.Wrap(logging);
+                sync.Wrap(telemetry);
 
                 synchronizer.Connect(buffer);
 

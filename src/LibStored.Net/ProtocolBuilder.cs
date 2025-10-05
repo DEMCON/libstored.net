@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 using System.Text;
+using LibStored.Net.Synchronization;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LibStored.Net;
@@ -111,6 +112,17 @@ public class ProtocolBuilder
     public ProtocolBuilder Add<T>(T layer) where T : Protocol.ProtocolLayer
     {
         _layers.Add(layer);
+        return this;
+    }
+
+    /// <summary>
+    /// Creates and adds a <see cref="SyncConnection"/> from a <see cref="Synchronizer"/>.
+    /// </summary>
+    /// <param name="synchronizer">The synchronizer used to create the connection layer.</param>
+    /// <returns>The current <see cref="ProtocolBuilder"/> instance.</returns>
+    public ProtocolBuilder Add(Synchronizer synchronizer)
+    {
+        _layers.Add(synchronizer.CreateConnectionLayer());
         return this;
     }
 
