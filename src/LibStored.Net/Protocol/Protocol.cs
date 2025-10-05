@@ -64,11 +64,6 @@ public class ProtocolLayer
     public virtual void Reset() => _down?.Reset();
 
     /// <summary>
-    /// Notifies the layer that a connection has been established.
-    /// </summary>
-    public virtual void Connected() => _up?.Connected();
-
-    /// <summary>
     /// Wraps this layer around the specified upper layer, chaining the protocol stack.
     /// </summary>
     /// <param name="up">The upper protocol layer to wrap.</param>
