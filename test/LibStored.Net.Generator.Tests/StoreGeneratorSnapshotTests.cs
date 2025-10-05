@@ -12,6 +12,7 @@ public class StoreGeneratorSnapshotTests
         {
             Name = "Test1",
             Hash = "1234",
+            Init = "2A000000",
             Variables = [
                 new Variables
                 {
@@ -19,8 +20,7 @@ public class StoreGeneratorSnapshotTests
                     Cname = "variable_1",
                     Type = "int32",
                     Offset = 0,
-                    Size = 4,
-                    Init = "2A000000"
+                    Size = 4
                 },
                 new Variables
                 {
@@ -61,15 +61,14 @@ public class StoreGeneratorSnapshotTests
                       {
                         "name": "asd",
                         "hash": "qwe",
+                        "init": "bad",
                         "variables": [
                           {
                              "name": "init var",
                              "cname": "init_var",
                              "type": "int32",
-                             "ctype": "int32_t",
                              "size": 4,
-                             "offset": 0,
-                             "init": "bad"
+                             "offset": 0
                           }
                         ]
                       }

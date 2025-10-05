@@ -137,7 +137,7 @@ public static class ScribanGenerator
             Name = model.Name,
             Hash = model.Hash,
             Size = Size(variables),
-            Init = Encode(variables),
+            Init = ToByteString(model.Init),
             Variables = variables,
         };
 
@@ -150,36 +150,26 @@ public static class ScribanGenerator
         return result;
     }
 
+    private static string ToByteString(string hex)
+    {
+        if (hex!.Length % 2 != 0)
+        {
+            throw new ArgumentException("Hex string must have an even length.", nameof(hex));
+        }
+
+        List<string> pairs = [];
+        for (int i = 0; i < hex.Length; i+=2)
+        {
+            string pair = hex.Substring(i, 2).ToUpper();
+            pairs.Add(pair);
+        }
+        return string.Join(", ", pairs.Select(p => $"0x{p}"));
+    }
+
     private static int Size(TemplateVariable[] variables) => variables
         .OrderBy(x => x.Offset)
         .Select(x => x.Offset + x.Size)
         .LastOrDefault();
-
-    private static string Encode(TemplateVariable[] variables)
-    {
-        List<byte> bytes = new();
-        foreach (TemplateVariable variable in variables)
-        {
-            if (variable.Value is null)
-            {
-                break;
-            }
-
-            int padding = variable.Offset - bytes.Count;
-            if (padding > 0)
-            {
-                for (int i = 0; i < padding; i++)
-                {
-                    bytes.Add(0);
-                }
-            }
-
-            bytes.AddRange(variable.Value);
-        }
-
-        return string.Join(", ", bytes.Select(b => $"0x{b:X2}"));
-    }
-
 
     private static TemplateVariable Map(Variables x) => new()
     {
@@ -188,37 +178,5 @@ public static class ScribanGenerator
         Type = x.Type,
         Offset = x.Offset,
         Size = x.Size,
-        Value = DecodeHex(x.Init)
     };
-
-    /// <summary>
-    /// Decodes a base64-encoded string to a byte array.
-    /// </summary>
-    /// <param name="init"></param>
-    /// <returns></returns>
-    private static byte[]? Decode(string? init) => init is null ? null : Convert.FromBase64String(init);
-
-    /// <summary>
-    /// Decodes a hex-encoded string (e.g., "0A1B2C" or "0a1b2c") to a byte array.
-    /// The input string must have even length and contain only valid hex digits.
-    /// </summary>
-    private static byte[]? DecodeHex(string? hex)
-    {
-        if (string.IsNullOrEmpty(hex))
-        {
-            return null;
-        }
-
-        if (hex!.Length % 2 != 0)
-        {
-            throw new ArgumentException("Hex string must have an even length.", nameof(hex));
-        }
-
-        byte[] bytes = new byte[hex.Length / 2];
-        for (int i = 0; i < hex.Length; i += 2)
-        {
-            bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
-        }
-        return bytes;
-    }
 }

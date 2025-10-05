@@ -9,6 +9,7 @@ namespace LibStored.Net.Protocol;
 /// <summary>
 /// A protocol layer that logs all encoded and decoded data as strings for inspection and testing.
 /// Stores the encoded and decoded messages in lists for later retrieval.
+/// Uses Latin1 encoding for string conversion: single byte per character for the full range 0x00–0xFF.
 /// </summary>
 public class LoggingLayer : ProtocolLayer
 {
@@ -43,9 +44,6 @@ public class LoggingLayer : ProtocolLayer
     public override void Encode(ReadOnlySpan<byte> buffer, bool last)
     {
         string encodedData = Encoding.Latin1.GetString(buffer);
-
-        //string encodedData = Encoding.UTF8.GetString(buffer);
-        //string encodedData = Encoding.ASCII.GetString(buffer);
 
         if (_partial && Encoded.Count > 0)
         {

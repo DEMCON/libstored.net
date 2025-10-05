@@ -8,7 +8,7 @@ Based on [libstored](https://demcon.github.io/libstored) by Jochem Rutgers, [Git
 
 The goal of this library is to provide native C# implementation of a part the libstored library, such that it can be used in C# applications without the need for a C++/CLI wrapper. The library provides a set of layers to build applications that can communicate with a Debugger or Synchroniser.
 
-This C# implementation target C# GUI's that synchornize data with and embedded device. The embedded device can be a microcontroller, FPGA, or any other device that can communicate using the libstored protocol. The C# implementation is not intended to be a full replacement of the C++ implementation, but rather a subset of the features that are needed for C# GUI applications.
+This C# implementation target C# GUI's that synchronize data with and embedded device. The embedded device can be a microcontroller, FPGA, or any other device that can communicate using the libstored protocol. The C# implementation is not intended to be a full replacement of the C++ implementation, but rather a subset of the features that are needed for C# GUI applications.
 
 On the embedded side, the libstored Debugger is a great way to debug a live running embedded application from a remote system. In C# and the tooling and editor for it, there are other option for debugging, so there is no need to a full featured libstored Debugger.
 
@@ -60,6 +60,7 @@ flowchart TD
 - LoopbackLayer
 - BufferLayer
 - SegmentationLayer
+- ArqLayer
 
 ### Transport layers
 - ZeroMQ using [NetMQ](https://netmq.readthedocs.io/)
@@ -98,7 +99,7 @@ For more information about the Source Generator see the [README.md](src/LibStore
 In [libstored](https://demcon.github.io/libstored) you are only allowed to access a store from a single thread. The store may only be accessed from a single thread (the thread that runs the NetMQPoller)
 This C# implementation adds locking to all read and writes to the store buffer.
 The C# store is therefore safe to use from any thread, at the cost of some performance.
-Another option would be to creat a store per thread, and synchronize them using the `Synchronizer` and communicating within the same process.
+Another option would be to create a store per thread, and synchronize them using the `Synchronizer` and communicating within the same process.
 
 ### Missing / unsupported / future features?
 - Only little endian stores are supported.
@@ -106,7 +107,6 @@ Another option would be to creat a store per thread, and synchronize them using 
 - Heatshrink compression is not supported.
 
 #### Missing layers
-- ArqLayer
 - PolledLayer(s)
 - FileLayer
 - NamedPipeLayer
@@ -114,7 +114,7 @@ Another option would be to creat a store per thread, and synchronize them using 
 - SerialLayer (use `libstored.Serial2Zmq` as alternative for local debugging, not production ready)
 
 #### Store source generation
-Currently, C# stored are created manually by running a Python script using the Meta.py output of [libstored](demcon.github.io/libstored).
+Currently, C# stores are created manually by running a Python script using the Meta.py output of [libstored](demcon.github.io/libstored).
 A C# Source Generator could automate this process of converting the store data structure to a C# class, using the hash, names, types, offset and
 sizes of all objects in the store.
 
@@ -124,7 +124,7 @@ Another option is to create a template file for the C# version of the store in [
 
 #### Unsupported features
 
-Types: `Pointer`, `Pointer32` and `Pointer64` are not supported, as they are not needed in C# applications. The `ptr32` and `ptr64` types are used to store pointers to other objects in the store, which is not needed in C# applications as the objects are stored in managed memory. Thee types will be mapped to unsigned integers (`uint` and `ulong`) in the C# implementation.
+Types: `Pointer`, `Pointer32` and `Pointer64` are not supported, as they are not needed in C# applications. The `ptr32` and `ptr64` types are used to store pointers to other objects in the store, which is not needed in C# applications as the objects are stored in managed memory. These types will be mapped to unsigned integers (`uint` and `ulong`) in the C# implementation.
 
 ## Example
 
@@ -172,7 +172,7 @@ Tested with:
 See [libstored changelog](https://demcon.github.io/libstored/doc/changelog.html) for the changes. There do not seem to be breaking changes from <v1.7.1 to v1.7.1 for this C# implementation.
 
 ### libstored >v1.7.1
-The ZeroMQ socket type changed from `PAIR` to `DEALER` for the SyncZeroMQLayer. Make sure the exact same socket type is used at both ends of the protocol, so `PAIR` - `PAIR` or `DEALER` - `DEALER`, but not `PAIR` - `DEALER`. When connection to libstored v1.7.1 or lower, use the `PAIR` socket type, for higher versions of libstored (not yet released, but using the master branch) use `DEALER`.
+The ZeroMQ socket type changed from `PAIR` to `DEALER` for the SyncZeroMQLayer. Make sure the exact same socket type is used at both ends of the protocol, so `PAIR` - `PAIR` or `DEALER` - `DEALER`, but not `PAIR` - `DEALER`. When connecting to libstored v1.7.1 or lower, use the `PAIR` socket type. For version v1.8 or higher of libstored, use `DEALER`.
 
 ## Build
 
