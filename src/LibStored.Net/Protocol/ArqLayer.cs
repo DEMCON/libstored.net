@@ -147,7 +147,7 @@ public class ArqLayer : ProtocolLayer
             _buffer.AddRange(buffer);
             if (last)
             {
-                Span<byte> b= CollectionsMarshal.AsSpan(_buffer);
+                Span<byte> b = CollectionsMarshal.AsSpan(_buffer);
                 PushEncodeQueue(b);
                 _buffer.Clear();
                 _encoding = false;
