@@ -12,21 +12,14 @@ using static LibStored.Net.ProtocolBuilder;
 
 // Example of using the LibStored library with a simple store
 ExampleStore store = new();
-store.Number.Set(42);
-int number = store.Number.Get();
+store.Number = 42;
+int number = store.Number;
 DebugVariant? n = store.Find("/number");
 
-// Or using the Value property directly
-store.Number.Value = 24;
-int number2 = store.Number.Value;
-
-// Another option is to make the StoreVariable<T> private, and use the Get and Set methods for the T directly: public T {get => ...; set => ...; }
-
-store.Fraction.Set(3.14);
-double faction = store.Fraction.Get();
+store.Fraction = 3.14;
+double faction = store.Fraction;
 
 Console.WriteLine(number);
-Console.WriteLine(number2);
 Console.WriteLine(faction);
 
 // Example of using the ProtocolLayer with logging
@@ -37,21 +30,17 @@ services.AddLogging(x => x.AddConsole());
 // For now directly use the store instance, but in a real application you would typically use dependency injection to get the store instance.
 services.AddSingleton<ExampleStore>(store);
 
-// Registering the ProtocolLayer and its dependencies.
+// Registering the default LibStored.Net ProtocolLayer, custom layers and its dependencies.
 // Add as transient services to ensure a new instance is created each time, so also multiple instances of the same layer type can be used.
-services.AddTransient<LoggerLayer>();
-services.AddTransient<LoopbackLayer>();
-services.AddTransient<Crc16Layer>();
+services.AddLibStoredProtocolLayers();
 services.AddTransient<PrintAsciiEncodeLayer>();
 services.AddDebugger((sp, x) => x.Map(sp.GetRequiredService<ExampleStore>()));
 
 services.AddProtocolStack(builder => builder
+    .Add<Debugger>()
     .Add<PrintAsciiEncodeLayer>()
     .Add<LoggerLayer>()
-    .Add<Debugger>()
 );
-
-HttpClientExtensions.AddHttpClient(services);
 
 IServiceProvider serviceProvider = services.BuildServiceProvider(new ServiceProviderOptions
 {
@@ -62,6 +51,7 @@ IServiceProvider serviceProvider = services.BuildServiceProvider(new ServiceProv
 ProtocolStack layer = serviceProvider.GetRequiredService<ProtocolStack>();
 string art = layer.ToAsciiArt();
 Console.WriteLine(art);
+
 
 Send("l");
 Send("r/number");
@@ -80,8 +70,16 @@ namespace LibStored.Net.Example
         public override void Encode(ReadOnlySpan<byte> buffer, bool last)
         {
             string text = Encoding.ASCII.GetString(buffer);
-            Console.WriteLine(text);
+            Console.WriteLine($"Send: {text}");
             base.Encode(buffer, last);
+        }
+
+        /// <inheritdoc />
+        public override void Decode(Span<byte> buffer)
+        {
+            string text = Encoding.ASCII.GetString(buffer);
+            Console.WriteLine($"Recv: {text}");
+            base.Decode(buffer);
         }
     }
 }
