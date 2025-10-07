@@ -1,0 +1,48 @@
+# SPDX-FileCopyrightText: 2020-2023 Jochem Rutgers
+#
+# SPDX-License-Identifier: MPL-2.0
+
+cmake_policy(VERSION 3.10)
+include(FindPackageHandleStandardArgs)
+
+set(PYTHON_EXECUTABLE "/usr/bin/python3")
+
+file(TO_CMAKE_PATH "/usr/local/lib/python3.10/dist-packages/libstored/data" LIBSTORED_SOURCE_DIR)
+
+if(EXISTS ${LIBSTORED_SOURCE_DIR}/cmake/libstored.cmake)
+	message(STATUS "Using libstored from ${LIBSTORED_SOURCE_DIR}")
+
+	list(APPEND CMAKE_MODULE_PATH ${LIBSTORED_SOURCE_DIR}/dist/common)
+
+	foreach(c IN LISTS Libstored_FIND_COMPONENTS)
+		set(_req)
+
+		if(${Libstored_FIND_REQUIRED_${c}})
+			set(_req "REQUIRED")
+		endif()
+
+		if("${c}" STREQUAL "ZeroMQ")
+			find_package(ZeroMQ ${_req})
+			set(LIBSTORED_HAVE_LIBZMQ ON CACHE INTERNAL "Enable ZeroMQ" FORCE)
+		elseif("${c}" STREQUAL "Zth")
+			find_package(Zth ${_req})
+			set(LIBSTORED_HAVE_ZTH ON CACHE INTERNAL "Enable Zth" FORCE)
+		elseif("${c}" STREQUAL "Heatshrink")
+			find_package(Heatshrink ${_req})
+			set(LIBSTORED_HAVE_HEATSHRINK ON CACHE INTERNAL "Enable heatshrink" FORCE)
+		elseif("${c}" STREQUAL "Qt5")
+			find_package(Qt5 ${_req} COMPONENTS Core)
+			set(LIBSTORED_HAVE_QT ON CACHE INTERNAL "Enable Qt5" FORCE)
+		elseif("${c}" STREQUAL "Qt6")
+			find_package(Qt6 ${_req} COMPONENTS Core)
+			set(LIBSTORED_HAVE_QT ON CACHE INTERNAL "Enable Qt6" FORCE)
+		endif()
+	endforeach()
+
+	include(${LIBSTORED_SOURCE_DIR}/cmake/libstored.cmake REQUIRED)
+	find_package_handle_standard_args(
+		Libstored
+		REQUIRED_VARS LIBSTORED_SOURCE_DIR
+		VERSION_VAR LIBSTORED_VERSION_BASE
+	)
+endif()
