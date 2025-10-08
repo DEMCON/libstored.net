@@ -45,21 +45,5 @@ RUN python3 -m venv .venv && \
 
 COPY . /src/app
 
-RUN chmod +x build.sh && \
-    ./build.sh
-
-# Create production image
-FROM ubuntu:22.04
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        libzmq5 && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# Copy the examples
-COPY --from=builder /src/app/build/arq /app/
-
-WORKDIR /app
-
-CMD ["./arq"]
+RUN chmod +x build.sh
+#RUN ./build.sh

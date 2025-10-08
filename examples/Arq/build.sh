@@ -1,4 +1,7 @@
 mkdir -p build
 cd build
 cmake ..
-cmake --build . --config Debug
+cmake --build .
+# Regenerate CMake after code generation
+cmake ..
+cmake --build .
