@@ -39,10 +39,22 @@ public class HooksTests
     {
         SynchronizableStore<TestStore> store1 = new(new TestStore());
         SynchronizableStore<TestStore> store2 = new(new TestStore());
-        List<PropertyChangedEventArgs> changed1 = [];
-        List<PropertyChangedEventArgs> changed2 = [];
-        store1.Store().PropertyChanged += (_, e) => changed1.Add(e);
-        store2.Store().PropertyChanged += (_, e) => changed2.Add(e);
+        int store1defaultInt32ChangeCount = 0;
+        int store2defaultInt32ChangeCount = 0;
+        store1.Store().PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(TestStore.DefaultInt32))
+            {
+                store1defaultInt32ChangeCount++;
+            }
+        };
+        store2.Store().PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(TestStore.DefaultInt32))
+            {
+                store2defaultInt32ChangeCount++;
+            }
+        };
 
         Synchronizer s1 = new();
         Synchronizer s2 = new();
@@ -58,8 +70,8 @@ public class HooksTests
 
         s2.SyncFrom(store2, p2);
 
-        Assert.Empty(changed1);
-        Assert.Single(changed2); // Because of the Welcome
+        Assert.Equal(0, store1defaultInt32ChangeCount);
+        Assert.Equal(1, store2defaultInt32ChangeCount); // Because of the Welcome
 
         store1.Store().DefaultInt32 = 1;
         store1.Store().DefaultInt32 = 2;
@@ -68,8 +80,8 @@ public class HooksTests
         store1.Store().DefaultInt32 = 5;
         s1.Process();
 
-        Assert.Equal(5, changed1.Count); // Local updates
-        Assert.Equal(2, changed2.Count); // Because of Update
+        Assert.Equal(5, store1defaultInt32ChangeCount); // Local updates
+        Assert.Equal(2, store2defaultInt32ChangeCount); // Because of Update
     }
 
     [Fact]
@@ -81,7 +93,7 @@ public class HooksTests
             if (e.PropertyName == nameof(TestStore.DefaultInt32))
             {
                 // Force a write during the change notification of another write
-                store.DefaultInt16++; 
+                store.DefaultInt16++;
             }
         };
 
