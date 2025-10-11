@@ -184,7 +184,7 @@ public class StoreJournal
         // data, we only update our local copy.
         buffer.CopyTo(_store.GetBuffer());
 
-        _store.HookChanged(Types.Invalid, GetBuffer());
+        _store.ListHookChanged();
 
         Seq seq = _seq;
         foreach (KeyValuePair<Key, ObjectInfo> keyValuePair in _changes)
