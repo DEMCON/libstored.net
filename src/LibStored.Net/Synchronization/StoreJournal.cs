@@ -182,7 +182,7 @@ public class StoreJournal
 
         // Don't use entryX/exitX, as we don't take exclusive ownership of the
         // data, we only update our local copy.
-        buffer.CopyTo(_store.GetBuffer());
+        buffer.Slice(0, GetBuffer().Length).CopyTo(_store.GetBuffer());
 
         _store.ListHookChanged();
 
