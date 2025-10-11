@@ -25,6 +25,7 @@ public class ProtocolTests
 
     [Theory]
     [InlineData("123", "123")]
+    [InlineData("123\0", "123\u007f@")]
     [InlineData("123\r4", "123\u007fM4")]
     [InlineData("123\u007f", "123\u007f\u007f")]
     [InlineData("\u007f123\r", "\u007f\u007f123\u007f\u004d")]
@@ -41,7 +42,30 @@ public class ProtocolTests
     }
 
     [Theory]
+    [InlineData("1", "1")]
+    [InlineData("\u007fM", "\r")]
+    [InlineData("\u007f@", "\0")]
+    [InlineData("\u007fQ", "\u0011")]
+    [InlineData("\u007fS", "\u0013")]
+    [InlineData("\u007f[", "\u001b")]
+    [InlineData("\u007f\u007f", "\u007f")]
+    public void AsciiEncodeSingleTest(string expected, string input)
+    {
+        Protocol.AsciiEscapeLayer ascii = new();
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(ascii);
+
+        Encode(ascii, input);
+
+        Assert.Single(logging.Encoded);
+        Assert.Equal([expected], logging.Encoded);
+    }
+
+    [Theory]
     [InlineData("123", "123")]
+    [InlineData("123\u0006", "123\u007fF")]
+    [InlineData("123\u007f", "123\u007f")]
+    [InlineData("\u0001123", "\u007fA12\r3")]
     [InlineData("123\r4", "123\u007fM4")]
     [InlineData("123\u007f", "123\u007f\u007f")]
     [InlineData("\u007f123\r", "\u007f\u007f123\u007f\u004d")]
