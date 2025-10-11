@@ -119,8 +119,8 @@ int main()
 	stored::PollableZmqLayer pollableZmq(zmq, stored::Pollable::PollIn);
 
 	while(true) {
-		// 1 s timeout, to force keep alive once in a while.
-		stored::Poller::Result const& result = poller.poll(1000);
+		// 0.1 s timeout, to force keep alive once in a while.
+		stored::Poller::Result const& result = poller.poll(100);
 
 		if(result.empty()) {
 			switch(errno) {

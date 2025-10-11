@@ -4,4 +4,4 @@ cmake ..
 cmake --build .
 # Regenerate CMake after code generation
 cmake ..
-cmake --build .
+cmake --build . --target install
