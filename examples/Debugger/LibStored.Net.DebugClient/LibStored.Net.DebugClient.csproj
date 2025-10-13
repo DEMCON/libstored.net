@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\LibStored.Net\LibStored.Net.csproj" />
+    <ProjectReference Include="..\..\..\src\LibStored.Net\LibStored.Net.csproj" />
   </ItemGroup>
 
 </Project>
