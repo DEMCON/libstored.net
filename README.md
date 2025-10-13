@@ -186,7 +186,7 @@ dotnet build
 Run the example:
 You also need to have a [container runtime](https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/setup-tooling?tabs=windows&pivots=vscode#container-runtime) installed: Podman or Docker.
 ```bash
-dotnet run --project examples\LibStored.Example.AppHost\LibStored.Example.AppHost.csproj
+dotnet run --project examples\Sync\LibStored.Net.Example.AppHost\LibStored.Net.Example.AppHost.csproj
 ```
 
 Run the tests:
