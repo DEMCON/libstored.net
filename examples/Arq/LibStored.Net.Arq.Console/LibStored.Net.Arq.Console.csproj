@@ -14,7 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\LibStored.Net.Generator\LibStored.Net.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\..\src\LibStored.Net\LibStored.Net.csproj" />
-    <ProjectReference Include="..\LibStored.Net.Arq.ServiceDefaults\Arq.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\LibStored.Net.Arq.ServiceDefaults\LibStored.Net.Arq.ServiceDefaults.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

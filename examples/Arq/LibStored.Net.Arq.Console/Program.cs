@@ -4,6 +4,7 @@
 
 using System.Globalization;
 using LibStored.Net;
+using LibStored.Net.Arq.ServiceDefaults;
 using LibStored.Net.Protocol;
 using LibStored.Net.Synchronization;
 using LibStored.Net.ZeroMQ;

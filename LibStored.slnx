@@ -1,9 +1,9 @@
 <Solution>
   <Folder Name="/examples/" />
   <Folder Name="/examples/arq/">
-    <Project Path="examples\Arq\LibStored.Net.Arq.AppHost\Arq.AppHost.csproj" />
+    <Project Path="examples/Arq/LibStored.Net.Arq.AppHost/LibStored.Net.Arq.AppHost.csproj" />
+    <Project Path="examples/Arq/LibStored.Net.Arq.ServiceDefaults/LibStored.Net.Arq.ServiceDefaults.csproj" />
     <Project Path="examples\Arq\LibStored.Net.Arq.Console\LibStored.Net.Arq.Console.csproj" />
-    <Project Path="examples\Arq\LibStored.Net.Arq.ServiceDefaults\Arq.ServiceDefaults.csproj" />
   </Folder>
   <Folder Name="/examples/debugger/">
     <Project Path="examples/Debugger/LibStored.Net.DebugClient/LibStored.Net.DebugClient.csproj" />
