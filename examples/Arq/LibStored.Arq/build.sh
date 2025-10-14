@@ -3,5 +3,6 @@ cd build
 cmake ..
 cmake --build .
 # Regenerate CMake after code generation
-cmake ..
+#cmake ..
 cmake --build . --target install
+# CMAKE INSTALL PREFIX

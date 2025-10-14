@@ -58,8 +58,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy the examples
-COPY --from=builder /src/app/build/arq /app/
+COPY --from=builder /app /app
 
-WORKDIR /app
+WORKDIR /app/bin
 
 CMD ["./arq"]

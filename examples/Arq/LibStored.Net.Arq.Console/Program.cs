@@ -63,13 +63,8 @@ internal class App : BackgroundService
         synchronizer.Map(syncStore);
 
         ILogger storeLogger = _loggerFactory.CreateLogger(nameof(ArqStore));
-        bool storeInitialized = false;
         store.PropertyChanged += (_, args) =>
         {
-            if (!storeInitialized && args.PropertyName == nameof(ArqStore.Ber))
-            {
-                storeInitialized = true;
-            }
             string value = args.PropertyName switch
             {
                 nameof(ArqStore.Ber) => store.Ber.ToString(CultureInfo.InvariantCulture),
@@ -91,6 +86,7 @@ internal class App : BackgroundService
 
         ProtocolBuilder.ProtocolStack syncStack = ProtocolBuilder.Create(_services)
             .Add(synchronizer)
+            .Add<BufferLayer>()
             .Add<SegmentationLayer>()
             .Add<LoggerLayer>()
             .Add<ArqLayer>()
@@ -111,7 +107,6 @@ internal class App : BackgroundService
 
         ArqLayer arqLayer = (ArqLayer)syncStack.Layers.First(x => x is ArqLayer);
         bool connected = false;
-        bool initialConnect = false;
         arqLayer.EventOccurred += (_, e) =>
         {
             _logger.LogInformation("Arc Event: {Event}", e.Event);
@@ -125,13 +120,11 @@ internal class App : BackgroundService
             }
         };
 
-        // First make sure the connection is established before calling syncFrom.
-        // Otherwise, many reset commands send before the first ACK replay is received, causing resetting back-and-forth.
-        arqLayer.KeepAlive();
+        synchronizer.SyncFrom(syncStore, syncLayer);
 
-        int retryIn = 3;
         NetMQTimer syncTimer = new(TimeSpan.FromMilliseconds(1000));
-        using (NetMQPoller poller = [syncTimer, socket])
+        NetMQTimer keepAliveTimer = new(TimeSpan.FromMilliseconds(5000));
+        using (NetMQPoller poller = [syncTimer, keepAliveTimer, socket])
         {
             socket.ReceiveReady += (_, _) =>
             {
@@ -139,28 +132,16 @@ internal class App : BackgroundService
                 _logger.LogTrace("Sync Received {Bytes} bytes", bytesReceived);
             };
 
+            keepAliveTimer.Elapsed += (_, _) =>
+            {
+                arqLayer.KeepAlive();
+            };
+
             syncTimer.Elapsed += (_, _) =>
             {
-                if (connected && !initialConnect)
-                {
-                    // First time after connected, enable synchronisation for the store.
-                    synchronizer.SyncFrom(syncStore, syncLayer);
-                    initialConnect = true;
-                }
-
                 if (connected)
                 {
                     store.Hello += 1;
-                }
-                else
-                {
-                    retryIn--;
-                    if(retryIn <= 0)
-                    {
-                        _logger.LogInformation("Not connected yet, sending keep-alive");
-                        arqLayer.KeepAlive();
-                        retryIn = 3;
-                    }
                 }
                 synchronizer.Process();
             };

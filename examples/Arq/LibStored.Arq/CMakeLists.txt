@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
+cmake_policy(VERSION 3.5)
 project(arq)
+
+set(CMAKE_INSTALL_PREFIX /app)
 
 # Point to the directory where you have cloned libstored.
 set(LIBSTORED_CLONE ${PROJECT_SOURCE_DIR}/../extern/libstored)
@@ -14,7 +17,7 @@ message(STATUS "Using libstored destination from ${LIBSTORED_GENERATE_DESTINATIO
 # Add ZMQ
 list(APPEND CMAKE_MODULE_PATH ${LIBSTORED_CLONE}/dist/common)
 find_package(ZeroMQ REQUIRED)
-set(LIBSTORED_HAVE_LIBZMQ ON)
+set(LIBSTORED_HAVE_LIBZMQ ON CACHE BOOL "" FORCE)
 
 # Include libstored functions
 include(libstored)
