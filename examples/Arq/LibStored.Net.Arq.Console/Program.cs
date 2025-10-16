@@ -142,6 +142,11 @@ internal class App : BackgroundService
                 if (connected)
                 {
                     store.Hello += 1;
+
+                    if (store.Hello == 10)
+                    {
+	                    store.Ber = 1e-3;
+                    }
                 }
                 synchronizer.Process();
             };
