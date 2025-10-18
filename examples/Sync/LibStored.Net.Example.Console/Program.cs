@@ -209,7 +209,6 @@ namespace LibStored.Net.Example.Console
                         x.Versions = "123";
                         x.Map(store);
                     })
-                    .Add<BufferLayer>()
                     .Add<LoggerLayer>()
                     .Add<OpenTelemetryLayer>()
                     .Add<DebugZeroMQLayer>(new DebugZeroMQLayer(debugSocket))
@@ -220,11 +219,8 @@ namespace LibStored.Net.Example.Console
                 Debugger debugger = new("8_sync", "123");
                 debugger.Map(store);
 
-                BufferLayer buffer = new();
-                buffer.Wrap(debugger);
-
                 LoggerLayer debugLogging = new(_loggerFactory.CreateLogger<LoggerLayer>());
-                debugLogging.Wrap(buffer);
+                debugLogging.Wrap(debugger);
 
                 OpenTelemetryLayer telemetry = new();
                 telemetry.Wrap(debugLogging);
