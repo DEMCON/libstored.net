@@ -244,7 +244,7 @@ public class ArqLayerTests
         la.Reset();
 
         lb.Encode(" 4"u8, true);
-        Assert.Equal(" 4", la.Decoded[1]);
+        Assert.Equal(" 4", la.Decoded[0]);
 
         la.Encode(" 5"u8, true);
         Assert.Equal(" 5", lb.Decoded[2]);
