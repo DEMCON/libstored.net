@@ -58,5 +58,12 @@ public class LoopbackLayer : ProtocolLayer
                 _to.Decode(b);
             }
         }
+
+        /// <inheritdoc />
+        public override void Reset()
+        {
+            _buffer.Clear();
+            base.Reset();
+        }
     }
 }

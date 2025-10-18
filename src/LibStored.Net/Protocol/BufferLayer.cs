@@ -1,5 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2025 Guus Kuiper
-// 
+//
 // SPDX-License-Identifier: MIT
 
 using System.Runtime.InteropServices;
@@ -32,5 +32,12 @@ public class BufferLayer : ProtocolLayer
             base.Encode(b, true);
             _buffer.Clear();
         }
+    }
+
+    /// <inheritdoc />
+    public override void Reset()
+    {
+        _buffer.Clear();
+        base.Reset();
     }
 }

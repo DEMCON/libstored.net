@@ -1,5 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2025 Guus Kuiper
-// 
+//
 // SPDX-License-Identifier: MIT
 
 using System.Runtime.InteropServices;
@@ -100,6 +100,14 @@ public class SegmentationLayer : ProtocolLayer
             // Full package, forward to the next layer
             base.Decode(buffer.Slice(0, buffer.Length - 1));
         }
+    }
+
+    /// <inheritdoc />
+    public override void Reset()
+    {
+        _decodeBuffer.Clear();
+        _encoded = 0;
+        base.Reset();
     }
 
     /// <inheritdoc />
