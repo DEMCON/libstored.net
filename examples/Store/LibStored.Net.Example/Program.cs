@@ -1,5 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2025 Guus Kuiper
-// 
+//
 // SPDX-License-Identifier: MIT
 
 using System.Text;

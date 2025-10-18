@@ -167,7 +167,7 @@ python -m libstored.gui -p 5555
 
 Tested with:
 - [v1.7.1](https://github.com/DEMCON/libstored/releases/tag/v1.7.1) (see note  below)
-- [master](https://github.com/DEMCON/libstored/commit/a8a5b6613876511ed886733660b515c1f67f57db)
+- [v1.8.0](https://github.com/DEMCON/libstored/releases/tag/v1.8.0)
 
 See [libstored changelog](https://demcon.github.io/libstored/doc/changelog.html) for the changes. There do not seem to be breaking changes from <v1.7.1 to v1.7.1 for this C# implementation.
 
@@ -186,7 +186,7 @@ dotnet build
 Run the example:
 You also need to have a [container runtime](https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/setup-tooling?tabs=windows&pivots=vscode#container-runtime) installed: Podman or Docker.
 ```bash
-dotnet run --project examples\LibStored.Example.AppHost\LibStored.Example.AppHost.csproj
+dotnet run --project examples\Sync\LibStored.Net.Example.AppHost\LibStored.Net.Example.AppHost.csproj
 ```
 
 Run the tests:

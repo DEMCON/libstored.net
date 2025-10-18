@@ -1,10 +1,20 @@
 <Solution>
-  <Folder Name="/examples/">
-    <Project Path="examples/LibStored.Net.DebugClient/LibStored.Net.DebugClient.csproj" />
-    <Project Path="examples/LibStored.Net.Example.AppHost/LibStored.Net.Example.AppHost.csproj" />
-    <Project Path="examples/LibStored.Net.Example.Console/LibStored.Net.Example.Console.csproj" />
-    <Project Path="examples/LibStored.Net.Example.ServiceDefaults/LibStored.Net.Example.ServiceDefaults.csproj" />
-    <Project Path="examples/LibStored.Net.Example/LibStored.Net.Example.csproj" />
+  <Folder Name="/examples/" />
+  <Folder Name="/examples/arq/">
+    <Project Path="examples/Arq/LibStored.Net.Arq.AppHost/LibStored.Net.Arq.AppHost.csproj" />
+    <Project Path="examples/Arq/LibStored.Net.Arq.ServiceDefaults/LibStored.Net.Arq.ServiceDefaults.csproj" />
+    <Project Path="examples\Arq\LibStored.Net.Arq.Console\LibStored.Net.Arq.Console.csproj" />
+  </Folder>
+  <Folder Name="/examples/debugger/">
+    <Project Path="examples/Debugger/LibStored.Net.DebugClient/LibStored.Net.DebugClient.csproj" />
+  </Folder>
+  <Folder Name="/examples/store/">
+    <Project Path="examples/Store/LibStored.Net.Example/LibStored.Net.Example.csproj" />
+  </Folder>
+  <Folder Name="/examples/sync/">
+    <Project Path="examples/Sync/LibStored.Net.Example.AppHost/LibStored.Net.Example.AppHost.csproj" />
+    <Project Path="examples/Sync/LibStored.Net.Example.Console/LibStored.Net.Example.Console.csproj" />
+    <Project Path="examples/Sync/LibStored.Net.Example.ServiceDefaults/LibStored.Net.Example.ServiceDefaults.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />

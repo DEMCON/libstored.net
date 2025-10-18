@@ -7,6 +7,9 @@
 obj/
 bin/
 
+# Aspire
+.aspire/
+
 # Python specific
 .venv/
 __pycache__/
