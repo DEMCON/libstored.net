@@ -1,5 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2025 Guus Kuiper
-// 
+//
 // SPDX-License-Identifier: MIT
 
 using System.Text;
@@ -50,8 +50,6 @@ services.AddProtocolStack(builder => builder
     .Add<LoggerLayer>()
     .Add<Debugger>()
 );
-
-HttpClientExtensions.AddHttpClient(services);
 
 IServiceProvider serviceProvider = services.BuildServiceProvider(new ServiceProviderOptions
 {
