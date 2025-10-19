@@ -15,7 +15,7 @@
         <PackageReference Include="NetMQ" Version="4.0.2.1" />
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
         <PackageReference Include="MinVer" Version="6.0.0" PrivateAssets="All" />
-        <PackageReference Include="System.Text.Json" Version="9.0.8" PrivateAssets="all" GeneratePathProperty="true" />
+        <PackageReference Include="YamlDotNet" Version="16.3.0" PrivateAssets="all" GeneratePathProperty="true"  />
     </ItemGroup>
 
     <ItemGroup>
@@ -33,7 +33,7 @@
                         ReferenceOutputAssembly="false"
                         PackAsAnalyzer="true" />
 
-      <None Include="$(PkgSystem_Text_Json)\lib\netstandard2.0\System.Text.Json.dll"
+      <None Include="$(PkgYamlDotNet)\lib\netstandard2.0\YamlDotNet.dll"
             Pack="true"
             PackagePath="analyzers/dotnet/cs"
             Visible="false" />

@@ -137,7 +137,7 @@ internal static class ScribanGenerator
             Name = model.Name,
             Hash = model.Hash,
             Size = Size(variables),
-            Init = ToByteString(model.Init),
+            Init = Encode(variables),
             Variables = variables,
         };
 
@@ -150,20 +150,29 @@ internal static class ScribanGenerator
         return result;
     }
 
-    private static string ToByteString(string hex)
+    private static string Encode(TemplateVariable[] variables)
     {
-        if (hex!.Length % 2 != 0)
+        List<byte> bytes = new();
+        foreach (TemplateVariable variable in variables)
         {
-            throw new ArgumentException("Hex string must have an even length.", nameof(hex));
+            if (variable.Value is null)
+            {
+                break;
+            }
+
+            int padding = variable.Offset - bytes.Count;
+            if (padding > 0)
+            {
+                for (int i = 0; i < padding; i++)
+                {
+                    bytes.Add(0);
+                }
+            }
+
+            bytes.AddRange(variable.Value);
         }
 
-        List<string> pairs = [];
-        for (int i = 0; i < hex.Length; i+=2)
-        {
-            string pair = hex.Substring(i, 2).ToUpper();
-            pairs.Add(pair);
-        }
-        return string.Join(", ", pairs.Select(p => $"0x{p}"));
+        return string.Join(", ", bytes.Select(b => $"0x{b:X2}"));
     }
 
     private static int Size(TemplateVariable[] variables) => variables
@@ -178,5 +187,6 @@ internal static class ScribanGenerator
         Type = x.Type,
         Offset = x.Offset,
         Size = x.Size,
+        Value = x.ToBytes()
     };
 }

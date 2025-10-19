@@ -1,0 +1,51 @@
+# SPDX-FileCopyrightText: 2025 Guus Kuiper
+#
+# SPDX-License-Identifier: MIT
+
+name: "ArqStore"
+hash: "b24b7d6c5782abfedf351f44d490a7e78de3b6c9"
+littleEndian: true
+variables:
+  - name: "ber"
+    cname: "ber"
+    type: "double"
+    size: 8
+    offset: 0
+    init: 1e-05
+  - name: "MTU"
+    cname: "MTU"
+    type: "uint32"
+    size: 4
+    offset: 8
+    init: 32
+  - name: "a long string that does not fit in the response buffers"
+    cname: "a_long_string_that_does_not_fit_in_the_response_buffers"
+    type: "string"
+    size: 32
+    offset: 16
+    init: null
+  - name: "world"
+    cname: "world"
+    type: "double"
+    size: 8
+    offset: 56
+    init: null
+  - name: "hello"
+    cname: "hello"
+    type: "int32"
+    size: 4
+    offset: 64
+    init: null
+  - name: "a short int that fits in the response buffers"
+    cname: "a_short_int_that_fits_in_the_response_buffers"
+    type: "int32"
+    size: 4
+    offset: 68
+    init: null
+  - name: "injected errors"
+    cname: "injected_errors"
+    type: "uint32"
+    size: 4
+    offset: 72
+    init: null
+functions:

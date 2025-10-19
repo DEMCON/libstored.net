@@ -7,11 +7,11 @@ public static class StoreDiagnosticsDescriptors
     public static readonly DiagnosticDescriptor DeserializationError
         = new("STRO001",
             "Store could not be deserialized",
-            "Store could not be deserialized: Path: {0} | LineNumber: {1} | BytePositionInLine: {2}",
+            "Store could not be deserialized: LineNumber: {1} | Column: {2}",
             "Deserialization",
             DiagnosticSeverity.Error,
             true);
-    
+
     public static readonly DiagnosticDescriptor GenerationError
         = new("STRO002",
             "Store could not be generated",

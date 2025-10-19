@@ -1,52 +1,47 @@
 ﻿using System.Collections.Immutable;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
-using System.Text.Json;
+using YamlDotNet.Core;
 
 namespace LibStored.Net.Generator;
 
 [Generator]
 public class StoreGenerator : IIncrementalGenerator
 {
-    private record struct JsonFile(string Path, string? Source);
+    private record struct StoreMetadataFile(string Path, string? Source);
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        IncrementalValueProvider<ImmutableArray<JsonFile>> stores = context.AdditionalTextsProvider
-            .Where(text => text.Path.EndsWith("Store.json", StringComparison.OrdinalIgnoreCase))
-            .Select((text, token) => new JsonFile(text.Path, text.GetText(token)?.ToString()))
+        IncrementalValueProvider<ImmutableArray<StoreMetadataFile>> stores = context.AdditionalTextsProvider
+            .Where(text => text.Path.EndsWith(".yml", StringComparison.OrdinalIgnoreCase)
+                           || text.Path.EndsWith(".yaml", StringComparison.OrdinalIgnoreCase))
+            .Select((text, token) => new StoreMetadataFile(text.Path, text.GetText(token)?.ToString()))
             .Where(file => file.Source is not null)!
             .Collect();
 
         context.RegisterSourceOutput(stores, GenerateCode);
     }
 
-    private void GenerateCode(SourceProductionContext context, ImmutableArray<JsonFile> stores)
+    private void GenerateCode(SourceProductionContext context, ImmutableArray<StoreMetadataFile> stores)
     {
         string version = typeof(StoreGenerator)
             .Assembly
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "unknown";
 
-        foreach (JsonFile store in stores)
+        foreach (StoreMetadataFile store in stores)
         {
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
             try
             {
-                StoreModel? model = JsonSerializer.Deserialize<StoreModel>(store.Source!, options);
-                if (model is null)
-                {
-                    continue;
-                }
+                StoreModel model = StoreYaml.Deserializer.Deserialize<StoreModel>(store.Source!);
+
+                StoreModelValidator.Validate(model);
 
                 string fileName = Path.GetFileName(store.Path);
                 string source = ScribanGenerator.GenerateSource(model, fileName, version);
                 context.AddSource($"{model.Name}.g.cs", source);
             }
-            catch (JsonException jex)
+            catch (YamlException jex)
             {
-                var error = Diagnostic.Create(StoreDiagnosticsDescriptors.DeserializationError, null, jex.Path, jex.LineNumber, jex.BytePositionInLine);
+                var error = Diagnostic.Create(StoreDiagnosticsDescriptors.DeserializationError, null, jex.Start.Line, jex.Start.Column);
                 context.ReportDiagnostic(error);
             }
             catch (Exception ex)
@@ -54,6 +49,33 @@ public class StoreGenerator : IIncrementalGenerator
                 var error = Diagnostic.Create(StoreDiagnosticsDescriptors.GenerationError, null, store.Path, ex.Message);
                 context.ReportDiagnostic(error);
             }
+
+            // var options = new JsonSerializerOptions
+            // {
+            //     PropertyNameCaseInsensitive = true
+            // };
+            // try
+            // {
+            //     StoreModel? model = JsonSerializer.Deserialize<StoreModel>(store.Source!, options);
+            //     if (model is null)
+            //     {
+            //         continue;
+            //     }
+            //
+            //     string fileName = Path.GetFileName(store.Path);
+            //     string source = ScribanGenerator.GenerateSource(model, fileName, version);
+            //     context.AddSource($"{model.Name}.g.cs", source);
+            // }
+            // catch (JsonException jex)
+            // {
+            //     var error = Diagnostic.Create(StoreDiagnosticsDescriptors.DeserializationError, null, jex.Path, jex.LineNumber, jex.BytePositionInLine);
+            //     context.ReportDiagnostic(error);
+            // }
+            // catch (Exception ex)
+            // {
+            //     var error = Diagnostic.Create(StoreDiagnosticsDescriptors.GenerationError, null, store.Path, ex.Message);
+            //     context.ReportDiagnostic(error);
+            // }
         }
     }
 }
