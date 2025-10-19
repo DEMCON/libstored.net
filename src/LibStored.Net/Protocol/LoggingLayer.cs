@@ -1,5 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2025 Guus Kuiper
-// 
+//
 // SPDX-License-Identifier: MIT
 
 using System.Text;
@@ -17,7 +17,7 @@ public class LoggingLayer : ProtocolLayer
     /// Gets the list of decoded messages as strings.
     /// </summary>
     public List<string> Decoded = [];
-    
+
     /// <summary>
     /// Gets the list of encoded messages as strings.
     /// </summary>
@@ -57,6 +57,13 @@ public class LoggingLayer : ProtocolLayer
         _partial = !last;
 
         base.Encode(buffer, last);
+    }
+
+    /// <inheritdoc />
+    public override void Reset()
+    {
+        Clear();
+        base.Reset();
     }
 
     /// <summary>

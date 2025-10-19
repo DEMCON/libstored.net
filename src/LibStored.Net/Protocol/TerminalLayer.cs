@@ -1,5 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2025 Guus Kuiper
-// 
+//
 // SPDX-License-Identifier: MIT
 
 using System.Runtime.InteropServices;
@@ -122,6 +122,15 @@ public class TerminalLayer : ProtocolLayer
             base.Encode(TerminalLayer.End, true);
             _encodingMessage = false; // Reset encoding state
         }
+    }
+
+    /// <inheritdoc />
+    public override void Reset()
+    {
+        _data.Clear();
+        _decodingMessage = false;
+        _encodingMessage = false;
+        base.Reset();
     }
 
     /// <inheritdoc />

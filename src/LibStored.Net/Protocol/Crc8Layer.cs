@@ -97,6 +97,13 @@ public class Crc8Layer : ProtocolLayer
     }
 
     /// <inheritdoc />
+    public override void Reset()
+    {
+        _crc = _init;
+        base.Reset();
+    }
+
+    /// <inheritdoc />
     public override int Mtu() => base.Mtu() switch
     {
         0 or > 256 => 256,
