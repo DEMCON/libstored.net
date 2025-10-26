@@ -266,18 +266,7 @@ def generate(meta : MetaProtocol, tmpl_filename : str) -> tuple[str, str, str]:
 
     js = json.dumps(asdict(model), indent=2)
 
-    # force all Python strings to be emitted as quoted scalars in YAML
-    class QuotedSafeDumper(yaml.SafeDumper):
-        pass
-
-    def _represent_str_quoted(dumper, data):
-        # use double quotes for string scalars
-        return dumper.represent_scalar('tag:yaml.org,2002:str', str(data), style='"')
-
-    QuotedSafeDumper.add_representer(str, _represent_str_quoted)
-
-    # dump using the custom dumper; keep key order stable
-    yml = yaml.dump(asdict(model), Dumper=QuotedSafeDumper, sort_keys=False)
+    yml = yaml.safe_dump(asdict(model), sort_keys=False)
 
     return source, js, yml
 
