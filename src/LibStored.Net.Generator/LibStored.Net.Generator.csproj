@@ -15,18 +15,20 @@
         <!-- Mark as IsGeneratorProject, see https://github.com/dotnet/runtime/blob/main/Directory.Build.props -->
         <IsGeneratorProject>true</IsGeneratorProject>
         <IsPackable>false</IsPackable>
+        <!-- Ensure generator dependencies are present next to the generator DLL so the compiler can load them -->
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     </PropertyGroup>
 
     <!-- The following libraries include the source generator interfaces and types we need -->
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" PrivateAssets="all" />
-        <PackageReference Include="System.Text.Json" Version="9.0.8" PrivateAssets="all" />
         <PackageReference Include="MinVer" Version="6.0.0" PrivateAssets="All" />
 
         <PackageReference Include="Scriban" Version="6.2.1" IncludeAssets="Build" />
         <PackageReference Include="Microsoft.CSharp" Version="4.6.0" />
         <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.6.0" />
+        <PackageReference Include="YamlDotNet" Version="16.3.0"  GeneratePathProperty="true" PrivateAssets="all" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -36,5 +38,16 @@
     <ItemGroup>
         <InternalsVisibleTo Include="$(AssemblyName).Tests" />
     </ItemGroup>
+
+    <!-- Make sure to include additional DLL's, see https://github.com/dotnet/roslyn/discussions/47517 -->
+    <PropertyGroup>
+        <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+    </PropertyGroup>
+
+    <Target Name="GetDependencyTargetPaths">
+        <ItemGroup>
+            <TargetPathWithTargetPlatformMoniker Include="$(PkgYamlDotNet)\lib\netstandard2.0\YamlDotNet.dll" IncludeRuntimeDependency="false" />
+        </ItemGroup>
+    </Target>
 
 </Project>

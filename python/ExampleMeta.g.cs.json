@@ -1,0 +1,31 @@
+{
+  "name": "ExampleMeta",
+  "hash": "96cc75d260a03f4931816b2bc0824eed28faa9ae",
+  "littleEndian": true,
+  "variables": [
+    {
+      "name": "a double",
+      "cname": "a_double",
+      "type": "double",
+      "size": 8,
+      "offset": 0,
+      "init": 1.618
+    },
+    {
+      "name": "world",
+      "cname": "world",
+      "type": "string",
+      "size": 7,
+      "offset": 8,
+      "init": "hello"
+    },
+    {
+      "name": "some int",
+      "cname": "some_int",
+      "type": "int32",
+      "size": 4,
+      "offset": 16,
+      "init": 42
+    }
+  ]
+}

@@ -1,5 +1,9 @@
 # Based on: https://andrewlock.net/creating-a-source-generator-part-3-integration-testing-and-packaging/
 
+dotnet pack `
+    -c Release `
+    --output artifacts
+
 # Read the version from the version.txt file
 $version = Get-Content .\artifacts\version.txt | Select-Object -First 1
 

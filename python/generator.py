@@ -12,7 +12,9 @@ import struct
 import types
 import json
 import base64
-from typing import Iterable, Protocol, runtime_checkable
+import yaml
+from dataclasses import dataclass, asdict
+from typing import Iterable, Protocol, Union, runtime_checkable
 
 @runtime_checkable
 class MetaObjectMeta(Protocol):
@@ -59,58 +61,21 @@ class MetaProtocol(Protocol):
     def variables(self) -> Iterable[MetaObjectMeta]:
         ...
 
+@dataclass
+class StoreVariable:
+    name: str
+    cname: str
+    type: str
+    size: int
+    offset: int
+    init: Union[str, float, int, None]
 
-class MetaProtocolEncoder(json.JSONEncoder):
-    def default(self, obj):
-            try:
-                if isinstance(obj, MetaObjectMeta):
-                    return obj._asdict()
-            except RuntimeError as e:
-                # Handle StopIteration raised as RuntimeError in Protocol __instancecheck__
-                pass
-            if isinstance(obj, MetaProtocol):
-                d = {
-                    'name': obj.name,
-                    'hash': obj.hash,
-                    'init': '',
-                }
-
-                fs = []
-                for f in obj.functions:
-                    fd = {
-                        'name': f.name,
-                        'cname': f.cname,
-                        'type': f.type,
-                        'size': f.size,
-                        'function': f.f,
-                    }
-                    fs.append(fd)
-                d['functions'] = fs
-
-                vs = []
-                buffer_init = ''
-                buffer_length = 0
-                for v in sorted(obj.variables, key=lambda x: x.offset):
-                    vd = {
-                        'name': v.name,
-                        'cname': v.cname,
-                        'type': v.type,
-                        'size': v.size,
-                        'offset': v.offset,
-                    }
-                    if v.init is not None:
-                        padding = v.offset - buffer_length
-                        init = bytes([0] * padding)  # Fill with zeros until the offset
-                        init += encode(v)
-                        buffer_length += len(init)
-                        # little endian hex list
-                        hex = init.hex()
-                        buffer_init += hex
-                    vs.append(vd)
-                d['variables'] = vs
-                d['init'] = buffer_init
-                return d
-            return super().default(obj)
+@dataclass
+class StoreModel:
+    name: str
+    hash: str
+    littleEndian: bool
+    variables: list[StoreVariable]
 
 def cstr(s):
     bs = str(s).encode()
@@ -243,7 +208,36 @@ def load_class_from_source(source_code: str) -> MetaProtocol:
             return obj
     return None
 
-def generate(meta : MetaProtocol, tmpl_filename : str) -> tuple[str, str]:
+def generate_model(meta : MetaProtocol) -> StoreModel:
+
+    variables = []
+    for v in sorted(meta.variables, key=lambda x: x.offset):
+        init = v.init
+
+        # Fix for bool initializations libstored also accepts int > 1, so convert to bool true / false
+        if v.type == 'bool' and v.init is not None:
+            init = bool(v.init)
+
+        sv = StoreVariable(
+            name=v.name,
+            cname=v.cname,
+            type=v.type,
+            size=v.size,
+            offset=v.offset,
+            init=init
+        )
+        variables.append(sv)
+
+    store_model = StoreModel(
+        name=meta.name,
+        hash=meta.hash,
+        littleEndian=True,
+        variables=variables
+    )
+
+    return store_model
+
+def generate(meta : MetaProtocol, tmpl_filename : str) -> tuple[str, str, str]:
 
     # Validate the meta object
     if not isinstance(meta, MetaProtocol):
@@ -251,6 +245,8 @@ def generate(meta : MetaProtocol, tmpl_filename : str) -> tuple[str, str]:
 
     if not isinstance(next(meta.variables), MetaObjectMeta):
         raise TypeError("Expected a MetaObjectMeta instances")
+    
+    model = generate_model(meta)
 
     jenv = jinja2.Environment(
         loader=jinja2.FileSystemLoader(os.path.dirname(tmpl_filename)),
@@ -268,9 +264,11 @@ def generate(meta : MetaProtocol, tmpl_filename : str) -> tuple[str, str]:
 
     source = tmpl.render(store=meta)
 
-    js = json.dumps(meta, cls=MetaProtocolEncoder, indent=2)
+    js = json.dumps(asdict(model), indent=2)
 
-    return source, js
+    yml = yaml.safe_dump(asdict(model), sort_keys=False)
+
+    return source, js, yml
 
 def generate_cs_meta_py(meta_py_code: str) -> str:
     """
@@ -296,7 +294,7 @@ def main():
     parser = argparse.ArgumentParser(description='Generator using store meta data')
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
-    parser.add_argument('-m', '--meta', type=str, default=os.path.join(script_dir, 'ExampleMetaMeta.py'), help='path to <store>Meta.py as input', dest="meta")
+    parser.add_argument('-m', '--meta', type=str, default=os.path.join(script_dir, 'TestStoreMeta.py'), help='path to <store>Meta.py as input', dest="meta")
     parser.add_argument('-t', '--template', type=str, default=os.path.join(script_dir, 'store.cs.tmpl'), help='path to jinja2 template META is to be applied to', dest="template")
     parser.add_argument('-o', '--output', type=str, help='output file for jinja2 generated content', dest="output")
 
@@ -313,7 +311,7 @@ def main():
     output_name = args.output if args.output else os.path.join(script_dir, f'{meta.name}.g.cs')
     output_name = os.path.abspath(output_name)
 
-    cs, json = generate(meta, template)
+    cs, json, yml = generate(meta, template)
 
     output_dir = os.path.dirname(output_name)
     if not os.path.exists(output_dir):
@@ -324,6 +322,9 @@ def main():
 
     with open(output_name + '.json', 'w') as jf:
         jf.write(json)
+
+    with open(output_name + '.yml', 'w') as yf:
+        yf.write(yml)
 
 
 if __name__ == "__main__":
