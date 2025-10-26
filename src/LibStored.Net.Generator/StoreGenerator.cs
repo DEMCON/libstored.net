@@ -29,53 +29,42 @@ public class StoreGenerator : IIncrementalGenerator
 
         foreach (StoreMetadataFile store in stores)
         {
+            string fileName = Path.GetFileName(store.Path);
+
+            StoreModel model;
             try
             {
-                StoreModel model = StoreYaml.Deserializer.Deserialize<StoreModel>(store.Source!);
-
-                StoreModelValidator.Validate(model);
-
-                string fileName = Path.GetFileName(store.Path);
-                string source = ScribanGenerator.GenerateSource(model, fileName, version);
-                context.AddSource($"{model.Name}.g.cs", source);
+                model = StoreYaml.Deserializer.Deserialize<StoreModel>(store.Source!);
             }
             catch (YamlException jex)
             {
-                var error = Diagnostic.Create(StoreDiagnosticsDescriptors.DeserializationError, null, jex.Start.Line, jex.Start.Column);
+                var error = Diagnostic.Create(StoreDiagnosticsDescriptors.DeserializationError, null, jex.Start.Line,
+                    jex.Start.Column);
                 context.ReportDiagnostic(error);
+                continue;
+            }
+
+            try
+            {
+                StoreModelValidator.Validate(model);
+            }
+            catch (ArgumentException aex)
+            {
+                var error = Diagnostic.Create(StoreDiagnosticsDescriptors.ValidationError, null, store.Path, aex.Message);
+                context.ReportDiagnostic(error);
+                continue;
+            }
+
+            try
+            {
+                string source = ScribanGenerator.GenerateSource(model, fileName, version);
+                context.AddSource($"{model.Name}.g.cs", source);
             }
             catch (Exception ex)
             {
                 var error = Diagnostic.Create(StoreDiagnosticsDescriptors.GenerationError, null, store.Path, ex.Message);
                 context.ReportDiagnostic(error);
             }
-
-            // var options = new JsonSerializerOptions
-            // {
-            //     PropertyNameCaseInsensitive = true
-            // };
-            // try
-            // {
-            //     StoreModel? model = JsonSerializer.Deserialize<StoreModel>(store.Source!, options);
-            //     if (model is null)
-            //     {
-            //         continue;
-            //     }
-            //
-            //     string fileName = Path.GetFileName(store.Path);
-            //     string source = ScribanGenerator.GenerateSource(model, fileName, version);
-            //     context.AddSource($"{model.Name}.g.cs", source);
-            // }
-            // catch (JsonException jex)
-            // {
-            //     var error = Diagnostic.Create(StoreDiagnosticsDescriptors.DeserializationError, null, jex.Path, jex.LineNumber, jex.BytePositionInLine);
-            //     context.ReportDiagnostic(error);
-            // }
-            // catch (Exception ex)
-            // {
-            //     var error = Diagnostic.Create(StoreDiagnosticsDescriptors.GenerationError, null, store.Path, ex.Message);
-            //     context.ReportDiagnostic(error);
-            // }
         }
     }
 }

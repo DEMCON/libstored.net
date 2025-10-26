@@ -1,13 +1,13 @@
 ﻿{
   Diagnostics: [
     {
-      Message: Store could not be deserialized: File: TestStore.yml | Message: Hash cannot be null or empty,
+      Message: Store model is not valid: File: TestStore.yml | Message: Hash cannot be null or empty,
       Severity: Error,
       Descriptor: {
-        Id: STRO002,
-        Title: Store could not be generated,
-        MessageFormat: Store could not be deserialized: File: {0} | Message: {1},
-        Category: Generator,
+        Id: STRO003,
+        Title: Store model value validation error,
+        MessageFormat: Store model is not valid: File: {0} | Message: {1},
+        Category: Validation,
         DefaultSeverity: Error,
         IsEnabledByDefault: true
       }

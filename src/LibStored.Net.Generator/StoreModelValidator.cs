@@ -1,5 +1,5 @@
 ﻿
-using LibStored.Net.Generator;
+namespace LibStored.Net.Generator;
 
 internal static class StoreModelValidator
 {

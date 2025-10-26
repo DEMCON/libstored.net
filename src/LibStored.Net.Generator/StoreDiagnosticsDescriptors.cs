@@ -19,4 +19,12 @@ public static class StoreDiagnosticsDescriptors
             "Generator",
             DiagnosticSeverity.Error,
             true);
+
+    public static readonly DiagnosticDescriptor ValidationError
+        = new("STRO003",
+            "Store model value validation error",
+            "Store model is not valid: File: {0} | Message: {1}",
+            "Validation",
+            DiagnosticSeverity.Error,
+            true);
 }
