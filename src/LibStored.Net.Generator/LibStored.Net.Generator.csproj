@@ -28,7 +28,7 @@
         <PackageReference Include="Scriban" Version="6.2.1" IncludeAssets="Build" />
         <PackageReference Include="Microsoft.CSharp" Version="4.6.0" />
         <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.6.0" />
-        <PackageReference Include="YamlDotNet" Version="16.3.0" />
+        <PackageReference Include="YamlDotNet" Version="16.3.0"  GeneratePathProperty="true" PrivateAssets="all" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -39,10 +39,15 @@
         <InternalsVisibleTo Include="$(AssemblyName).Tests" />
     </ItemGroup>
 
-    <!-- Forward YamlDotNet.dll explicitly as an analyzer dependency so Roslyn can resolve it when loading the generator.
-         This fixes FileNotFoundException for YamlDotNet when consuming the generator via project reference. -->
-    <ItemGroup>
-        <Analyzer Include="$(TargetDir)YamlDotNet.dll" Condition="Exists('$(TargetDir)YamlDotNet.dll')" />
-    </ItemGroup>
+    <!-- Make sure to include additional DLL's, see https://github.com/dotnet/roslyn/discussions/47517 -->
+    <PropertyGroup>
+        <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+    </PropertyGroup>
+
+    <Target Name="GetDependencyTargetPaths">
+        <ItemGroup>
+            <TargetPathWithTargetPlatformMoniker Include="$(PkgYamlDotNet)\lib\netstandard2.0\YamlDotNet.dll" IncludeRuntimeDependency="false" />
+        </ItemGroup>
+    </Target>
 
 </Project>
