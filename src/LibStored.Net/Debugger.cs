@@ -1,5 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2025 Guus Kuiper
-// 
+//
 // SPDX-License-Identifier: MIT
 
 using System.Text;
@@ -29,6 +29,7 @@ public class Debugger : Protocol.ProtocolLayer
     private const char Nack = '?';
 
     private readonly Dictionary<string, Store> _stores = [];
+    private readonly Dictionary<char, DebugVariant> _aliases = [];
 
     private string? _identification;
     private string _versions;
@@ -75,7 +76,7 @@ public class Debugger : Protocol.ProtocolLayer
         {
             name = store.Name;
         }
-        
+
         if (string.IsNullOrEmpty(name) || name[0] != '/' || name.AsSpan().Slice(1).Contains('/'))
         {
             return;
@@ -124,7 +125,7 @@ public class Debugger : Protocol.ProtocolLayer
             case Debugger.CmdCapabilities:
             {
                 // '?' -> <list of command chars>
-                Span<byte> capabilities = Bytes("?rweliv");
+                Span<byte> capabilities = Bytes("?rweliva");
                 response.Encode(capabilities, true);
                 return;
             }
@@ -150,9 +151,19 @@ public class Debugger : Protocol.ProtocolLayer
 
                 // find the '/' to split the data and path
                 int slashIndex = buffer.IndexOf((byte)'/');
+
+                // or check if the last byte is an alias.
                 if (slashIndex < 1)
                 {
-                    Debugger.SendNack(response);
+                    if (buffer[^1] != '/')
+                    {
+                        slashIndex = buffer.Length - 1;
+                    }
+                    else
+                    {
+                        Debugger.SendNack(response);
+                        return;
+                    }
                 }
 
                 ReadOnlySpan<byte> writeValue = buffer.Slice(1, slashIndex - 1);
@@ -224,7 +235,7 @@ public class Debugger : Protocol.ProtocolLayer
             }
             case Debugger.CmdVersion:
             {
-                // 'v' -> <debugger version> ' ' <application-defined version> 
+                // 'v' -> <debugger version> ' ' <application-defined version>
                 byte[] sizeBytes = BitConverter.GetBytes(Debugger._version);
                 Span<byte> versionBuffer = Debugger.EncodeHex(sizeBytes, Types.Int32);
                 response.Encode(versionBuffer, false);
@@ -241,8 +252,40 @@ public class Debugger : Protocol.ProtocolLayer
                 return;
             }
             case Debugger.CmdAlias:
-            case Debugger.CmdMacro:
+                // 'a' <char> </path/to/object? ?  -> '!' | '?'
+                if (buffer.Length < 2)
+                {
+                    Debugger.SendNack(response);
+                    return;
+                }
 
+                char a = (char)buffer[0];
+                if (a < 0x20 || a > 0x7e || a == '/')
+                {
+                    Debugger.SendNack(response);
+                    return;
+                }
+
+                if (buffer.Length == 2)
+                {
+                    // Remove alias
+                    _aliases.Remove(a);
+                    break;
+                }
+
+                DebugVariant? debugVariant = Find(buffer.Slice(2));
+                if (debugVariant is null)
+                {
+                    Debugger.SendNack(response);
+                    return;
+                }
+
+                // Dont limit the number of alias, max is limited to 255.
+                // Add or replace.
+                _aliases[a] = debugVariant;
+
+                break;
+            case Debugger.CmdMacro:
             case Debugger.CmdReadMem:
             case Debugger.CmdWriteMem:
             case Debugger.CmdStream:
@@ -422,6 +465,16 @@ public class Debugger : Protocol.ProtocolLayer
         if (_stores.Count == 0 || path.IsEmpty)
         {
             return null;
+        }
+
+        if (path.Length == 1 && path[0] != '/')
+        {
+            // Lookup alias
+            char c = (char)path[0];
+            if (_aliases.TryGetValue(c, out var alias))
+            {
+                return alias;
+            }
         }
 
         if (_stores.Count == 1)

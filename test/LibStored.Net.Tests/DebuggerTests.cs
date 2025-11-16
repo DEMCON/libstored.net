@@ -215,6 +215,39 @@ public class DebuggerTests
         Assert.Equal(expected, logging.Encoded[0]);
     }
 
+    [Fact]
+    public void AliasTest()
+    {
+        Debugger debugger = new();
+        TestStore store = new();
+        debugger.Map(store);
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(debugger);
+
+        Decode(debugger, "aa/default int8");
+        Assert.Equal("!", logging.Encoded[0]);
+
+        Decode(debugger, "w11a");
+        Assert.Equal("!", logging.Encoded[1]);
+        Assert.Equal(0x11, store.DefaultInt8);
+
+        Decode(debugger, "aa/default int16");
+        Assert.Equal("!", logging.Encoded[2]);
+        Decode(debugger, "w12a");
+        Assert.Equal("!", logging.Encoded[3]);
+        Assert.Equal(0x11, store.DefaultInt8);
+        Assert.Equal(0x12, store.DefaultInt16);
+
+        Decode(debugger, "ra");
+        Assert.Equal("12", logging.Encoded[4]);
+
+        Decode(debugger, "aa");
+        Assert.Equal("!", logging.Encoded[5]);
+
+        Decode(debugger, "ra");
+        Assert.Equal("?", logging.Encoded[6]);
+    }
+
 
     private void Encode(Debugger layer, string data, bool last = true)
     {
