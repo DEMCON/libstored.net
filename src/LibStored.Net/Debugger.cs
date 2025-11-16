@@ -30,6 +30,8 @@ public class Debugger : Protocol.ProtocolLayer
 
     private readonly Dictionary<string, Store> _stores = [];
     private readonly Dictionary<char, DebugVariant> _aliases = [];
+    private readonly Dictionary<char, byte[]> _macros = [];
+    private readonly int _maxMacrosSize;
 
     private string? _identification;
     private string _versions;
@@ -40,10 +42,12 @@ public class Debugger : Protocol.ProtocolLayer
     /// </summary>
     /// <param name="identification">Optional identification string for the debugger.</param>
     /// <param name="versions">Optional version string for the application.</param>
-    public Debugger(string? identification = null, string versions = "")
+    /// <param name="maxMacrosSize">Combined size of all macros</param>
+    public Debugger(string? identification = null, string versions = "", int maxMacrosSize = 4096)
     {
         _identification = identification;
         _versions = versions;
+        _maxMacrosSize = maxMacrosSize;
     }
 
     /// <summary>
@@ -125,7 +129,7 @@ public class Debugger : Protocol.ProtocolLayer
             case Debugger.CmdCapabilities:
             {
                 // '?' -> <list of command chars>
-                Span<byte> capabilities = Bytes("?rweliva");
+                Span<byte> capabilities = Bytes("?rwelivam");
                 response.Encode(capabilities, true);
                 return;
             }
@@ -285,12 +289,94 @@ public class Debugger : Protocol.ProtocolLayer
 
                 break;
             case Debugger.CmdMacro:
+                // 'm' ( <char> ( <sep> <any command> ) * ? -> '!' | '?' | <bytes>
+
+                if (buffer.Length == 1)
+                {
+                    // Returns all macros.
+                    foreach ((char c, _) in _macros)
+                    {
+                        response.Encode([(byte)c], false);
+                    }
+
+                    response.Encode([], true);
+                    return;
+                }
+
+                char m = (char)buffer[1];
+                if (m == '?')
+                {
+                    // Invalid macro name
+                    Debugger.SendNack(response);
+                    return;
+                }
+
+                if (buffer.Length == 2)
+                {
+                    // Remove the macro
+                    if (!_macros.TryGetValue(m, out byte[]? macro))
+                    {
+                        break;
+                    }
+
+                    if (macro.Length == 0)
+                    {
+                        // Macro in use
+                        Debugger.SendNack(response);
+                        return;
+                    }
+
+                    _macros.Remove(m);
+                    break;
+                }
+
+                if (_macros.TryGetValue(m, out byte[]? currentMacro))
+                {
+                    // Update macro
+                    int totalSize = buffer.Length - 2 - currentMacro.Length + _macros.Sum(x => x.Value.Length);
+                    if (totalSize > _maxMacrosSize)
+                    {
+                        Debugger.SendNack(response);
+                        return;
+                    }
+
+                    if (currentMacro.Length == 0)
+                    {
+                        // Macro in use
+                        Debugger.SendNack(response);
+                        return;
+                    }
+
+                    _macros[m] = buffer.Slice(2).ToArray();
+                }
+                else
+                {
+                    // Add new macro
+                    int totalSize = buffer.Length - 2 + _macros.Sum(x => x.Value.Length);
+                    if (totalSize > _maxMacrosSize)
+                    {
+                        Debugger.SendNack(response);
+                        return;
+                    }
+
+                    _macros[m] = buffer.Slice(2).ToArray();
+                }
+
+                break;
             case Debugger.CmdReadMem:
             case Debugger.CmdWriteMem:
             case Debugger.CmdStream:
             case Debugger.CmdTrace:
             case Debugger.CmdFlush:
             default:
+                if (_macros.ContainsKey(command))
+                {
+                    if (RunMacro(command, response))
+                    {
+                        return;
+                    }
+                }
+
                 Debugger.SendNack(response);
                 return;
         }
@@ -480,7 +566,7 @@ public class Debugger : Protocol.ProtocolLayer
         {
             // If there is only one store, we can directly use it without prefix
             Store store = _stores.First().Value;
-            DebugVariant? variant =  store.Find(path);
+            DebugVariant? variant = store.Find(path);
             if (variant is not null)
             {
                 return variant;
@@ -522,7 +608,67 @@ public class Debugger : Protocol.ProtocolLayer
         }
 
         return null;
+
+    }
+
+    private bool RunMacro(char macro, Protocol.ProtocolLayer response)
+    {
+        if (!_macros.TryGetValue(macro, out byte[]? macroBytes))
+        {
+            return false;
+        }
+
+        if (macroBytes.Length == 0)
+        {
+            // Macco is currently executing. Recursive calls are not allowed.
+            return false;
+        }
+        else if (macroBytes.Length == 1)
+        {
+            // Nothing to execute. Only a separator.
+            return true;
+        }
+
+        byte[] macroBytesLocal = macroBytes;
+        _macros[macro] = [];
+
+        byte sep = macroBytesLocal[0];
+
+        FrameMerger merger = new(response);
+
+        Span<byte> data = macroBytesLocal.AsSpan(1);
+        do
+        {
+            int index = data.IndexOf(sep);
+            ReadOnlySpan<byte> dataLocal = index < 0 ? data : data.Slice(0, index);
+            Process(dataLocal, merger);
+            data = index < 0 ? [] : data.Slice(index + 1);
+        } while (!data.IsEmpty);
+
+        response.Encode([], true);
+
+        _macros[macro] = macroBytesLocal;
+
+        return true;
     }
 
     private byte[] Bytes(string text) => Encoding.ASCII.GetBytes(text);
+}
+
+/// <summary>
+/// Helper layer to merge responses for a macro.
+/// </summary>
+public class FrameMerger : Protocol.ProtocolLayer
+{
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="protocolLayer"></param>
+    public FrameMerger(Protocol.ProtocolLayer protocolLayer)
+    {
+        protocolLayer.Wrap(this);
+    }
+
+    /// <inheritdoc />
+    public override void Encode(ReadOnlySpan<byte> buffer, bool last) => base.Encode(buffer, false);
 }

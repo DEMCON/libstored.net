@@ -248,6 +248,73 @@ public class DebuggerTests
         Assert.Equal("?", logging.Encoded[6]);
     }
 
+    [Fact]
+    public void MacroTest()
+    {
+        Debugger debugger = new();
+        TestStore store = new();
+        debugger.Map(store);
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(debugger);
+
+        Decode(debugger, "m1;r/default uint8");
+        Assert.Equal("!", logging.Encoded[0]);
+        Decode(debugger, "1");
+        Assert.Equal("0", logging.Encoded[1]);
+        store.DefaultUint8 = 2;
+        Decode(debugger, "1");
+        Assert.Equal("2", logging.Encoded[2]);
+
+        Decode(debugger, "m1|r/default uint8|e;|r/default uint16");
+        Assert.Equal("!", logging.Encoded[3]);
+        Decode(debugger, "1");
+        Assert.Equal("2;0", logging.Encoded[4]);
+
+        // Remove macro
+        Decode(debugger, "m1");
+        Assert.Equal("!", logging.Encoded[5]);
+        Decode(debugger, "1");
+        Assert.Equal("?", logging.Encoded[6]);
+
+        // Recursive call
+        Decode(debugger, "m1|e0|1|e0");
+        Assert.Equal("!", logging.Encoded[7]);
+        Decode(debugger, "1");
+        Assert.Equal("0?0", logging.Encoded[8]);
+
+        // Remove by itself is not allowed
+        Decode(debugger, "m1|e0|m1|e0");
+        Assert.Equal("!", logging.Encoded[9]);
+        Decode(debugger, "1");
+        Assert.Equal("0?0", logging.Encoded[10]);
+
+        // Redefine by itself is not allowed
+        Decode(debugger, "m1|e0|m1=?|e0");
+        Assert.Equal("!", logging.Encoded[11]);
+        Decode(debugger, "1");
+        Assert.Equal("0?0", logging.Encoded[12]);
+
+        // List macros
+        Decode(debugger, "mMem");
+        Assert.Equal("!", logging.Encoded[13]);
+        Decode(debugger, "m");
+        Assert.Equal("1M", logging.Encoded[14]);
+    }
+
+    [Fact]
+    public void MacroMaxSizeTest()
+    {
+        Debugger debugger = new(maxMacrosSize: 16);
+        TestStore store = new();
+        debugger.Map(store);
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(debugger);
+
+        Decode(debugger, "m1;e3456789abcdef");
+        Assert.Equal("!", logging.Encoded[0]);
+        Decode(debugger, "m3;e");
+        Assert.Equal("?", logging.Encoded[1]);
+    }
 
     private void Encode(Debugger layer, string data, bool last = true)
     {
