@@ -151,11 +151,10 @@ public class Debugger : Protocol.ProtocolLayer
 
                 // find the '/' to split the data and path
                 int slashIndex = buffer.IndexOf((byte)'/');
-
-                // or check if the last byte is an alias.
                 if (slashIndex < 1)
                 {
-                    if (buffer[^1] != '/')
+                    // Check if the last byte can be an alias.
+                    if (buffer.Length - 1 != '/')
                     {
                         slashIndex = buffer.Length - 1;
                     }
