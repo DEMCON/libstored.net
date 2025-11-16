@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
+using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 using System.Text;
 using LibStored.Net.Debugging;
@@ -30,6 +31,7 @@ public class Debugger : Protocol.ProtocolLayer
     private const char CmdFlush = 'f';
     private const char Ack = '!';
     private const char Nack = '?';
+    private const int _version = 2;
 
     private readonly Dictionary<string, Store> _stores = [];
     private readonly Dictionary<char, DebugVariant> _aliases = [];
@@ -40,7 +42,10 @@ public class Debugger : Protocol.ProtocolLayer
 
     private string? _identification;
     private string _versions;
-    private const int _version = 2;
+    private ulong _traceDecimation;
+    private ulong _traceCount;
+    private char _traceMacro;
+    private char _traceStream;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Debugger"/> class.
@@ -136,7 +141,7 @@ public class Debugger : Protocol.ProtocolLayer
             case Debugger.CmdCapabilities:
             {
                 // '?' -> <list of command chars>
-                Span<byte> capabilities = Bytes("?rwelivams");
+                Span<byte> capabilities = Bytes("?rwelivamst");
                 response.Encode(capabilities, true);
                 return;
             }
@@ -397,12 +402,12 @@ public class Debugger : Protocol.ProtocolLayer
                 char s = (char)buffer[1];
                 ReadOnlySpan<byte> suffix = buffer.Slice(2);
 
-                Stream? stream = Streams(s);
+                Stream? stream = Stream(s);
                 if (stream is null)
                 {
                     Debugger.SendNack(response);
                     return;
-                };
+                }
 
                 List<byte> streamBuffer = [];
                 stream.Swap(ref streamBuffer);
@@ -420,8 +425,52 @@ public class Debugger : Protocol.ProtocolLayer
 
                 response.Encode(suffix, true);
                 return;
-            case Debugger.CmdTrace:
             case Debugger.CmdFlush:
+            case Debugger.CmdTrace:
+                // Enable: 't' <macro> <stream> ( <decimation in dex>) ? -> '!' | '?'
+                // Disable 't' -> '!' | '?'
+
+                // Disable by default.
+                _traceDecimation = 0;
+
+                if (buffer.Length == 1)
+                {
+                    // Disable
+                    break;
+                }
+
+                if (buffer.Length < 3)
+                {
+                    Debugger.SendNack(response);
+                    return;
+                }
+
+                _traceMacro = (char)buffer[1];
+                _traceStream = (char)buffer[2];
+
+                if (Stream(_traceStream, true) is null)
+                {
+                    Debugger.SendNack(response);
+                    return;
+                }
+
+                if (buffer.Length > 3)
+                {
+                    bool ok = true;
+                    Span<byte> res = DecodeHex(buffer.Slice(3), Types.Uint64, ref ok);
+                    if (!ok)
+                    {
+                        Debugger.SendNack(response);
+                        return;
+                    }
+                    _traceDecimation = BinaryPrimitives.ReadUInt64LittleEndian(res);
+                }
+                else
+                {
+                    _traceDecimation = 1;
+                }
+
+                break;
             default:
                 if (_macros.ContainsKey(command))
                 {
@@ -724,7 +773,7 @@ public class Debugger : Protocol.ProtocolLayer
             return 0;
         }
 
-        Stream? stream = Streams(s, true);
+        Stream? stream = Stream(s, true);
         if (stream is null)
         {
             return 0;
@@ -741,13 +790,12 @@ public class Debugger : Protocol.ProtocolLayer
     }
 
     /// <summary>
-    ///
+    /// Get the stream. May fail when all the maximum number of streams is already in use.
     /// </summary>
     /// <param name="s"></param>
+    /// <param name="alloc">Allocate when the stream does not yet exist.</param>
     /// <returns></returns>
-    public Stream? Stream(char s) => _streams.GetValueOrDefault(s);
-
-    private Stream? Streams(char s, bool alloc = false)
+    public Stream? Stream(char s, bool alloc = false)
     {
         if (_streams.TryGetValue(s, out Stream? stream))
         {
@@ -773,6 +821,37 @@ public class Debugger : Protocol.ProtocolLayer
         _streams[s] = stream = recycle.Value ?? new Stream();
 
         return stream;
+    }
+
+    /// <summary>
+    /// Executes the trace macro and append the output to the trace stream.
+    /// </summary>
+    public void Trace()
+    {
+        if (_traceDecimation <= 0)
+        {
+            return;
+        }
+
+        if (++_traceCount < _traceDecimation)
+        {
+            return;
+        }
+
+        _traceCount = 0;
+
+        Stream? stream = Stream(_traceStream, true);
+        if (stream is null)
+        {
+            return;
+        }
+
+        if (stream.IsFull)
+        {
+            return;
+        }
+
+        RunMacro(_traceMacro, stream);
     }
 
     private byte[] Bytes(string text) => Encoding.ASCII.GetBytes(text);

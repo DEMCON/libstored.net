@@ -360,6 +360,59 @@ public class DebuggerTests
         Assert.Equal("?", logging.Encoded[6]);
     }
 
+    [Fact]
+    public void TraceTest()
+    {
+        Debugger debugger = new();
+        TestStore store = new();
+        debugger.Map(store);
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(debugger);
+
+        Decode(debugger, "mt|r/default uint8|e;");
+        Assert.Equal("!", logging.Encoded[0]);
+
+        Decode(debugger, "ttT");
+        Assert.Equal("!", logging.Encoded[1]);
+
+        debugger.Trace();
+        // No compression, so no need to flush here
+        Decode(debugger, "sT");
+        Assert.Equal("0;", logging.Encoded[2]);
+
+        store.DefaultUint8 = 1;
+        debugger.Trace();
+        store.DefaultUint8 = 2;
+        debugger.Trace();
+
+        Decode(debugger, "sT");
+        Assert.Equal("1;2;", logging.Encoded[3]);
+
+        // Set decimation
+        Decode(debugger, "ttT3");
+        Assert.Equal("!", logging.Encoded[4]);
+
+        for (int i = 4; i < 10; i++)
+        {
+            store.DefaultUint8 = (byte)i;
+            debugger.Trace();
+        }
+
+        Decode(debugger, "sT");
+        Assert.Equal("6;9;", logging.Encoded[5]);
+
+        // Disable
+        Decode(debugger, "t");
+        Assert.Equal("!", logging.Encoded[6]);
+
+        debugger.Trace();
+        debugger.Trace();
+        debugger.Trace();
+
+        Decode(debugger, "sT");
+        Assert.Equal("", logging.Encoded[7]);
+    }
+
     private void Encode(Debugger layer, string data, bool last = true)
     {
         byte[] bytes = DebuggerTests.Bytes(data);

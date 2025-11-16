@@ -88,4 +88,9 @@ public class Stream : ProtocolLayer
         }
         return Math.Min(size, _maxSize - _buffer.Count);
     }
+
+    /// <summary>
+    ///
+    /// </summary>
+    public bool IsFull => _buffer.Count >= _maxSize;
 }
