@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: MIT
 
+using System.Runtime.InteropServices;
 using System.Text;
+using LibStored.Net.Debugging;
+using Stream = LibStored.Net.Debugging.Stream;
 
 namespace LibStored.Net;
 
@@ -31,7 +34,9 @@ public class Debugger : Protocol.ProtocolLayer
     private readonly Dictionary<string, Store> _stores = [];
     private readonly Dictionary<char, DebugVariant> _aliases = [];
     private readonly Dictionary<char, byte[]> _macros = [];
+    private readonly Dictionary<char, Stream> _streams = [];
     private readonly int _maxMacrosSize;
+    private readonly int _maxStreamCount;
 
     private string? _identification;
     private string _versions;
@@ -43,11 +48,13 @@ public class Debugger : Protocol.ProtocolLayer
     /// <param name="identification">Optional identification string for the debugger.</param>
     /// <param name="versions">Optional version string for the application.</param>
     /// <param name="maxMacrosSize">Combined size of all macros</param>
-    public Debugger(string? identification = null, string versions = "", int maxMacrosSize = 4096)
+    /// <param name="maxStreamCount"></param>
+    public Debugger(string? identification = null, string versions = "", int maxMacrosSize = 4096, int maxStreamCount = 2)
     {
         _identification = identification;
         _versions = versions;
         _maxMacrosSize = maxMacrosSize;
+        _maxStreamCount = maxStreamCount;
     }
 
     /// <summary>
@@ -129,7 +136,7 @@ public class Debugger : Protocol.ProtocolLayer
             case Debugger.CmdCapabilities:
             {
                 // '?' -> <list of command chars>
-                Span<byte> capabilities = Bytes("?rwelivam");
+                Span<byte> capabilities = Bytes("?rwelivams");
                 response.Encode(capabilities, true);
                 return;
             }
@@ -366,6 +373,53 @@ public class Debugger : Protocol.ProtocolLayer
             case Debugger.CmdReadMem:
             case Debugger.CmdWriteMem:
             case Debugger.CmdStream:
+                // 's' ( <stream char> <suffix> ? ) ?
+                // -> '?' | <stream char> +
+                // -> <stream data> <suffix>
+
+                if (buffer.Length == 1)
+                {
+                    if (_streams.Count == 0)
+                    {
+                        Debugger.SendNack(response);
+                        return;
+                    }
+
+                    foreach ((char c, _) in _streams)
+                    {
+                        response.Encode([(byte)c], false);
+                    }
+
+                    response.Encode([], true);
+                    return;
+                }
+
+                char s = (char)buffer[1];
+                ReadOnlySpan<byte> suffix = buffer.Slice(2);
+
+                Stream? stream = Streams(s);
+                if (stream is null)
+                {
+                    Debugger.SendNack(response);
+                    return;
+                };
+
+                List<byte> streamBuffer = [];
+                stream.Swap(ref streamBuffer);
+                Span<byte> streamBufferSpan = CollectionsMarshal.AsSpan(streamBuffer);
+                response.Encode(streamBufferSpan, false);
+
+                if (stream.Empty)
+                {
+                    // Clear and wwap back to avoid allocations.
+                    streamBuffer.Clear();
+                    stream.Swap(ref streamBuffer);
+                }
+
+                stream.Unblock();
+
+                response.Encode(suffix, true);
+                return;
             case Debugger.CmdTrace:
             case Debugger.CmdFlush:
             default:
@@ -652,23 +706,74 @@ public class Debugger : Protocol.ProtocolLayer
         return true;
     }
 
-    private byte[] Bytes(string text) => Encoding.ASCII.GetBytes(text);
-}
-
-/// <summary>
-/// Helper layer to merge responses for a macro.
-/// </summary>
-public class FrameMerger : Protocol.ProtocolLayer
-{
     /// <summary>
-    /// Constructor
+    /// Adds data to the stream. Tries to create it when it does not exists.
     /// </summary>
-    /// <param name="protocolLayer"></param>
-    public FrameMerger(Protocol.ProtocolLayer protocolLayer)
+    /// <param name="s"></param>
+    /// <param name="data"></param>
+    /// <returns></returns>
+    public int Stream(char s, ReadOnlySpan<byte> data)
     {
-        protocolLayer.Wrap(this);
+        if (_maxStreamCount < 1)
+        {
+            return 0;
+        }
+
+        if (s == '?')
+        {
+            return 0;
+        }
+
+        Stream? stream = Streams(s, true);
+        if (stream is null)
+        {
+            return 0;
+        }
+
+        int len = stream.Fits(data.Length);
+        if (len == 0)
+        {
+            return 0;
+        }
+
+        stream.Encode(data.Slice(0, len), true);
+        return len;
     }
 
-    /// <inheritdoc />
-    public override void Encode(ReadOnlySpan<byte> buffer, bool last) => base.Encode(buffer, false);
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="s"></param>
+    /// <returns></returns>
+    public Stream? Stream(char s) => _streams.GetValueOrDefault(s);
+
+    private Stream? Streams(char s, bool alloc = false)
+    {
+        if (_streams.TryGetValue(s, out Stream? stream))
+        {
+            return stream;
+        }
+
+        if (!alloc)
+        {
+            return null;
+        }
+
+        KeyValuePair<char, Stream> recycle = _streams.FirstOrDefault(x => x.Value.Empty);
+        if (recycle.Value is not null && recycle.Value.Empty)
+        {
+            _streams.Remove(recycle.Key);
+        }
+
+        if (_streams.Count >= _maxStreamCount)
+        {
+            return null;
+        }
+
+        _streams[s] = stream = recycle.Value ?? new Stream();
+
+        return stream;
+    }
+
+    private byte[] Bytes(string text) => Encoding.ASCII.GetBytes(text);
 }

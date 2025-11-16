@@ -316,6 +316,50 @@ public class DebuggerTests
         Assert.Equal("?", logging.Encoded[1]);
     }
 
+    [Fact]
+    public void StreamTest()
+    {
+        Debugger debugger = new(maxStreamCount: 2);
+        TestStore store = new();
+        debugger.Map(store);
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(debugger);
+
+        // Use one stream, such that there is only one left.
+        debugger.Stream('z', "oh gosh"u8);
+        Decode(debugger, "s1");
+        Assert.Equal("?", logging.Encoded[0]);
+
+        debugger.Stream('1', "it's "u8);
+        debugger.Stream('2', "a "u8); // no room for this stream
+        debugger.Stream('1', "small "u8);
+
+        debugger.Stream('1')!.Flush();
+        Decode(debugger, "s1");
+        Assert.Equal("it's small ", logging.Encoded[1]);
+        Decode(debugger, "s1");
+        Assert.Equal("", logging.Encoded[2]);
+
+        debugger.Stream('1', "world "u8);
+        debugger.Stream('1')!.Flush();
+        Decode(debugger, "s1");
+        Assert.Equal("world ", logging.Encoded[3]);
+
+        debugger.Stream('3', "after "u8); // 1 is empty, so 3 can us it's space.
+        debugger.Stream('3', "all "u8);
+        debugger.Stream('3')!.Flush();
+        debugger.Stream('1', "world "u8);
+        Assert.Null(debugger.Stream('1'));
+
+        Decode(debugger, "s3");
+        Assert.Equal("after all ", logging.Encoded[4]);
+
+        Decode(debugger, "s2");
+        Assert.Equal("?", logging.Encoded[5]);
+        Decode(debugger, "s1");
+        Assert.Equal("?", logging.Encoded[6]);
+    }
+
     private void Encode(Debugger layer, string data, bool last = true)
     {
         byte[] bytes = DebuggerTests.Bytes(data);
