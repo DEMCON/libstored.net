@@ -16,7 +16,6 @@ public class Stream : ProtocolLayer
     private readonly int _maxSize;
 
     private List<byte> _buffer = [];
-
     private bool _blocked;
 
     /// <summary>
@@ -91,7 +90,6 @@ public class Stream : ProtocolLayer
     /// </summary>
     public void Unblock() => _blocked = false;
 
-
     /// <summary>
     /// Blocks the stream to prevent further data from being appended to the
     /// internal buffer.
@@ -104,14 +102,7 @@ public class Stream : ProtocolLayer
     /// </summary>
     /// <param name="size">Requested number of bytes to fit.</param>
     /// <returns>The number of bytes that can be accepted (0 if the buffer is full).</returns>
-    public int Fits(int size)
-    {
-        if (_buffer.Count >= _maxSize)
-        {
-            return 0;
-        }
-        return Math.Min(size, _maxSize - _buffer.Count);
-    }
+    public int Fits(int size) => IsFull ? 0 : Math.Min(size, _maxSize - _buffer.Count);
 
     /// <summary>
     /// Gets a value indicating whether the internal buffer has reached or
