@@ -47,8 +47,9 @@ flowchart TD
 
 ### Application layers
 - Debugger
-  - Supported commands (rwelvi): read, write, echo, list, identification & version.
-  - List and find do not work when multiple stores are mapped to a single debugger.
+  - All commands are supported except:
+   - ReadMem ('R') / WriteMem ('W')
+   - Flush (f), not needed since compression is not implemented.
 - Synchronizer
 
 ### Protocol layers
@@ -103,7 +104,7 @@ Another option would be to create a store per thread, and synchronize them using
 
 ### Missing / unsupported / future features?
 - Only little endian stores are supported.
-- Functions and streams are not supported.
+- Functions are not supported.
 - Heatshrink compression is not supported.
 
 #### Missing layers
