@@ -38,6 +38,7 @@ public class Debugger : Protocol.ProtocolLayer
     private readonly Dictionary<char, Stream> _streams = [];
     private readonly int _maxMacrosSize;
     private readonly int _maxStreamCount;
+    private readonly int _maxStreamSize;
 
     private string? _identification;
     private string _versions;
@@ -53,12 +54,15 @@ public class Debugger : Protocol.ProtocolLayer
     /// <param name="versions">Optional version string for the application.</param>
     /// <param name="maxMacrosSize">Combined size of all macros</param>
     /// <param name="maxStreamCount"></param>
-    public Debugger(string? identification = null, string versions = "", int maxMacrosSize = 4096, int maxStreamCount = 2)
+    /// <param name="maxStreamSize"></param>
+    public Debugger(string? identification = null, string versions = "", int maxMacrosSize = 4096,
+        int maxStreamCount = 2, int maxStreamSize = 1024)
     {
         _identification = identification;
         _versions = versions;
         _maxMacrosSize = maxMacrosSize;
         _maxStreamCount = maxStreamCount;
+        _maxStreamSize = maxStreamSize;
     }
 
     /// <summary>
@@ -78,7 +82,6 @@ public class Debugger : Protocol.ProtocolLayer
         get => _versions;
         set => _versions = value;
     }
-
 
     /// <summary>
     /// Maps a <see cref="Store"/> to a specified name for debugging access.
@@ -123,6 +126,106 @@ public class Debugger : Protocol.ProtocolLayer
     /// <param name="name">The name of the variant to find.</param>
     /// <returns>The <see cref="DebugVariant"/> if found; otherwise, null.</returns>
     public DebugVariant? Find(string name) => Find(Encoding.ASCII.GetBytes(name));
+
+
+    /// <summary>
+    /// Adds data to the stream. Tries to create it when it does not exists.
+    /// </summary>
+    /// <param name="s"></param>
+    /// <param name="data"></param>
+    /// <returns></returns>
+    public int Stream(char s, ReadOnlySpan<byte> data)
+    {
+        if (_maxStreamCount < 1)
+        {
+            return 0;
+        }
+
+        if (s == '?')
+        {
+            return 0;
+        }
+
+        Stream? stream = Stream(s, true);
+        if (stream is null)
+        {
+            return 0;
+        }
+
+        int len = stream.Fits(data.Length);
+        if (len == 0)
+        {
+            return 0;
+        }
+
+        stream.Encode(data.Slice(0, len), true);
+        return len;
+    }
+
+    /// <summary>
+    /// Get the stream. May fail when all the maximum number of streams is already in use.
+    /// </summary>
+    /// <param name="s"></param>
+    /// <param name="alloc">Allocate when the stream does not yet exist.</param>
+    /// <returns></returns>
+    public Stream? Stream(char s, bool alloc = false)
+    {
+        if (_streams.TryGetValue(s, out Stream? stream))
+        {
+            return stream;
+        }
+
+        if (!alloc)
+        {
+            return null;
+        }
+
+        KeyValuePair<char, Stream> recycle = _streams.FirstOrDefault(x => x.Value.Empty);
+        if (recycle.Value is not null && recycle.Value.Empty)
+        {
+            _streams.Remove(recycle.Key);
+        }
+
+        if (_streams.Count >= _maxStreamCount)
+        {
+            return null;
+        }
+
+        _streams[s] = stream = recycle.Value ?? new Stream(_maxStreamSize);
+
+        return stream;
+    }
+
+    /// <summary>
+    /// Executes the trace macro and append the output to the trace stream.
+    /// </summary>
+    public void Trace()
+    {
+        if (_traceDecimation <= 0)
+        {
+            return;
+        }
+
+        if (++_traceCount < _traceDecimation)
+        {
+            return;
+        }
+
+        _traceCount = 0;
+
+        Stream? stream = Stream(_traceStream, true);
+        if (stream is null)
+        {
+            return;
+        }
+
+        if (stream.IsFull)
+        {
+            return;
+        }
+
+        RunMacro(_traceMacro, stream);
+    }
 
     /// <inheritdoc />
     public override void Decode(Span<byte> buffer) => Process(buffer, this);
@@ -754,104 +857,6 @@ public class Debugger : Protocol.ProtocolLayer
         return true;
     }
 
-    /// <summary>
-    /// Adds data to the stream. Tries to create it when it does not exists.
-    /// </summary>
-    /// <param name="s"></param>
-    /// <param name="data"></param>
-    /// <returns></returns>
-    public int Stream(char s, ReadOnlySpan<byte> data)
-    {
-        if (_maxStreamCount < 1)
-        {
-            return 0;
-        }
-
-        if (s == '?')
-        {
-            return 0;
-        }
-
-        Stream? stream = Stream(s, true);
-        if (stream is null)
-        {
-            return 0;
-        }
-
-        int len = stream.Fits(data.Length);
-        if (len == 0)
-        {
-            return 0;
-        }
-
-        stream.Encode(data.Slice(0, len), true);
-        return len;
-    }
-
-    /// <summary>
-    /// Get the stream. May fail when all the maximum number of streams is already in use.
-    /// </summary>
-    /// <param name="s"></param>
-    /// <param name="alloc">Allocate when the stream does not yet exist.</param>
-    /// <returns></returns>
-    public Stream? Stream(char s, bool alloc = false)
-    {
-        if (_streams.TryGetValue(s, out Stream? stream))
-        {
-            return stream;
-        }
-
-        if (!alloc)
-        {
-            return null;
-        }
-
-        KeyValuePair<char, Stream> recycle = _streams.FirstOrDefault(x => x.Value.Empty);
-        if (recycle.Value is not null && recycle.Value.Empty)
-        {
-            _streams.Remove(recycle.Key);
-        }
-
-        if (_streams.Count >= _maxStreamCount)
-        {
-            return null;
-        }
-
-        _streams[s] = stream = recycle.Value ?? new Stream();
-
-        return stream;
-    }
-
-    /// <summary>
-    /// Executes the trace macro and append the output to the trace stream.
-    /// </summary>
-    public void Trace()
-    {
-        if (_traceDecimation <= 0)
-        {
-            return;
-        }
-
-        if (++_traceCount < _traceDecimation)
-        {
-            return;
-        }
-
-        _traceCount = 0;
-
-        Stream? stream = Stream(_traceStream, true);
-        if (stream is null)
-        {
-            return;
-        }
-
-        if (stream.IsFull)
-        {
-            return;
-        }
-
-        RunMacro(_traceMacro, stream);
-    }
 
     private byte[] Bytes(string text) => Encoding.ASCII.GetBytes(text);
 }

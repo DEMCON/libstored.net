@@ -379,6 +379,39 @@ public class DebuggerTests
     }
 
     [Fact]
+    public void StreamOverflowTest()
+    {
+        Debugger debugger = new(maxStreamSize: 64);
+        TestStore store = new();
+        debugger.Map(store);
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(debugger);
+
+        // Use the Stream class' max size to create input larger than the stream can hold.
+        int max = 64;
+        int mod = 'z' - '0' + 1;
+        byte[] payload = new byte[max + 8];
+        for (int i = 0; i < payload.Length; i++)
+        {
+            payload[i] = (byte)('0' + i % mod);
+        }
+
+        // Append the data in a few chunks; the stream should only keep up to maxStreamSize bytes.
+        debugger.Stream('1', payload.AsSpan(0, max / 2));
+        debugger.Stream('1', payload.AsSpan(max / 2, max - (max / 2)));
+        // This chunk should overflow and be discarded (or truncated) by the stream implementation.
+        debugger.Stream('1', payload.AsSpan(max, payload.Length - max));
+
+        // Flush and read the stream content.
+        debugger.Stream('1')!.Flush();
+        Decode(debugger, "s1");
+
+        string expected = Encoding.UTF8.GetString(payload, 0, max);
+        Assert.Single(logging.Encoded);
+        Assert.Equal(expected, logging.Encoded[0]);
+    }
+
+    [Fact]
     public void TraceTest()
     {
         Debugger debugger = new();
