@@ -49,7 +49,7 @@ flowchart TD
 - Debugger
   - All commands are supported except:
    - ReadMem ('R') / WriteMem ('W')
-   - Flush (f), not needed since compression is not implemented.
+   - Flush ('f'), not needed since compression is not implemented.
 - Synchronizer
 
 ### Protocol layers
