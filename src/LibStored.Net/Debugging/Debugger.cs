@@ -5,10 +5,9 @@
 using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 using System.Text;
-using LibStored.Net.Debugging;
 using Stream = LibStored.Net.Debugging.Stream;
 
-namespace LibStored.Net;
+namespace LibStored.Net.Debugging;
 
 /// <summary>
 /// Provides a protocol layer for debugging and interacting with mapped <see cref="Store"/> objects.

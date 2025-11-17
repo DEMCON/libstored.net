@@ -4,6 +4,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using LibStored.Net.Protocol;
+using LibStored.Net.Debugging;
 
 namespace LibStored.Net;
 

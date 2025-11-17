@@ -2,7 +2,7 @@
 // 
 // SPDX-License-Identifier: MIT
 
-namespace LibStored.Net;
+namespace LibStored.Net.Debugging;
 
 /// <summary>
 /// Represents a debuggable variant of a value in a <see cref="Store"/>.

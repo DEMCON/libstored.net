@@ -2,6 +2,8 @@
 // 
 // SPDX-License-Identifier: MIT
 
+using LibStored.Net.Debugging;
+
 namespace LibStored.Net.Example.Console;
 
 public class TimeStore : Store

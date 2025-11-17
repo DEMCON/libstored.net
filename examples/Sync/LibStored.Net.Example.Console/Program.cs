@@ -16,6 +16,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NetMQ;
 using NetMQ.Sockets;
+using Debugger = LibStored.Net.Debugging.Debugger;
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder();
 

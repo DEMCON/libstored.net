@@ -4,6 +4,7 @@
 
 using System.Diagnostics;
 using System.Text;
+using LibStored.Net.Debugging;
 using LibStored.Net.Synchronization;
 using Xunit.Abstractions;
 
