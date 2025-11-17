@@ -2,6 +2,7 @@
 // 
 // SPDX-License-Identifier: MIT
 
+using System.Diagnostics;
 using System.Globalization;
 using LibStored.Net;
 using LibStored.Net.Example.Console;
@@ -42,10 +43,11 @@ finally
 
 namespace LibStored.Net.Example.Console
 {
-    class App : BackgroundService
+    public class App : BackgroundService
     {
         private static TimeSpan IncrementInterval = TimeSpan.FromSeconds(1);
         private static TimeSpan SyncInterval = TimeSpan.FromSeconds(0.1);
+        private static TimeSpan TraceInterval = TimeSpan.FromSeconds(0.01);
 
         private readonly IConfiguration _configuration;
         private readonly ILogger<App> _logger;
@@ -72,6 +74,10 @@ namespace LibStored.Net.Example.Console
 
             SynchronizableStore<ExampleSync1> store = new(new ExampleSync1());
 
+            // Need to add a "/t (ms)" variable / function for more detailed tracing.
+            TimeStore timeStore = new();
+            long startTimeStamp = Stopwatch.GetTimestamp();
+
             store.Store().PropertyChanged += (_, args) =>
             {
                 string value = args.PropertyName switch
@@ -85,15 +91,17 @@ namespace LibStored.Net.Example.Console
 
             List<NetMQSocket> sockets = [];
 
+            Debugger? debugger = null;
             // Create the stack for the Debugger
             if (useDebug)
             {
                 ResponseSocket debugSocket = new($"@tcp://*:{debugPort}");
                 sockets.Add(debugSocket); 
 
-                ProtocolBuilder.ProtocolStack stack = CreateDebugStack(debugSocket, store.Store(), useBuilder);
+                ProtocolBuilder.ProtocolStack stack = CreateDebugStack(debugSocket, useBuilder, store.Store(), timeStore);
 
                 DebugZeroMQLayer debugLayer = stack.Layers.Last() as DebugZeroMQLayer ?? throw new Exception("Bottom should be a DebugZeroMQLayer");
+                debugger = stack.Layers.First() as Debugger ?? throw new Exception("Top should be a Debugger");
 
                 debugSocket.ReceiveReady += (_, _) =>
                 {
@@ -153,7 +161,8 @@ namespace LibStored.Net.Example.Console
         
             NetMQTimer incrementTimer = new(App.IncrementInterval);
             NetMQTimer syncTimer = new(App.SyncInterval);
-            using (NetMQPoller poller = [incrementTimer, syncTimer, ..sockets])
+            NetMQTimer traceTimer = new(App.TraceInterval);
+            using (NetMQPoller poller = [incrementTimer, syncTimer, traceTimer, ..sockets])
             {
                 stoppingToken.Register(poller.StopAsync);
 
@@ -179,6 +188,13 @@ namespace LibStored.Net.Example.Console
                     }
                 };
 
+                traceTimer.Elapsed += (_, _) =>
+                {
+                    TimeSpan elapsed = Stopwatch.GetElapsedTime(startTimeStamp);
+                    timeStore.T = (uint)elapsed.TotalMilliseconds;
+                    debugger?.Trace();
+                };
+
                 syncTimer.Elapsed += (_, _) =>
                 {
                     synchronizer.Process();
@@ -196,7 +212,7 @@ namespace LibStored.Net.Example.Console
             return Task.CompletedTask;
         }
 
-        private ProtocolBuilder.ProtocolStack CreateDebugStack(ResponseSocket debugSocket, Store store, bool useBuilder)
+        private ProtocolBuilder.ProtocolStack CreateDebugStack(ResponseSocket debugSocket, bool useBuilder, params Store[] stores)
         {
             ProtocolBuilder.ProtocolStack stack;
 
@@ -207,7 +223,10 @@ namespace LibStored.Net.Example.Console
                     {
                         x.Identification = "8_sync";
                         x.Versions = "123";
-                        x.Map(store);
+                        foreach (Store store in stores)
+                        {
+                            x.Map(store);
+                        }
                     })
                     .Add<LoggerLayer>()
                     .Add<OpenTelemetryLayer>()
@@ -217,7 +236,10 @@ namespace LibStored.Net.Example.Console
             else
             {
                 Debugger debugger = new("8_sync", "123");
-                debugger.Map(store);
+                foreach (Store store in stores)
+                {
+                    debugger.Map(store);
+                }
 
                 LoggerLayer debugLogging = new(_loggerFactory.CreateLogger<LoggerLayer>());
                 debugLogging.Wrap(debugger);
