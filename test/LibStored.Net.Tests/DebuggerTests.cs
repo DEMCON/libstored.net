@@ -249,6 +249,23 @@ public class DebuggerTests
     }
 
     [Fact]
+    public void AliasBTest()
+    {
+        Debugger debugger = new();
+        TestStore store = new();
+        debugger.Map(store);
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(debugger);
+
+        Decode(debugger, "ab/default int8");
+        Assert.Equal("!", logging.Encoded[0]);
+
+        Decode(debugger, "w11b");
+        Assert.Equal("!", logging.Encoded[1]);
+        Assert.Equal(0x11, store.DefaultInt8);
+    }
+
+    [Fact]
     public void MacroTest()
     {
         Debugger debugger = new();

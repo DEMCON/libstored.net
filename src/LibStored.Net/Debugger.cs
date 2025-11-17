@@ -274,7 +274,7 @@ public class Debugger : Protocol.ProtocolLayer
                     return;
                 }
 
-                char a = (char)buffer[0];
+                char a = (char)buffer[1];
                 if (a < 0x20 || a > 0x7e || a == '/')
                 {
                     Debugger.SendNack(response);
