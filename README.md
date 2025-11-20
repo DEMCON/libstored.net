@@ -129,10 +129,13 @@ Types: `Pointer`, `Pointer32` and `Pointer64` are not supported, as they are not
 ## Example
 
 ```csharp
-using LibStored;
+using LibStored.Net;
+using LibStored.Net.Protocol;
+using LibStored.Net.ZeroMQ;
 using NetMQ;
 using NetMQ.Sockets;
 
+// Make sure this ExampleStore is created by the source generator or python script.
 ExampleStore store = new();
 
 // Attach the store to the debugger
