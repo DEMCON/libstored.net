@@ -5,6 +5,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using LibStored.Net.Debugging;
 
 namespace LibStored.Net;
 

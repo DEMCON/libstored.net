@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 using System.Text;
+using LibStored.Net.Debugging;
 using LibStored.Net.Synchronization;
 using Microsoft.Extensions.DependencyInjection;
 

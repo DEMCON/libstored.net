@@ -5,6 +5,7 @@
 using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 using System.Text;
+using LibStored.Net.Debugging;
 
 namespace LibStored.Net.Tests;
 
@@ -215,6 +216,253 @@ public class DebuggerTests
         Assert.Equal(expected, logging.Encoded[0]);
     }
 
+    [Fact]
+    public void AliasTest()
+    {
+        Debugger debugger = new();
+        TestStore store = new();
+        debugger.Map(store);
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(debugger);
+
+        Decode(debugger, "aa/default int8");
+        Assert.Equal("!", logging.Encoded[0]);
+
+        Decode(debugger, "w11a");
+        Assert.Equal("!", logging.Encoded[1]);
+        Assert.Equal(0x11, store.DefaultInt8);
+
+        Decode(debugger, "aa/default int16");
+        Assert.Equal("!", logging.Encoded[2]);
+        Decode(debugger, "w12a");
+        Assert.Equal("!", logging.Encoded[3]);
+        Assert.Equal(0x11, store.DefaultInt8);
+        Assert.Equal(0x12, store.DefaultInt16);
+
+        Decode(debugger, "ra");
+        Assert.Equal("12", logging.Encoded[4]);
+
+        Decode(debugger, "aa");
+        Assert.Equal("!", logging.Encoded[5]);
+
+        Decode(debugger, "ra");
+        Assert.Equal("?", logging.Encoded[6]);
+    }
+
+    [Fact]
+    public void AliasBTest()
+    {
+        Debugger debugger = new();
+        TestStore store = new();
+        debugger.Map(store);
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(debugger);
+
+        Decode(debugger, "ab/default int8");
+        Assert.Equal("!", logging.Encoded[0]);
+
+        Decode(debugger, "w11b");
+        Assert.Equal("!", logging.Encoded[1]);
+        Assert.Equal(0x11, store.DefaultInt8);
+    }
+
+    [Fact]
+    public void MacroTest()
+    {
+        Debugger debugger = new();
+        TestStore store = new();
+        debugger.Map(store);
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(debugger);
+
+        Decode(debugger, "m1;r/default uint8");
+        Assert.Equal("!", logging.Encoded[0]);
+        Decode(debugger, "1");
+        Assert.Equal("0", logging.Encoded[1]);
+        store.DefaultUint8 = 2;
+        Decode(debugger, "1");
+        Assert.Equal("2", logging.Encoded[2]);
+
+        Decode(debugger, "m1|r/default uint8|e;|r/default uint16");
+        Assert.Equal("!", logging.Encoded[3]);
+        Decode(debugger, "1");
+        Assert.Equal("2;0", logging.Encoded[4]);
+
+        // Remove macro
+        Decode(debugger, "m1");
+        Assert.Equal("!", logging.Encoded[5]);
+        Decode(debugger, "1");
+        Assert.Equal("?", logging.Encoded[6]);
+
+        // Recursive call
+        Decode(debugger, "m1|e0|1|e0");
+        Assert.Equal("!", logging.Encoded[7]);
+        Decode(debugger, "1");
+        Assert.Equal("0?0", logging.Encoded[8]);
+
+        // Remove by itself is not allowed
+        Decode(debugger, "m1|e0|m1|e0");
+        Assert.Equal("!", logging.Encoded[9]);
+        Decode(debugger, "1");
+        Assert.Equal("0?0", logging.Encoded[10]);
+
+        // Redefine by itself is not allowed
+        Decode(debugger, "m1|e0|m1=?|e0");
+        Assert.Equal("!", logging.Encoded[11]);
+        Decode(debugger, "1");
+        Assert.Equal("0?0", logging.Encoded[12]);
+
+        // List macros
+        Decode(debugger, "mMem");
+        Assert.Equal("!", logging.Encoded[13]);
+        Decode(debugger, "m");
+        Assert.Equal("1M", logging.Encoded[14]);
+    }
+
+    [Fact]
+    public void MacroMaxSizeTest()
+    {
+        Debugger debugger = new(maxMacrosSize: 16);
+        TestStore store = new();
+        debugger.Map(store);
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(debugger);
+
+        Decode(debugger, "m1;e3456789abcdef");
+        Assert.Equal("!", logging.Encoded[0]);
+        Decode(debugger, "m3;e");
+        Assert.Equal("?", logging.Encoded[1]);
+    }
+
+    [Fact]
+    public void StreamTest()
+    {
+        Debugger debugger = new(maxStreamCount: 2);
+        TestStore store = new();
+        debugger.Map(store);
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(debugger);
+
+        // Use one stream, such that there is only one left.
+        debugger.Stream('z', "oh gosh"u8);
+        Decode(debugger, "s1");
+        Assert.Equal("?", logging.Encoded[0]);
+
+        debugger.Stream('1', "it's "u8);
+        debugger.Stream('2', "a "u8); // no room for this stream
+        debugger.Stream('1', "small "u8);
+
+        debugger.Stream('1')!.Flush();
+        Decode(debugger, "s1");
+        Assert.Equal("it's small ", logging.Encoded[1]);
+        Decode(debugger, "s1");
+        Assert.Equal("", logging.Encoded[2]);
+
+        debugger.Stream('1', "world "u8);
+        debugger.Stream('1')!.Flush();
+        Decode(debugger, "s1");
+        Assert.Equal("world ", logging.Encoded[3]);
+
+        debugger.Stream('3', "after "u8); // 1 is empty, so 3 can us it's space.
+        debugger.Stream('3', "all "u8);
+        debugger.Stream('3')!.Flush();
+        debugger.Stream('1', "world "u8);
+        Assert.Null(debugger.Stream('1'));
+
+        Decode(debugger, "s3");
+        Assert.Equal("after all ", logging.Encoded[4]);
+
+        Decode(debugger, "s2");
+        Assert.Equal("?", logging.Encoded[5]);
+        Decode(debugger, "s1");
+        Assert.Equal("?", logging.Encoded[6]);
+    }
+
+    [Fact]
+    public void StreamOverflowTest()
+    {
+        Debugger debugger = new(maxStreamSize: 64);
+        TestStore store = new();
+        debugger.Map(store);
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(debugger);
+
+        // Use the Stream class' max size to create input larger than the stream can hold.
+        int max = 64;
+        int mod = 'z' - '0' + 1;
+        byte[] payload = new byte[max + 8];
+        for (int i = 0; i < payload.Length; i++)
+        {
+            payload[i] = (byte)('0' + i % mod);
+        }
+
+        // Append the data in a few chunks; the stream should only keep up to maxStreamSize bytes.
+        debugger.Stream('1', payload.AsSpan(0, max / 2));
+        debugger.Stream('1', payload.AsSpan(max / 2, max - (max / 2)));
+        // This chunk should overflow and be discarded (or truncated) by the stream implementation.
+        debugger.Stream('1', payload.AsSpan(max, payload.Length - max));
+
+        // Flush and read the stream content.
+        debugger.Stream('1')!.Flush();
+        Decode(debugger, "s1");
+
+        string expected = Encoding.UTF8.GetString(payload, 0, max);
+        Assert.Single(logging.Encoded);
+        Assert.Equal(expected, logging.Encoded[0]);
+    }
+
+    [Fact]
+    public void TraceTest()
+    {
+        Debugger debugger = new();
+        TestStore store = new();
+        debugger.Map(store);
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(debugger);
+
+        Decode(debugger, "mt|r/default uint8|e;");
+        Assert.Equal("!", logging.Encoded[0]);
+
+        Decode(debugger, "ttT");
+        Assert.Equal("!", logging.Encoded[1]);
+
+        debugger.Trace();
+        // No compression, so no need to flush here
+        Decode(debugger, "sT");
+        Assert.Equal("0;", logging.Encoded[2]);
+
+        store.DefaultUint8 = 1;
+        debugger.Trace();
+        store.DefaultUint8 = 2;
+        debugger.Trace();
+
+        Decode(debugger, "sT");
+        Assert.Equal("1;2;", logging.Encoded[3]);
+
+        // Set decimation
+        Decode(debugger, "ttT3");
+        Assert.Equal("!", logging.Encoded[4]);
+
+        for (int i = 4; i < 10; i++)
+        {
+            store.DefaultUint8 = (byte)i;
+            debugger.Trace();
+        }
+
+        Decode(debugger, "sT");
+        Assert.Equal("6;9;", logging.Encoded[5]);
+
+        // Disable
+        Decode(debugger, "t");
+        Assert.Equal("!", logging.Encoded[6]);
+
+        debugger.Trace();
+        debugger.Trace();
+        debugger.Trace();
+
+        Decode(debugger, "sT");
+        Assert.Equal("", logging.Encoded[7]);
+    }
 
     private void Encode(Debugger layer, string data, bool last = true)
     {

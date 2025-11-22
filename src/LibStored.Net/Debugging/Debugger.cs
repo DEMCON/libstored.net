@@ -1,10 +1,13 @@
 ﻿// SPDX-FileCopyrightText: 2025 Guus Kuiper
-// 
+//
 // SPDX-License-Identifier: MIT
 
+using System.Buffers.Binary;
+using System.Runtime.InteropServices;
 using System.Text;
+using Stream = LibStored.Net.Debugging.Stream;
 
-namespace LibStored.Net;
+namespace LibStored.Net.Debugging;
 
 /// <summary>
 /// Provides a protocol layer for debugging and interacting with mapped <see cref="Store"/> objects.
@@ -27,22 +30,39 @@ public class Debugger : Protocol.ProtocolLayer
     private const char CmdFlush = 'f';
     private const char Ack = '!';
     private const char Nack = '?';
+    private const int _version = 2;
 
     private readonly Dictionary<string, Store> _stores = [];
+    private readonly Dictionary<char, DebugVariant> _aliases = [];
+    private readonly Dictionary<char, byte[]> _macros = [];
+    private readonly Dictionary<char, Stream> _streams = [];
+    private readonly int _maxMacrosSize;
+    private readonly int _maxStreamCount;
+    private readonly int _maxStreamSize;
 
     private string? _identification;
     private string _versions;
-    private const int _version = 2;
+    private ulong _traceDecimation;
+    private ulong _traceCount;
+    private char _traceMacro;
+    private char _traceStream;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Debugger"/> class.
     /// </summary>
     /// <param name="identification">Optional identification string for the debugger.</param>
     /// <param name="versions">Optional version string for the application.</param>
-    public Debugger(string? identification = null, string versions = "")
+    /// <param name="maxMacrosSize">Combined size of all macros</param>
+    /// <param name="maxStreamCount"></param>
+    /// <param name="maxStreamSize"></param>
+    public Debugger(string? identification = null, string versions = "", int maxMacrosSize = 4096,
+        int maxStreamCount = 2, int maxStreamSize = 1024)
     {
         _identification = identification;
         _versions = versions;
+        _maxMacrosSize = maxMacrosSize;
+        _maxStreamCount = maxStreamCount;
+        _maxStreamSize = maxStreamSize;
     }
 
     /// <summary>
@@ -63,7 +83,6 @@ public class Debugger : Protocol.ProtocolLayer
         set => _versions = value;
     }
 
-
     /// <summary>
     /// Maps a <see cref="Store"/> to a specified name for debugging access.
     /// </summary>
@@ -75,7 +94,7 @@ public class Debugger : Protocol.ProtocolLayer
         {
             name = store.Name;
         }
-        
+
         if (string.IsNullOrEmpty(name) || name[0] != '/' || name.AsSpan().Slice(1).Contains('/'))
         {
             return;
@@ -108,6 +127,106 @@ public class Debugger : Protocol.ProtocolLayer
     /// <returns>The <see cref="DebugVariant"/> if found; otherwise, null.</returns>
     public DebugVariant? Find(string name) => Find(Encoding.ASCII.GetBytes(name));
 
+
+    /// <summary>
+    /// Adds data to the stream. Tries to create it when it does not exists.
+    /// </summary>
+    /// <param name="s"></param>
+    /// <param name="data"></param>
+    /// <returns></returns>
+    public int Stream(char s, ReadOnlySpan<byte> data)
+    {
+        if (_maxStreamCount < 1)
+        {
+            return 0;
+        }
+
+        if (s == '?')
+        {
+            return 0;
+        }
+
+        Stream? stream = Stream(s, true);
+        if (stream is null)
+        {
+            return 0;
+        }
+
+        int len = stream.Fits(data.Length);
+        if (len == 0)
+        {
+            return 0;
+        }
+
+        stream.Encode(data.Slice(0, len), true);
+        return len;
+    }
+
+    /// <summary>
+    /// Get the stream. May fail when all the maximum number of streams is already in use.
+    /// </summary>
+    /// <param name="s"></param>
+    /// <param name="alloc">Allocate when the stream does not yet exist.</param>
+    /// <returns></returns>
+    public Stream? Stream(char s, bool alloc = false)
+    {
+        if (_streams.TryGetValue(s, out Stream? stream))
+        {
+            return stream;
+        }
+
+        if (!alloc)
+        {
+            return null;
+        }
+
+        KeyValuePair<char, Stream> recycle = _streams.FirstOrDefault(x => x.Value.Empty);
+        if (recycle.Value is not null && recycle.Value.Empty)
+        {
+            _streams.Remove(recycle.Key);
+        }
+
+        if (_streams.Count >= _maxStreamCount)
+        {
+            return null;
+        }
+
+        _streams[s] = stream = recycle.Value ?? new Stream(_maxStreamSize);
+
+        return stream;
+    }
+
+    /// <summary>
+    /// Executes the trace macro and append the output to the trace stream.
+    /// </summary>
+    public void Trace()
+    {
+        if (_traceDecimation <= 0)
+        {
+            return;
+        }
+
+        if (++_traceCount < _traceDecimation)
+        {
+            return;
+        }
+
+        _traceCount = 0;
+
+        Stream? stream = Stream(_traceStream, true);
+        if (stream is null)
+        {
+            return;
+        }
+
+        if (stream.IsFull)
+        {
+            return;
+        }
+
+        RunMacro(_traceMacro, stream);
+    }
+
     /// <inheritdoc />
     public override void Decode(Span<byte> buffer) => Process(buffer, this);
 
@@ -124,7 +243,7 @@ public class Debugger : Protocol.ProtocolLayer
             case Debugger.CmdCapabilities:
             {
                 // '?' -> <list of command chars>
-                Span<byte> capabilities = Bytes("?rweliv");
+                Span<byte> capabilities = Bytes("?rwelivamst");
                 response.Encode(capabilities, true);
                 return;
             }
@@ -152,7 +271,16 @@ public class Debugger : Protocol.ProtocolLayer
                 int slashIndex = buffer.IndexOf((byte)'/');
                 if (slashIndex < 1)
                 {
-                    Debugger.SendNack(response);
+                    // Check if the last byte can be an alias.
+                    if (buffer.Length - 1 != '/')
+                    {
+                        slashIndex = buffer.Length - 1;
+                    }
+                    else
+                    {
+                        Debugger.SendNack(response);
+                        return;
+                    }
                 }
 
                 ReadOnlySpan<byte> writeValue = buffer.Slice(1, slashIndex - 1);
@@ -224,7 +352,7 @@ public class Debugger : Protocol.ProtocolLayer
             }
             case Debugger.CmdVersion:
             {
-                // 'v' -> <debugger version> ' ' <application-defined version> 
+                // 'v' -> <debugger version> ' ' <application-defined version>
                 byte[] sizeBytes = BitConverter.GetBytes(Debugger._version);
                 Span<byte> versionBuffer = Debugger.EncodeHex(sizeBytes, Types.Int32);
                 response.Encode(versionBuffer, false);
@@ -241,14 +369,219 @@ public class Debugger : Protocol.ProtocolLayer
                 return;
             }
             case Debugger.CmdAlias:
-            case Debugger.CmdMacro:
+                // 'a' <char> </path/to/object? ?  -> '!' | '?'
+                if (buffer.Length < 2)
+                {
+                    Debugger.SendNack(response);
+                    return;
+                }
 
+                char a = (char)buffer[1];
+                if (a < 0x20 || a > 0x7e || a == '/')
+                {
+                    Debugger.SendNack(response);
+                    return;
+                }
+
+                if (buffer.Length == 2)
+                {
+                    // Remove alias
+                    _aliases.Remove(a);
+                    break;
+                }
+
+                DebugVariant? debugVariant = Find(buffer.Slice(2));
+                if (debugVariant is null)
+                {
+                    Debugger.SendNack(response);
+                    return;
+                }
+
+                // Dont limit the number of alias, max is limited to 255.
+                // Add or replace.
+                _aliases[a] = debugVariant;
+
+                break;
+            case Debugger.CmdMacro:
+                // 'm' ( <char> ( <sep> <any command> ) * ? -> '!' | '?' | <bytes>
+
+                if (buffer.Length == 1)
+                {
+                    // Returns all macros.
+                    foreach ((char c, _) in _macros)
+                    {
+                        response.Encode([(byte)c], false);
+                    }
+
+                    response.Encode([], true);
+                    return;
+                }
+
+                char m = (char)buffer[1];
+                if (m == '?')
+                {
+                    // Invalid macro name
+                    Debugger.SendNack(response);
+                    return;
+                }
+
+                if (buffer.Length == 2)
+                {
+                    // Remove the macro
+                    if (!_macros.TryGetValue(m, out byte[]? macro))
+                    {
+                        break;
+                    }
+
+                    if (macro.Length == 0)
+                    {
+                        // Macro in use
+                        Debugger.SendNack(response);
+                        return;
+                    }
+
+                    _macros.Remove(m);
+                    break;
+                }
+
+                if (_macros.TryGetValue(m, out byte[]? currentMacro))
+                {
+                    // Update macro
+                    int totalSize = buffer.Length - 2 - currentMacro.Length + _macros.Sum(x => x.Value.Length);
+                    if (totalSize > _maxMacrosSize)
+                    {
+                        Debugger.SendNack(response);
+                        return;
+                    }
+
+                    if (currentMacro.Length == 0)
+                    {
+                        // Macro in use
+                        Debugger.SendNack(response);
+                        return;
+                    }
+
+                    _macros[m] = buffer.Slice(2).ToArray();
+                }
+                else
+                {
+                    // Add new macro
+                    int totalSize = buffer.Length - 2 + _macros.Sum(x => x.Value.Length);
+                    if (totalSize > _maxMacrosSize)
+                    {
+                        Debugger.SendNack(response);
+                        return;
+                    }
+
+                    _macros[m] = buffer.Slice(2).ToArray();
+                }
+
+                break;
             case Debugger.CmdReadMem:
             case Debugger.CmdWriteMem:
             case Debugger.CmdStream:
-            case Debugger.CmdTrace:
+                // 's' ( <stream char> <suffix> ? ) ?
+                // -> '?' | <stream char> +
+                // -> <stream data> <suffix>
+
+                if (buffer.Length == 1)
+                {
+                    if (_streams.Count == 0)
+                    {
+                        Debugger.SendNack(response);
+                        return;
+                    }
+
+                    foreach ((char c, _) in _streams)
+                    {
+                        response.Encode([(byte)c], false);
+                    }
+
+                    response.Encode([], true);
+                    return;
+                }
+
+                char s = (char)buffer[1];
+                ReadOnlySpan<byte> suffix = buffer.Slice(2);
+
+                Stream? stream = Stream(s);
+                if (stream is null)
+                {
+                    Debugger.SendNack(response);
+                    return;
+                }
+
+                List<byte> streamBuffer = [];
+                stream.Swap(ref streamBuffer);
+                Span<byte> streamBufferSpan = CollectionsMarshal.AsSpan(streamBuffer);
+                response.Encode(streamBufferSpan, false);
+
+                if (stream.Empty)
+                {
+                    // Clear and wwap back to avoid allocations.
+                    streamBuffer.Clear();
+                    stream.Swap(ref streamBuffer);
+                }
+
+                stream.Unblock();
+
+                response.Encode(suffix, true);
+                return;
             case Debugger.CmdFlush:
+            case Debugger.CmdTrace:
+                // Enable: 't' <macro> <stream> ( <decimation in dex>) ? -> '!' | '?'
+                // Disable 't' -> '!' | '?'
+
+                // Disable by default.
+                _traceDecimation = 0;
+
+                if (buffer.Length == 1)
+                {
+                    // Disable
+                    break;
+                }
+
+                if (buffer.Length < 3)
+                {
+                    Debugger.SendNack(response);
+                    return;
+                }
+
+                _traceMacro = (char)buffer[1];
+                _traceStream = (char)buffer[2];
+
+                if (Stream(_traceStream, true) is null)
+                {
+                    Debugger.SendNack(response);
+                    return;
+                }
+
+                if (buffer.Length > 3)
+                {
+                    bool ok = true;
+                    Span<byte> res = DecodeHex(buffer.Slice(3), Types.Uint64, ref ok);
+                    if (!ok)
+                    {
+                        Debugger.SendNack(response);
+                        return;
+                    }
+                    _traceDecimation = BinaryPrimitives.ReadUInt64LittleEndian(res);
+                }
+                else
+                {
+                    _traceDecimation = 1;
+                }
+
+                break;
             default:
+                if (_macros.ContainsKey(command))
+                {
+                    if (RunMacro(command, response))
+                    {
+                        return;
+                    }
+                }
+
                 Debugger.SendNack(response);
                 return;
         }
@@ -424,11 +757,21 @@ public class Debugger : Protocol.ProtocolLayer
             return null;
         }
 
+        if (path.Length == 1 && path[0] != '/')
+        {
+            // Lookup alias
+            char c = (char)path[0];
+            if (_aliases.TryGetValue(c, out var alias))
+            {
+                return alias;
+            }
+        }
+
         if (_stores.Count == 1)
         {
             // If there is only one store, we can directly use it without prefix
             Store store = _stores.First().Value;
-            DebugVariant? variant =  store.Find(path);
+            DebugVariant? variant = store.Find(path);
             if (variant is not null)
             {
                 return variant;
@@ -470,7 +813,50 @@ public class Debugger : Protocol.ProtocolLayer
         }
 
         return null;
+
     }
+
+    private bool RunMacro(char macro, Protocol.ProtocolLayer response)
+    {
+        if (!_macros.TryGetValue(macro, out byte[]? macroBytes))
+        {
+            return false;
+        }
+
+        if (macroBytes.Length == 0)
+        {
+            // Macco is currently executing. Recursive calls are not allowed.
+            return false;
+        }
+        else if (macroBytes.Length == 1)
+        {
+            // Nothing to execute. Only a separator.
+            return true;
+        }
+
+        byte[] macroBytesLocal = macroBytes;
+        _macros[macro] = [];
+
+        byte sep = macroBytesLocal[0];
+
+        FrameMerger merger = new(response);
+
+        Span<byte> data = macroBytesLocal.AsSpan(1);
+        do
+        {
+            int index = data.IndexOf(sep);
+            ReadOnlySpan<byte> dataLocal = index < 0 ? data : data.Slice(0, index);
+            Process(dataLocal, merger);
+            data = index < 0 ? [] : data.Slice(index + 1);
+        } while (!data.IsEmpty);
+
+        response.Encode([], true);
+
+        _macros[macro] = macroBytesLocal;
+
+        return true;
+    }
+
 
     private byte[] Bytes(string text) => Encoding.ASCII.GetBytes(text);
 }
