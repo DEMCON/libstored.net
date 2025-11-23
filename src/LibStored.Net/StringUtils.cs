@@ -1,5 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2025 Guus Kuiper
-// 
+//
 // SPDX-License-Identifier: MIT
 
 using System.Diagnostics;
@@ -61,11 +61,11 @@ public static class StringUtils
     /// Trims trailing zero bytes from the buffer and decodes it to a string using the specified encoding.
     /// </summary>
     /// <param name="buffer">The buffer to decode.</param>
-    /// <param name="encoding">The encoding to use. Defaults to ASCII if null.</param>
+    /// <param name="encoding">The encoding to use. Defaults to UTF8 if null.</param>
     /// <returns>The decoded string.</returns>
     public static string Decode(ReadOnlySpan<byte> buffer, Encoding? encoding = null)
     {
-        encoding ??= Encoding.ASCII;
+        encoding ??= Encoding.UTF8;
 
         return encoding.GetString(buffer.TrimEnd((byte)'0'));
     }

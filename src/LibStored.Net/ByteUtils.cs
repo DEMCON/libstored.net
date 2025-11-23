@@ -1,5 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2025 Guus Kuiper
-// 
+//
 // SPDX-License-Identifier: MIT
 
 using System.Buffers.Binary;
@@ -81,7 +81,7 @@ public static class ByteUtils
         => bigEndian ? BinaryPrimitives.ReadUInt16BigEndian(buffer) : BinaryPrimitives.ReadUInt16LittleEndian(buffer);
 
     /// <summary>
-    /// Writes a 16-bit unsigned integer to the buffer in the specified endianness.
+    /// Writes a 8-bit unsigned integer to the buffer in the specified endianness.
     /// </summary>
     public static void WriteUInt8(Span<byte> buffer, byte value, bool bigEndian = false)
     {
@@ -94,7 +94,7 @@ public static class ByteUtils
     }
 
     /// <summary>
-    /// Reads a 16-bit unsigned integer from the buffer in the specified endianness.
+    /// Reads a 8-bit unsigned integer from the buffer in the specified endianness.
     /// </summary>
     public static byte ReadUInt8(ReadOnlySpan<byte> buffer, bool bigEndian = false)
     {
@@ -104,6 +104,32 @@ public static class ByteUtils
         }
 
         return buffer[0];
+    }
+
+    /// <summary>
+    /// Writes a 8-bit integer to the buffer in the specified endianness.
+    /// </summary>
+    public static void WriteInt8(Span<byte> buffer, sbyte value, bool bigEndian = false)
+    {
+        if (buffer.IsEmpty)
+        {
+            throw new ArgumentException("Buffer must be at least 1 byte long.", nameof(buffer));
+        }
+
+        buffer[0] = (byte)value;
+    }
+
+    /// <summary>
+    /// Reads a 8-bit integer from the buffer in the specified endianness.
+    /// </summary>
+    public static sbyte ReadInt8(ReadOnlySpan<byte> buffer, bool bigEndian = false)
+    {
+        if (buffer.IsEmpty)
+        {
+            throw new ArgumentException("Buffer must be at least 1 byte long.", nameof(buffer));
+        }
+
+        return (sbyte)buffer[0];
     }
 
     /// <summary>

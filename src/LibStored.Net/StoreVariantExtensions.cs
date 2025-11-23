@@ -1,5 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2025 Guus Kuiper
-// 
+//
 // SPDX-License-Identifier: MIT
 
 using System.Text;
@@ -36,7 +36,7 @@ public static class StoreVariantExtensions
             throw new ArgumentException($"String length exceeds the size of the variant: {variant.Size} bytes.", nameof(text));
         }
 
-        variant.Set(bytes.Slice(0, variant.Size));
+        variant.Set(bytes);
     }
 
     /// <summary>
@@ -64,6 +64,6 @@ public static class StoreVariantExtensions
             throw new ArgumentException($"bytes array length exceeds the size of the variant: {variant.Size} bytes.", nameof(bytes));
         }
 
-        variant.Set(bytes.AsSpan(0, variant.Size));
+        variant.Set(bytes);
     }
 }

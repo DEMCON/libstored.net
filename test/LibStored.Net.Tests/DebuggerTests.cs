@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 using System.Buffers.Binary;
-using System.Runtime.InteropServices;
+using System.Globalization;
 using System.Text;
 using LibStored.Net.Debugging;
 
@@ -165,13 +165,16 @@ public class DebuggerTests
         string expected = Convert.ToHexStringLower(buffer.TrimStart((byte)0b0));
 
         store.Fraction.Set(3.14);
-        Span<byte> bufferFaction = stackalloc byte[store.Fraction.Size];
-        BinaryPrimitives.WriteDoubleBigEndian(bufferFaction, store.Fraction.Get());
-        string expectedFactionHex = Convert.ToHexStringLower(bufferFaction.TrimStart((byte)0b0));
+        Span<byte> bufferFraction = stackalloc byte[store.Fraction.Size];
+        BinaryPrimitives.WriteDoubleBigEndian(bufferFraction, store.Fraction.Get());
+        string expectedFractionHex = Convert.ToHexStringLower(bufferFraction.TrimStart((byte)0b0));
 
         Decode(debugger, "r/number");
         Assert.Single(logging.Encoded);
         Assert.Equal(expected, logging.Encoded[0]);
+
+        Decode(debugger, "r/fraction");
+        Assert.Equal(expectedFractionHex, logging.Encoded[1]);
     }
 
     [Fact]
@@ -205,11 +208,6 @@ public class DebuggerTests
         store.Number.Set(42);
         store.Fraction.Set(3.14);
         store.Text.Set("Hello World!"u8);
-
-        ReadOnlySpan<byte> text = store.Text.Get();
-
-        byte[] bytes = Encoding.UTF8.GetBytes("Hello World!\0\0\0");
-        string expectedHex = Convert.ToHexStringLower(bytes);
 
         Decode(debugger, $"r{path}");
         Assert.Single(logging.Encoded);
@@ -462,6 +460,54 @@ public class DebuggerTests
 
         Decode(debugger, "sT");
         Assert.Equal("", logging.Encoded[7]);
+    }
+
+    [Fact]
+    public void ListReadTest()
+    {
+        Debugger debugger = new();
+        TestStore store = new();
+        debugger.Map(store);
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(debugger);
+
+        Decode(debugger, "l");
+        Assert.Single(logging.Encoded);
+        string list = logging.Encoded[0];
+
+        foreach (ReadOnlySpan<char> line in list.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+        {
+            int pathIndex = line.IndexOf('/');
+            ReadOnlySpan<char> typeStr = line.Slice(0, 2);
+            ReadOnlySpan<char> sizeStr = line.Slice(2, pathIndex - 2);
+            ReadOnlySpan<char> pathStr = line.Slice(pathIndex);
+
+            Types type = TypesExtensions.Parse(typeStr);
+            int size = int.Parse(sizeStr, NumberStyles.HexNumber);
+
+            DebugVariant? debugVariant = debugger.Find(pathStr.ToString());
+
+            // Make sure the metadata is correct
+            Assert.NotNull(debugVariant);
+            Assert.Equal(debugVariant.Type, type);
+            Assert.Equal(debugVariant.Size, size);
+
+            Decode(debugger, $"r{pathStr}");
+
+            // Get the bytes.
+            string hexValue = logging.Encoded[^1];
+            string extendedHexValue = hexValue.PadLeft(size * 2, '0');
+            byte[] bytes = Convert.FromHexString(extendedHexValue);
+
+            // Ensure the bytes are in the endianness of this machine.
+            byte[] dataBytes = BitConverter.IsLittleEndian && (type & Types.FlagFixed) != 0 ?
+                bytes.ToArray().Reverse().ToArray() :
+                bytes.ToArray();
+
+            Assert.Equal(debugVariant.Get(), dataBytes);
+
+            object value = TypesExtensions.ReadValue(bytes, type, size, bigEndian: true);
+        }
     }
 
     private void Encode(Debugger layer, string data, bool last = true)
