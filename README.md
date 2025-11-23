@@ -131,7 +131,7 @@ Types: `Pointer`, `Pointer32` and `Pointer64` are not supported, as they are not
 
 ```csharp
 using LibStored.Net;
-using LibStored.Net.Debugging
+using LibStored.Net.Debugging;
 using LibStored.Net.Protocol;
 using LibStored.Net.ZeroMQ;
 using NetMQ;
