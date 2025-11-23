@@ -1,72 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Sdk Name="Aspire.AppHost.Sdk" Version="9.5.1" />
+  <Sdk Name="Aspire.AppHost.Sdk" Version="13.0.0" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
     <NoWarn>CS1591</NoWarn>
     <IsAspireHost>true</IsAspireHost>
     <UserSecretsId>d11b339a-7d36-4112-8969-2ebfad7419e0</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.5.1" />
-    <PackageReference Include="Aspire.Hosting.Docker" Version="9.5.1-preview.1.25502.11" />
-    <PackageReference Include="Aspire.Hosting.Python" Version="9.5.1" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.0.0" />
+    <PackageReference Include="Aspire.Hosting.Docker" Version="13.0.0-preview.1.25560.3" />
+    <PackageReference Include="Aspire.Hosting.Python" Version="13.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\LibStored.Net.Example.Console\LibStored.Net.Example.Console.csproj" />
   </ItemGroup>
-
-  <!-- Example to automatically install the python venv from https://github.com/dotnet/aspire-samples/tree/main/samples/AspireWithPython -->
-  <!-- Properties, Items, and targets to ensure Python apps are initialized -->
-  <PropertyGroup>
-    <PythonVirtualEnvironmentName>.venv</PythonVirtualEnvironmentName>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PipRequirementsTxt Include="python\requirements.txt" />
-  </ItemGroup>
-
-  <Target Name="SetPipInstallSentinelFilePath">
-    <PropertyGroup>
-      <PipInstallSentinelFilePath>$(IntermediateOutputPath)piprestored.sentinel</PipInstallSentinelFilePath>
-    </PropertyGroup>
-  </Target>
-
-  <Target Name="CreatePythonVirtualEnvironments">
-    <PropertyGroup>
-      <PipRequirementsTxtDir>%(PipRequirementsTxt.RootDir)%(PipRequirementsTxt.Directory)</PipRequirementsTxtDir>
-      <VenvDir>$(PipRequirementsTxtDir)$(PythonVirtualEnvironmentName)/</VenvDir>
-      <CreateVenv Condition="!Exists('$(VenvDir)')">True</CreateVenv>
-    </PropertyGroup>
-
-    <Message Importance="Normal" Text="Initializing virtual environment for $(PipRequirementsTxtDir)" />
-
-    <Exec Command="python -m venv $(VenvDir)" WorkingDirectory="$(PipRequirementsTxtDir)" Condition=" '$(CreateVenv)' == 'True' " />
-  </Target>
-
-  <Target Name="PipInstall" AfterTargets="PrepareForBuild" DependsOnTargets="SetPipInstallSentinelFilePath;CreatePythonVirtualEnvironments" Condition=" '$(DesignTimeBuild)' != 'True' " Inputs="@(PipRequirementsTxt)" Outputs="$(PipInstallSentinelFilePath)">
-    <PropertyGroup>
-      <PipRequirementsTxtDir>%(PipRequirementsTxt.RootDir)%(PipRequirementsTxt.Directory)</PipRequirementsTxtDir>
-      <PipCmd Condition=" '$(OS)' == 'Windows_NT' ">pip</PipCmd>
-      <PipCmd Condition=" '$(OS)' != 'Windows_NT' ">python -m pip</PipCmd>
-      <PipInstallCmd>$(PipCmd) install -r %(PipRequirementsTxt.Filename)%(PipRequirementsTxt.Extension)</PipInstallCmd>
-      <RestoreCmd Condition=" '$(OS)' == 'Windows_NT' ">call $(PythonVirtualEnvironmentName)\Scripts\activate.bat &amp;&amp; $(PipInstallCmd)</RestoreCmd>
-      <RestoreCmd Condition=" '$(OS)' != 'Windows_NT' ">. ./$(PythonVirtualEnvironmentName)/bin/activate &amp;&amp; $(PipInstallCmd)</RestoreCmd>
-    </PropertyGroup>
-
-    <Message Importance="Normal" Text="Restoring packages for $(PipRequirementsTxtDir)" />
-
-    <Exec Command="$(RestoreCmd)" WorkingDirectory="$(PipRequirementsTxtDir)" />
-
-    <Touch Files="$(PipInstallSentinelFilePath)" AlwaysCreate="True" />
-
-    <ItemGroup>
-      <FileWrites Include="$(PipInstallSentinelFilePath)" />
-    </ItemGroup>
-  </Target>
 
 </Project>
