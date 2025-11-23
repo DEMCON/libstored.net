@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
+using System.Numerics;
 using LibStored.Net.DebugClient;
 using LibStored.Net.ZeroMQ;
 using NetMQ;
@@ -17,12 +18,23 @@ Console.WriteLine("podman run -p 5555:5555 -p 5556:5556 <name>");
     string capabilities = client.Capabilities();
     Console.WriteLine(capabilities);
 
-    string[] registers = client.List();
-    Console.WriteLine(string.Join("\n", registers));
+    Register[] registers = client.List();
+    Console.WriteLine(string.Join("\n", registers.Select(x => x)));
 
-    string path = registers.Length == 0 ? "" : registers[0].Substring(registers[0].IndexOf('/'));
-    string value = client.Read(path);
-    Console.WriteLine($"{path} = {value}");
+    foreach (Register register in registers)
+    {
+        object value = client.Read(register);
+        Console.WriteLine($"{register.Path} = {value}");
+
+        object? incremented = Incrementer.IncrementIfNumeric(value);
+        if (incremented is null)
+        {
+            continue;
+        }
+
+        bool success = client.Write(register, incremented);
+        Console.WriteLine($"{register.Path} = {incremented} ({(success ? "written" : "failed")})");
+    }
 
     foreach (int i in Enumerable.Range(0, 10))
     {
@@ -50,3 +62,26 @@ Console.WriteLine("podman run -p 5555:5555 -p 5556:5556 <name>");
         }
     }
 }
+
+public static class Incrementer
+{
+    public static object? IncrementIfNumeric(object value) =>
+        value switch
+        {
+            bool _ => true,
+            byte b => Increment(b),
+            sbyte sb => Increment(sb),
+            short s => Increment(s),
+            ushort us => Increment(us),
+            int i => Increment(i),
+            uint ui => Increment(ui),
+            long l => Increment(l),
+            ulong ul => Increment(ul),
+            float f => Increment(f),
+            double d => Increment(d),
+            _ => null
+        };
+
+    public static T Increment<T>(T value) where T : INumber<T> => value + T.One;
+}
+
