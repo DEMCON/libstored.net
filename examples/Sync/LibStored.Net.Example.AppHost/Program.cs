@@ -12,7 +12,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 builder.AddDockerComposeEnvironment("docker-compose");
 
-const string libstoredVersion = "1.8.0";
+const string libstoredVersion = "2.0.0";
 var sync = builder.AddDockerfile("libstored", ".", "Dockerfile")
     .WithImage("demcon/libstored")
     .WithImageTag(libstoredVersion)
