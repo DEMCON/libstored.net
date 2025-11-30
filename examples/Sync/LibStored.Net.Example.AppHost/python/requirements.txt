@@ -1,1 +1,1 @@
-libstored==1.7.1
+libstored==2.0.0
