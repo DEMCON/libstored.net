@@ -8,6 +8,9 @@
         <PackageIcon>libstored.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+        <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);IncludeSystemTextJsonContentInPackage</TargetsForTfmSpecificContentInPackage>
+        <!-- When multiple target frameworks are used, suppress NU5118 warning -->
+        <NoWarn>NU5118</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -32,12 +35,17 @@
       <ProjectReference Include="..\LibStored.Net.Generator\LibStored.Net.Generator.csproj"
                         ReferenceOutputAssembly="false"
                         PackAsAnalyzer="true" />
-
-      <None Include="$(PkgYamlDotNet)\lib\netstandard2.0\YamlDotNet.dll"
-            Pack="true"
-            PackagePath="analyzers/dotnet/cs"
-            Visible="false" />
     </ItemGroup>
+
+    <!-- Copy the System.Text.Json.dll to the analyzers folder in the package -->
+    <Target Name="IncludeSystemTextJsonContentInPackage">
+        <Message Text="IncludeSystemTextJsonContentInPackage $(PkgYamlDotNet)" Importance="high"/>
+        <ItemGroup>
+            <TfmSpecificPackageFile
+                Include="$(PkgYamlDotNet)\lib\netstandard2.0\YamlDotNet.dll"
+                PackagePath="analyzers/dotnet/cs" />
+        </ItemGroup>
+    </Target>
 
     <!-- After packing, write the version to a file in artifacts for the NugetIntegrationTests -->
     <Target Name="WriteVersionFile" AfterTargets="Pack">

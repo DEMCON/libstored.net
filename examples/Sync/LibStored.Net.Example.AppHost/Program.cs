@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2025 Guus Kuiper
-// 
+//
 // SPDX-License-Identifier: MIT
 
 // ReSharper disable SuggestVarOrType_SimpleTypes
@@ -37,19 +37,19 @@ var client = builder.AddProject<Projects.LibStored_Net_Example_Console>("client"
     .WithEndpoint(targetPort: 6666, name: "debug", env: "NETMQ_DEBUG")
     ;
 
-#pragma warning disable ASPIREHOSTINGPYTHON001
-var py1 = builder.AddPythonApp("libstored-gui-container", "python", "-m", ["libstored.gui"])
+var py1 = builder.AddPythonModule("libstored-gui-container", "python", "libstored.gui")
     .WaitFor(sync)
+    .WithPip()
     .WithPortArgFromEndpoint(sync, "debug")
     .ExcludeFromManifest()
     ;
 
-var py2 = builder.AddPythonApp("libstored-gui-cs", "python", "-m", ["libstored.gui"])
+var py2 = builder.AddPythonModule("libstored-gui-cs", "python", "libstored.gui")
     .WaitFor(client)
+    .WaitFor(py1) // don't start and install at the same time
+    .WithPip(false)
     .WithPortArgFromEndpoint(client, "debug")
     .ExcludeFromManifest()
     ;
-
-#pragma warning restore ASPIREHOSTINGPYTHON001
 
 builder.Build().Run();
