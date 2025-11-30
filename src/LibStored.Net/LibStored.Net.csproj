@@ -18,7 +18,7 @@
         <PackageReference Include="NetMQ" Version="4.0.2.1" />
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
         <PackageReference Include="MinVer" Version="6.0.0" PrivateAssets="All" />
-        <PackageReference Include="System.Text.Json" Version="9.0.8" PrivateAssets="all" NoWarn="NU1510" GeneratePathProperty="true" />
+        <PackageReference Include="YamlDotNet" Version="16.3.0" PrivateAssets="all" GeneratePathProperty="true"  />
     </ItemGroup>
 
     <ItemGroup>
@@ -39,10 +39,10 @@
 
     <!-- Copy the System.Text.Json.dll to the analyzers folder in the package -->
     <Target Name="IncludeSystemTextJsonContentInPackage">
-        <Message Text="IncludeSystemTextJsonContentInPackage $(PkgSystem_Text_Json)" Importance="high"/>
+        <Message Text="IncludeSystemTextJsonContentInPackage $(PkgYamlDotNet)" Importance="high"/>
         <ItemGroup>
-            <TfmSpecificPackageFile 
-                Include="$(PkgSystem_Text_Json)\lib\netstandard2.0\System.Text.Json.dll"
+            <TfmSpecificPackageFile
+                Include="$(PkgYamlDotNet)\lib\netstandard2.0\YamlDotNet.dll"
                 PackagePath="analyzers/dotnet/cs" />
         </ItemGroup>
     </Target>

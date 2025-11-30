@@ -18,7 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Include="TestStore.json">
+      <None Include="TestStore.yml">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>
