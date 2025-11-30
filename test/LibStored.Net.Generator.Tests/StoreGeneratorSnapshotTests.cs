@@ -1,7 +1,4 @@
-﻿
-using System.Text.Json;
-
-namespace LibStored.Net.Generator.Tests;
+﻿namespace LibStored.Net.Generator.Tests;
 
 public class StoreGeneratorSnapshotTests
 {
@@ -12,17 +9,18 @@ public class StoreGeneratorSnapshotTests
         {
             Name = "Test1",
             Hash = "1234",
-            Init = "2A000000",
+            LittleEndian = true,
             Variables = [
-                new Variables
+                new Variables<int>
                 {
                     Name = "Variable 1",
                     Cname = "variable_1",
                     Type = "int32",
                     Offset = 0,
-                    Size = 4
+                    Size = 4,
+                    Init = 42
                 },
-                new Variables
+                new Variables<double>
                 {
                     Name = "Variable 2",
                     Cname = "variable_2",
@@ -32,47 +30,42 @@ public class StoreGeneratorSnapshotTests
                 }
             ]
         };
-        string json = JsonSerializer.Serialize(model);
-        await TestHelper.VerifyAdditionalText(json);
+        string yaml = StoreYaml.Serializer.Serialize(model);
+        await TestHelper.VerifyAdditionalText(yaml);
     }
 
     [Fact]
     public async Task GeneratesTestStoreCorrectly()
     {
-        string json = await File.ReadAllTextAsync("TestStore.json");
+        string json = await File.ReadAllTextAsync("TestStore.yml");
         await TestHelper.VerifyAdditionalText(json);
     }
 
     [Fact]
     public async Task GeneratesJsonDiagnosticsErrorMissingHash()
     {
-        string json = """
-                      {
-                        "name": "asd",
-                      }
+        string yaml = """
+                      name: "asd"
+                      littleEndian: true
                       """;
-        await TestHelper.VerifyAdditionalText(json);
+        await TestHelper.VerifyAdditionalText(yaml);
     }
 
     [Fact]
     public async Task GeneratesJsonDiagnosticsInvalidInit()
     {
-        string json = """
-                      {
-                        "name": "asd",
-                        "hash": "qwe",
-                        "init": "bad",
-                        "variables": [
-                          {
-                             "name": "init var",
-                             "cname": "init_var",
-                             "type": "int32",
-                             "size": 4,
-                             "offset": 0
-                          }
-                        ]
-                      }
+        string yaml = """
+                      name: "asd"
+                      hash: "qwe"
+                      littleEndian: true
+                      variables:
+                        - name: "init var"
+                          cname: "init_var"
+                          type: "int32"
+                          size: 8
+                          offset: 0
+                          init: "not a number"
                       """;
-        await TestHelper.VerifyAdditionalText(json);
+        await TestHelper.VerifyAdditionalText(yaml);
     }
 }

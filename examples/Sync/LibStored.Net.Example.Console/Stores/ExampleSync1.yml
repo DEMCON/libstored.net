@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: 2025 Guus Kuiper
+#
+# SPDX-License-Identifier: MIT
+
+name: "ExampleSync1"
+hash: "681a3ece584568efcf5879a64b688fc19e620577"
+littleEndian: true
+variables:
+  - name: "d"
+    cname: "d"
+    type: "double"
+    size: 8
+    offset: 0
+    init: null
+  - name: "i"
+    cname: "i"
+    type: "int32"
+    size: 4
+    offset: 8
+    init: null
+functions:
+  - name: "sync ExampleSync2"
+    cname: "sync_ExampleSync2"
+    type: "bool"
+    size: 1
+    function: 1
