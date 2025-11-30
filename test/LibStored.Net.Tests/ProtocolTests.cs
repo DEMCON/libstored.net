@@ -247,6 +247,26 @@ public class ProtocolTests
     }
 
     [Theory]
+    [InlineData("", "00000000")]
+    [InlineData("1", "3183DCEFB7")]
+    [InlineData("12", "31324F5344CD")]
+    [InlineData("123", "313233884863D2")]
+    public void Crc32EncodeTest(string input, string expectedHex)
+    {
+        byte[] expected = Convert.FromHexString(expectedHex);
+        string expectedString = Encoding.Latin1.GetString(expected);
+
+        Protocol.Crc32Layer crc32 = new();
+        Protocol.LoggingLayer logging = new();
+        logging.Wrap(crc32);
+
+        Encode(crc32, input);
+
+        Assert.Single(logging.Encoded);
+        Assert.Equal([expectedString], logging.Encoded);
+    }
+
+    [Theory]
     [InlineData("123", "123")]
     [InlineData("123", "12", "3")]
     [InlineData("123", "12", "3", "")]
