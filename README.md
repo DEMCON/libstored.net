@@ -57,11 +57,13 @@ flowchart TD
 - TerminalLayer
 - Crc8Layer (0xA6)
 - Crc16Layer (0xBAAD)
+- Crc32Layer (reversed 0x04c11db7)
 - LoggingLayer using ILogger
 - LoopbackLayer
 - BufferLayer
 - SegmentationLayer
 - ArqLayer
+- IdleCheckLayer
 
 ### Transport layers
 - ZeroMQ using [NetMQ](https://netmq.readthedocs.io/)
@@ -170,11 +172,14 @@ python -m libstored.gui -p 5555
 
 ## Compatibility
 
-Tested with:
-- [v1.7.1](https://github.com/DEMCON/libstored/releases/tag/v1.7.1) (see note  below)
+Tested with libstored versions:
+- [v2.0.0](https://github.com/DEMCON/libstored/releases/tag/v2.0.0)
 - [v1.8.0](https://github.com/DEMCON/libstored/releases/tag/v1.8.0)
+- [v1.7.1](https://github.com/DEMCON/libstored/releases/tag/v1.7.1) (see note below)
 
 See [libstored changelog](https://demcon.github.io/libstored/doc/changelog.html) for the changes. There do not seem to be breaking changes from <v1.7.1 to v1.7.1 for this C# implementation.
+
+Only the latest major version of libstored will be supported.
 
 ### libstored >v1.7.1
 The ZeroMQ socket type changed from `PAIR` to `DEALER` for the SyncZeroMQLayer. Make sure the exact same socket type is used at both ends of the protocol, so `PAIR` - `PAIR` or `DEALER` - `DEALER`, but not `PAIR` - `DEALER`. When connecting to libstored v1.7.1 or lower, use the `PAIR` socket type. For version v1.8 or higher of libstored, use `DEALER`.
