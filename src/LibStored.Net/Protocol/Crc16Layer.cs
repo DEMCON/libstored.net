@@ -72,7 +72,7 @@ public class Crc16Layer : ProtocolLayer
             crc = Compute(buffer[i], crc);
         }
 
-        if (crc != (ushort)(buffer[buffer.Length - 2] << 8 | buffer[buffer.Length - 1]))
+        if (crc != BinaryPrimitives.ReadUInt16BigEndian(buffer.Slice(buffer.Length - 2, 2)))
         {
             // CRC mismatch, ignore the packet
             _logger?.LogWarning("Invalid crc check: {Actual}, expected: {Expected}", buffer[^1], crc);
