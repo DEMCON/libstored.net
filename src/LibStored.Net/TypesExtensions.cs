@@ -40,6 +40,13 @@ public static class TypesExtensions
     public static bool IsSigned(this Types type) => (type & Types.FlagSigned) != 0;
 
     /// <summary>
+    /// Determines whether the type is a floating point number.
+    /// </summary>
+    /// <param name="type">The type to check.</param>
+    /// <returns>True if the type is floating point number; otherwise, false.</returns>
+    public static bool IsFloat(this Types type) => type.IsFixed() && type.IsSigned() && !type.IsInt();
+
+    /// <summary>
     /// Determines whether the type is a special type (undefined length).
     /// </summary>
     /// <param name="type">The type to check.</param>

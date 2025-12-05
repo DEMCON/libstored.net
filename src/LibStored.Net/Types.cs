@@ -1,5 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2025 Guus Kuiper
-// 
+//
 // SPDX-License-Identifier: MIT
 
 namespace LibStored.Net;
@@ -83,12 +83,12 @@ public enum Types : byte
     /// <summary>
     /// Native signed integer type (platform size).
     /// </summary>
-    Int = Types.FlagFixed | Types.FlagInt | (sizeof(int) - 1),
+    Int = Types.FlagFixed | Types.FlagInt | Types.FlagSigned | (sizeof(int) - 1),
 
     /// <summary>
     /// Native unsigned integer type (platform size).
     /// </summary>
-    Uint = Types.FlagFixed | (sizeof(uint) - 1),
+    Uint = Types.FlagFixed | Types.FlagInt | (sizeof(uint) - 1),
 
     /// <summary>
     /// 32-bit floating point type.
