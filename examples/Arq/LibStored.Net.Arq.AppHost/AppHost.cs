@@ -2,7 +2,7 @@ using System.Net.Sockets;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-const string libstoredVersion = "1.8.0";
+const string libstoredVersion = "2.0.0";
 var arq = builder.AddDockerfile("libstored-arq", "../LibStored.Arq/", "Dockerfile")
         .WithImage("demcon/libstored-arq-example")
         .WithImageTag(libstoredVersion)

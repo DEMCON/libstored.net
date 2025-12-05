@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 using System.Text;
+using LibStored.Net.Protocol;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace LibStored.Net.Tests;
@@ -12,15 +13,15 @@ public class ProtocolTests
     [Fact]
     public void LoggingLayerTest()
     {
-        Protocol.LoggingLayer logging = new();
+        LoggingLayer logging = new();
 
         byte[] bytes = Enumerable.Range(0, 255).Select(x => (byte)x).ToArray();
 
         logging.Encode(bytes, true);
 
         Assert.Single(logging.Encoded);
-        Assert.Equal([ProtocolTests.String(bytes)], logging.Encoded);
-        Assert.Equal(bytes, ProtocolTests.Bytes(logging.Encoded[0]));
+        Assert.Equal([String(bytes)], logging.Encoded);
+        Assert.Equal(bytes, Bytes(logging.Encoded[0]));
     }
 
     [Theory]
@@ -31,8 +32,8 @@ public class ProtocolTests
     [InlineData("\u007f123\r", "\u007f\u007f123\u007f\u004d")]
     public void AsciiEncodeTest(string input, string expected)
     {
-        Protocol.AsciiEscapeLayer ascii = new();
-        Protocol.LoggingLayer logging = new();
+        AsciiEscapeLayer ascii = new();
+        LoggingLayer logging = new();
         logging.Wrap(ascii);
 
         Encode(ascii, input);
@@ -51,8 +52,8 @@ public class ProtocolTests
     [InlineData("\u007f\u007f", "\u007f")]
     public void AsciiEncodeSingleTest(string expected, string input)
     {
-        Protocol.AsciiEscapeLayer ascii = new();
-        Protocol.LoggingLayer logging = new();
+        AsciiEscapeLayer ascii = new();
+        LoggingLayer logging = new();
         logging.Wrap(ascii);
 
         Encode(ascii, input);
@@ -71,8 +72,8 @@ public class ProtocolTests
     [InlineData("\u007f123\r", "\u007f\u007f123\u007f\u004d")]
     public void AsciiDecodeTest(string expected, string input)
     {
-        Protocol.AsciiEscapeLayer ascii = new();
-        Protocol.LoggingLayer logging = new();
+        AsciiEscapeLayer ascii = new();
+        LoggingLayer logging = new();
         ascii.Wrap(logging);
 
         Decode(ascii, input);
@@ -86,8 +87,8 @@ public class ProtocolTests
     [InlineData( "\u001b_123\u001b\\", "1", "2", "3")]
     public void TerminalEncodeTest(string expected, params string[] inputs)
     {
-        Protocol.TerminalLayer term = new(NullLogger<Protocol.TerminalLayer>.Instance);
-        Protocol.LoggingLayer logging = new();
+        TerminalLayer term = new(NullLogger<TerminalLayer>.Instance);
+        LoggingLayer logging = new();
         logging.Wrap(term);
 
         for (int i = 0; i < inputs.Length; i++)
@@ -110,15 +111,15 @@ public class ProtocolTests
         using StreamWriter writer = new(ms);
         Console.SetOut(writer);
 
-        Protocol.TerminalLayer term = new(NullLogger<Protocol.TerminalLayer>.Instance);
-        Protocol.LoggingLayer logging = new();
+        TerminalLayer term = new(NullLogger<TerminalLayer>.Instance);
+        LoggingLayer logging = new();
         term.Wrap(logging);
 
         Decode(term, input);
 
         writer.Flush();
         byte[] debug = ms.ToArray();
-        string debugMessage = ProtocolTests.String(debug);
+        string debugMessage = String(debug);
 
         Assert.Single(logging.Decoded);
         Assert.Equal([expected], logging.Decoded);
@@ -134,8 +135,8 @@ public class ProtocolTests
         using StreamWriter writer = new(ms);
         Console.SetOut(writer);
 
-        Protocol.TerminalLayer term = new(NullLogger<Protocol.TerminalLayer>.Instance);
-        Protocol.LoggingLayer logging = new();
+        TerminalLayer term = new(NullLogger<TerminalLayer>.Instance);
+        LoggingLayer logging = new();
         term.Wrap(logging);
 
         foreach (string input in inputs)
@@ -145,7 +146,7 @@ public class ProtocolTests
 
         writer.Flush();
         byte[] debug = ms.ToArray();
-        string debugMessage = ProtocolTests.String(debug);
+        string debugMessage = String(debug);
 
         Assert.Single(logging.Decoded);
         Assert.Equal([expected], logging.Decoded);
@@ -159,8 +160,8 @@ public class ProtocolTests
     [InlineData("123", "123\xfc")]
     public void Crc8EncodeTest(string input, string expected)
     {
-        Protocol.Crc8Layer crc8 = new();
-        Protocol.LoggingLayer logging = new();
+        Crc8Layer crc8 = new();
+        LoggingLayer logging = new();
         logging.Wrap(crc8);
 
         Encode(crc8, input);
@@ -176,8 +177,8 @@ public class ProtocolTests
     [InlineData("123", "123\xfc")]
     public void Crc8DecodeTest(string expected, string input)
     {
-        Protocol.Crc8Layer crc8 = new();
-        Protocol.LoggingLayer logging = new();
+        Crc8Layer crc8 = new();
+        LoggingLayer logging = new();
         crc8.Wrap(logging);
 
         Decode(crc8, input);
@@ -190,8 +191,8 @@ public class ProtocolTests
     [InlineData("1234\xfc")]
     public void Crc8DecodeFailsTest(string input)
     {
-        Protocol.Crc8Layer crc8 = new();
-        Protocol.LoggingLayer logging = new();
+        Crc8Layer crc8 = new();
+        LoggingLayer logging = new();
         crc8.Wrap(logging);
 
         Decode(crc8, input);
@@ -206,8 +207,8 @@ public class ProtocolTests
     [InlineData("123", "123\x1c\x84")]
     public void Crc16EncodeTest(string input, string expected)
     {
-        Protocol.Crc16Layer crc16 = new();
-        Protocol.LoggingLayer logging = new();
+        Crc16Layer crc16 = new();
+        LoggingLayer logging = new();
         logging.Wrap(crc16);
 
         Encode(crc16, input);
@@ -223,8 +224,8 @@ public class ProtocolTests
     [InlineData("123", "123\x1c\x84")]
     public void Crc16DecodeTest(string expected, string input)
     {
-        Protocol.Crc16Layer crc16 = new();
-        Protocol.LoggingLayer logging = new();
+        Crc16Layer crc16 = new();
+        LoggingLayer logging = new();
         crc16.Wrap(logging);
 
         Decode(crc16, input);
@@ -237,8 +238,8 @@ public class ProtocolTests
     [InlineData("1234\x1c\x84")]
     public void Crc16DecodeFailsTest(string input)
     {
-        Protocol.Crc16Layer crc16 = new();
-        Protocol.LoggingLayer logging = new();
+        Crc16Layer crc16 = new();
+        LoggingLayer logging = new();
         crc16.Wrap(logging);
 
         Decode(crc16, input);
@@ -247,13 +248,54 @@ public class ProtocolTests
     }
 
     [Theory]
+    [InlineData("", "00000000")]
+    [InlineData("1", "3183DCEFB7")]
+    [InlineData("12", "31324F5344CD")]
+    [InlineData("123", "313233884863D2")]
+    [InlineData("1234", "313233349BE3E0A3")]
+    public void Crc32EncodeTest(string input, string expectedHex)
+    {
+        byte[] expected = Convert.FromHexString(expectedHex);
+        string expectedString = String(expected);
+
+        Crc32Layer crc32 = new();
+        LoggingLayer logging = new();
+        logging.Wrap(crc32);
+
+        Encode(crc32, input);
+
+        Assert.Single(logging.Encoded);
+        Assert.Equal([expectedString], logging.Encoded);
+    }
+
+    [Theory]
+    [InlineData("", "00000000")]
+    [InlineData("1", "3183DCEFB7")]
+    [InlineData("12", "31324F5344CD")]
+    [InlineData("123", "313233884863D2")]
+    [InlineData("1234", "313233349BE3E0A3")]
+    public void Crc32DecodeTest(string expected, string inputHex)
+    {
+        byte[] input = Convert.FromHexString(inputHex);
+
+        Crc32Layer crc32 = new();
+        LoggingLayer logging = new();
+        crc32.Wrap(logging);
+
+        crc32.Decode(input);
+
+        Assert.Single(logging.Decoded);
+        Assert.Equal([expected], logging.Decoded);
+    }
+
+    [Theory]
     [InlineData("123", "123")]
     [InlineData("123", "12", "3")]
     [InlineData("123", "12", "3", "")]
     public void BufferLayerEncodeTest(string expected, params string[] inputs)
     {
-        Protocol.BufferLayer bufferLayer = new();
-        Protocol.LoggingLayer logging = new();
+        BufferLayer bufferLayer = new();
+        LoggingLayer logging = new();
         logging.Wrap(bufferLayer);
 
         for (int i = 0; i < inputs.Length; i++)
@@ -274,8 +316,8 @@ public class ProtocolTests
     [InlineData("1234567E", "1234", "567", "")]
     public void SegmentationLayerEncode8Test(string expected, params string[] input)
     {
-        Protocol.SegmentationLayer segmentation = new(8);
-        Protocol.LoggingLayer logging = new();
+        SegmentationLayer segmentation = new(8);
+        LoggingLayer logging = new();
         logging.Wrap(segmentation);
 
         for (int i = 0; i < input.Length; i++)
@@ -291,8 +333,8 @@ public class ProtocolTests
     [InlineData("1234567890", "123C", "456C", "789C", "0E")]
     public void SegmentationLayerEncodeTest(string input, params string[] expected)
     {
-        Protocol.SegmentationLayer segmentation = new(4);
-        Protocol.LoggingLayer logging = new();
+        SegmentationLayer segmentation = new(4);
+        LoggingLayer logging = new();
         logging.Wrap(segmentation);
 
         Encode(segmentation, input);
@@ -303,8 +345,8 @@ public class ProtocolTests
     [Fact]
     public void SegmentationLayerEncodeMultipleTest()
     {
-        Protocol.SegmentationLayer segmentation = new(4);
-        Protocol.LoggingLayer logging = new();
+        SegmentationLayer segmentation = new(4);
+        LoggingLayer logging = new();
         logging.Wrap(segmentation);
 
         Encode(segmentation, "12345", false);
@@ -320,8 +362,8 @@ public class ProtocolTests
     [InlineData("E", "")]
     public void SegmentationLayerDecodeTest(string input, params string[] expected)
     {
-        Protocol.LoggingLayer logging = new();
-        Protocol.SegmentationLayer segmentation = new(4);
+        LoggingLayer logging = new();
+        SegmentationLayer segmentation = new(4);
         segmentation.Wrap(logging);
 
         Decode(segmentation, input);
@@ -332,8 +374,8 @@ public class ProtocolTests
     [Fact]
     public void SegmentationLayerDecodeEmptyTest()
     {
-        Protocol.LoggingLayer logging = new();
-        Protocol.SegmentationLayer segmentation = new(4);
+        LoggingLayer logging = new();
+        SegmentationLayer segmentation = new(4);
         segmentation.Wrap(logging);
 
         Decode(segmentation, "");
@@ -348,8 +390,8 @@ public class ProtocolTests
     [InlineData("123456789", "123C", "456789C", "E")]
     public void SegmentationLayerDecodeMultiTest(string expected, params string[] inputs)
     {
-        Protocol.LoggingLayer logging = new();
-        Protocol.SegmentationLayer segmentation = new(4);
+        LoggingLayer logging = new();
+        SegmentationLayer segmentation = new(4);
         segmentation.Wrap(logging);
 
         foreach (string input in inputs)
@@ -364,9 +406,9 @@ public class ProtocolTests
     [Fact]
     public void LoopBackTest()
     {
-        Protocol.LoggingLayer loggingA = new();
-        Protocol.LoggingLayer loggingB = new();
-        Protocol.LoopbackLayer _ = new(loggingA, loggingB);
+        LoggingLayer loggingA = new();
+        LoggingLayer loggingB = new();
+        LoopbackLayer _ = new(loggingA, loggingB);
 
         Encode(loggingA, "Hello ", false);
         Encode(loggingB, "other text", false);
@@ -377,15 +419,33 @@ public class ProtocolTests
         Assert.Equal(["other text!"], loggingA.Decoded);
     }
 
-    private void Encode(Protocol.ProtocolLayer layer, string data, bool last = true)
+    [Fact]
+    public void IdleLayerTest()
     {
-        byte[] bytes = ProtocolTests.Bytes(data);
+        IdleCheckLayer idle = new();
+        Assert.True(idle.Idle);
+
+        Encode(idle, "down");
+        Assert.False(idle.Idle);
+        Assert.True(idle.IdleUp);
+        Assert.False(idle.IdleDown);
+
+        Decode(idle, "up");
+        Assert.False(idle.IdleUp);
+
+        idle.SetIdle();
+        Assert.True(idle.Idle);
+    }
+
+    private void Encode(ProtocolLayer layer, string data, bool last = true)
+    {
+        byte[] bytes = Bytes(data);
         layer.Encode(bytes, last);
     }
 
-    private void Decode(Protocol.ProtocolLayer layer, string data)
+    private void Decode(ProtocolLayer layer, string data)
     {
-        byte[] bytes = ProtocolTests.Bytes(data);
+        byte[] bytes = Bytes(data);
         layer.Decode(bytes);
     }
 

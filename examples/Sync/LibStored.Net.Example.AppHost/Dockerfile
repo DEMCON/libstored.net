@@ -1,10 +1,12 @@
 # Add ARG for libstored version
-ARG LIBSTORED_VERSION=1.8.0
+ARG LIBSTORED_VERSION=2.0.0
 
 FROM ubuntu:22.04 as builder
 
 # Use the ARG after FROM
 ARG LIBSTORED_VERSION
+
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -19,6 +21,7 @@ RUN apt-get update && \
         plantuml \
         python3-venv \
         python3-dev \
+        python3-tk \
         lsb-release \
         libgl1 \
         libegl1 \
