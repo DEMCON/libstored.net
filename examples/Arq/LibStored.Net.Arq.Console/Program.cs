@@ -109,7 +109,7 @@ internal class App : BackgroundService
         bool connected = false;
         arqLayer.EventOccurred += (_, e) =>
         {
-            _logger.LogInformation("Arc Event: {Event}", e.Event);
+            _logger.LogInformation("Arq Event: {Event}", e.Event);
             if (e.Event is ArqEvent.Connected or ArqEvent.Reconnect)
             {
                 connected = true;
