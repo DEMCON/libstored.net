@@ -76,6 +76,7 @@ public class ArqLayerTests
 
         top.Encode(" 2"u8, true);
         // Triggers retransmit of 1
+        arq.KeepAlive();
         Assert.Equal(ProtocolTests.String([0x01, .." 1"u8]), bottom.Encoded[1]);
 
         top.Flush();
@@ -191,6 +192,7 @@ public class ArqLayerTests
         Assert.Equal(ProtocolTests.String([0x80, 0x40]), bottom.Encoded[2]);
 
         top.Encode(" 3"u8, true);
+        arq.KeepAlive();
         Assert.Equal(ProtocolTests.String([0x40]), bottom.Encoded[3]); // Retransmit
 
         bottom.Decode([0x40]);
@@ -198,25 +200,27 @@ public class ArqLayerTests
 
         // Separate ack/reset does not fully reconnect; expect reset.
         bottom.Decode([0xC0]);
-        Assert.Equal(ProtocolTests.String([0x01, .." 3"u8]), bottom.Encoded[5]);
+        arq.KeepAlive(); // nop, no retransmit after reset
+        Assert.Equal(ProtocolTests.String([0x41]), bottom.Encoded[5]);
         bottom.Decode([0x40]);
         Assert.Equal(ProtocolTests.String([0x80, 0x40]), bottom.Encoded[6]); // Full reset again
 
         // In same message, reconnection completes.
         bottom.Decode([0xC0, 0x40]);
-        Assert.Equal(ProtocolTests.String([0x80, 0x01, .." 3"u8]), bottom.Encoded[7]);
+        Assert.Equal(ProtocolTests.String([0x80]), bottom.Encoded[7]);
         bottom.Decode([0x81]);
 
         top.Encode(" 4"u8, true);
-        Assert.Equal(ProtocolTests.String([0x02, .." 4"u8]), bottom.Encoded[8]);
-        bottom.Decode([0x82]);
+        Assert.Equal(ProtocolTests.String([0x01, .." 4"u8]), bottom.Encoded[8]);
+        bottom.Decode([0x81]);
 
         top.Encode(" 5"u8, true);
-        Assert.Equal(ProtocolTests.String([0x03, .." 5"u8]), bottom.Encoded[9]);
+        Assert.Equal(ProtocolTests.String([0x02, .." 5"u8]), bottom.Encoded[9]);
         bottom.Decode([0x40]);
         Assert.Equal(ProtocolTests.String([0x80, 0x40]), bottom.Encoded[10]); // Full reset again
         bottom.Decode([0x80]);
-        Assert.Equal(ProtocolTests.String([0x01, .." 5"u8]), bottom.Encoded[11]);
+        arq.KeepAlive();
+        Assert.Equal(ProtocolTests.String([0x41]), bottom.Encoded[11]);
     }
 
     [Fact]
@@ -231,6 +235,9 @@ public class ArqLayerTests
         b.Wrap(lb);
 
         LoopbackLayer l = new(a, b);
+
+        // Complete handshake
+        a.KeepAlive();
 
         la.Encode(" 1"u8, true);
         Assert.Equal(" 1", lb.Decoded[0]);

@@ -59,7 +59,7 @@ public class ArqLayer : ProtocolLayer
     /// <summary>
     /// Number of successive retransmits before the event is emitted.
     /// </summary>
-    public const int RetransmitCallbackThreshold = 10;
+    public const int RetransmitCallbackThreshold = 16;
 
     private const byte NopFlag = 0x40;
     private const byte AckFlag = 0x80;
@@ -71,6 +71,7 @@ public class ArqLayer : ProtocolLayer
 
     private int _encodeQueueBytes;
     private bool _encoding;
+    private bool _connected;
     private bool _pauseTransmit;
     private bool _didTransmit;
     private byte _sendSeq;
@@ -103,6 +104,7 @@ public class ArqLayer : ProtocolLayer
         }
 
         _encoding = false;
+        _connected = false;
         _pauseTransmit = false;
         _didTransmit = false;
         _retransmits = 0;
@@ -110,8 +112,8 @@ public class ArqLayer : ProtocolLayer
         _recvSeq = 0;
         _buffer.Clear();
 
+        // base.Disconnected();
         base.Reset();
-
         KeepAlive();
     }
 
@@ -125,6 +127,8 @@ public class ArqLayer : ProtocolLayer
     /// <inheritdoc />
     public override void Encode(ReadOnlySpan<byte> buffer, bool last)
     {
+        bool isIdle = !WaitingForAck();
+
         if (_maxEncodeBufferSize > 0 && _maxEncodeBufferSize < _encodeQueueBytes + buffer.Length + 1 )
         {
             Event(ArqEvent.EncodeBufferOverflow);
@@ -154,34 +158,50 @@ public class ArqLayer : ProtocolLayer
             }
         }
 
-        Transmit();
+        if (isIdle)
+        {
+            Transmit();
+        }
     }
 
     /// <inheritdoc/>
     public override void Decode(Span<byte> buffer)
     {
-        bool reconnect = false;
+        bool resetHandshake = false;
 
         Span<byte> response = [0, 0];
         byte responseLen = 0;
         bool doTransmit = false;
         bool doDecode = false;
 
+        Debug.Assert(!_pauseTransmit);
+        _pauseTransmit = true;
+
         while (buffer.Length > 0)
         {
             byte header = buffer[0];
+            byte headerSeq = (byte)(header & SeqMask);
+
             if ((header & AckFlag) != 0)
             {
-                if (WaitingForAck() && (header & SeqMask) == (_encodeQueue.First()[0] & SeqMask))
+                if (headerSeq == 0)
+                {
+                    // Maybe be an ack to our reset message.
+                    resetHandshake = true;
+                }
+
+                if (WaitingForAck() && headerSeq == (_encodeQueue.First()[0] & SeqMask))
                 {
                     PopEncodeQueue();
                     _retransmits = 0;
 
                     doTransmit = true;
 
-                    if ((header & SeqMask) == 0)
+                    if (resetHandshake)
                     {
-                        reconnect = true;
+                        // This is an ack to our reset message.
+                        _connected = true;
+                        _recvSeq = NextSeq(0);
                         // Libstored uses a method, here an event is used.
                         Event(ArqEvent.Connected);
                     }
@@ -189,7 +209,32 @@ public class ArqLayer : ProtocolLayer
 
                 buffer = buffer.Slice(1);
             }
-            else if((header & SeqMask) == _recvSeq)
+            else if (headerSeq == 0)
+            {
+                // Reset handshake
+
+                // Send ack
+                response[responseLen++] = AckFlag;
+                // Drop the rest
+                buffer = Span<byte>.Empty;
+
+                // Also reset our send seq.
+                if (!resetHandshake)
+                {
+                    PushReset();
+
+                    doTransmit = true;
+
+                    if (_connected)
+                    {
+                        _connected = false;
+                        Event(ArqEvent.Reconnect);
+                    }
+
+                    // base.Disconnected()
+                }
+            }
+            else if(headerSeq == _recvSeq)
             {
                 // The next message
                 response[responseLen++] = (byte) (_recvSeq | AckFlag);
@@ -200,34 +245,7 @@ public class ArqLayer : ProtocolLayer
 
                 buffer = buffer.Slice(1);
             }
-            else if ((header & SeqMask) == 0)
-            {
-                // Unexpected reset
-                Event(ArqEvent.Reconnect);
-
-                // Send ack
-                _recvSeq = NextSeq(0);
-                response[responseLen++] = AckFlag;
-
-                // Also reset our send seq.
-                if (!reconnect && (_encodeQueueBytes == 0 || _encodeQueue.First()[0] != NopFlag))
-                {
-                    // Insert at front of queue.
-                    PushEncodeQueueRaw([NopFlag], false);
-                    _sendSeq = NextSeq(0);
-
-                    // Re-encode existing outbound messages.
-                    foreach (byte[] bytes in _encodeQueue.Skip(1))
-                    {
-                        bytes[0] = (byte)((bytes[0] & ~SeqMask) | _sendSeq);
-                        _sendSeq = NextSeq(_sendSeq);
-                    }
-                }
-
-                doTransmit = true;
-                buffer = buffer.Slice(1);
-            }
-            else if(NextSeq((byte)(header & SeqMask)) == _recvSeq)
+            else if(NextSeq(headerSeq) == _recvSeq)
             {
                 // Retransmit, send an Ack again
                 response[responseLen++] = (byte) (header & SeqMask | AckFlag);
@@ -263,9 +281,6 @@ public class ArqLayer : ProtocolLayer
 
         if (doDecode)
         {
-            Debug.Assert(!_pauseTransmit);
-            _pauseTransmit = true;
-
             _didTransmit = false;
             // Decode and queue only
             base.Decode(buffer);
@@ -273,10 +288,11 @@ public class ArqLayer : ProtocolLayer
             {
                 doTransmit = true;
             }
-
-            Debug.Assert(_pauseTransmit);
-            _pauseTransmit = false;
         }
+
+        // Dont expect recursion
+        Debug.Assert(_pauseTransmit);
+        _pauseTransmit = false;
 
         if (responseLen > 0)
         {
@@ -307,6 +323,13 @@ public class ArqLayer : ProtocolLayer
 
         Transmit();
     }
+
+    /// <summary>
+    /// Call this function at a regular interval to retransmit messages, when necessary.
+    /// When no messages are queued, this function does nothing.
+    /// </summary>
+    /// <returns>True when a message was sent.</returns>
+    public bool Process() => Transmit();
 
     /// <summary>
     /// Transmit the first message in the encode queue.
@@ -349,6 +372,18 @@ public class ArqLayer : ProtocolLayer
     {
         byte[] bytes = [_sendSeq, ..buffer];
         PushEncodeQueueRaw(bytes);
+    }
+
+    private void PushReset()
+    {
+        while (_encodeQueue.Count > 0)
+        {
+            PopEncodeQueue();
+        }
+
+        _sendSeq = 0;
+        PushEncodeQueueRaw([NopFlag], false);
+        _recvSeq = 0;
     }
 
     private void PushEncodeQueueRaw(byte[] bytes, bool back = true)
