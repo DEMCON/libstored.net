@@ -1,11 +1,6 @@
-# Add ARG for libstored version
-ARG LIBSTORED_VERSION=2.0.0
-
 FROM ubuntu:22.04 as builder
 
-# Use the ARG after FROM
-ARG LIBSTORED_VERSION
-
+# Set noninteractive frontend for apt
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 
 RUN apt-get update && \
@@ -35,6 +30,9 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src/extern
+
+# Add ARG for libstored version
+ARG LIBSTORED_VERSION=2.0.0
 
 RUN wget https://github.com/DEMCON/libstored/archive/refs/tags/v${LIBSTORED_VERSION}.tar.gz && \
      tar -xzf v${LIBSTORED_VERSION}.tar.gz --transform="s/libstored-${LIBSTORED_VERSION}/libstored/" && \
