@@ -1,4 +1,7 @@
 # LibStored.Net
+[![.NET](https://github.com/DEMCON/libstored.net/actions/workflows/dotnet.yml/badge.svg)](https://github.com/DEMCON/libstored.net/actions/workflows/dotnet.yml)
+[![NuGet](https://img.shields.io/nuget/dt/LibStored.Net.svg)](https://www.nuget.org/packages/LibStored.Net)
+[![NuGet](https://img.shields.io/nuget/vpre/LibStored.Net.svg)](https://www.nuget.org/packages/LibStored.Net)
 
 A 100% native C# implementation of the [libstored](https://github.com/DEMCON/libstored) library, which is a library for storing and retrieving data in a structured way, using a store definition file. The library provides a set of layers to build applications that can communicate with a Debugger or Synchroniser.
 
