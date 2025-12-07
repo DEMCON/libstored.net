@@ -134,6 +134,14 @@ public class TerminalLayer : ProtocolLayer
     }
 
     /// <inheritdoc />
+    public override void Disconnected()
+    {
+        _data.Clear();
+        _decodingMessage = false;
+        base.Disconnected();
+    }
+
+    /// <inheritdoc />
     public override int Mtu() => base.Mtu() switch
     {
         0 => 0, // No limit

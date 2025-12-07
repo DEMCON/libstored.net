@@ -129,6 +129,13 @@ public class Crc32Layer : ProtocolLayer
     }
 
     /// <inheritdoc />
+    public override void Disconnected()
+    {
+        _crc = _init;
+        base.Disconnected();
+    }
+
+    /// <inheritdoc />
     public override int Mtu() => base.Mtu() switch
     {
         0 => 0,

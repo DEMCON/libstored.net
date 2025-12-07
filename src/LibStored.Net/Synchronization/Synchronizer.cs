@@ -1,5 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2025 Guus Kuiper
-// 
+//
 // SPDX-License-Identifier: MIT
 
 namespace LibStored.Net.Synchronization;
@@ -147,6 +147,18 @@ public class Synchronizer
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Returns if the given store is currently connected over the given connection.
+    /// </summary>
+    /// <param name="journal"></param>
+    /// <param name="connection"></param>
+    /// <returns></returns>
+    public bool IsConnected(StoreJournal journal, SyncConnection connection)
+    {
+        SyncConnection? c = _connections.Contains(connection) ? connection : null;
+        return c is not null && c.IsConnected(journal);
     }
 
     internal StoreJournal? ToJournal(string hash)

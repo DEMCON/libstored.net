@@ -1,5 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2025 Guus Kuiper
-// 
+//
 // SPDX-License-Identifier: MIT
 
 using System.Buffers;
@@ -18,14 +18,22 @@ public class StoreInfo
     /// Gets or sets the last known sequence number for the store.
     /// </summary>
     public Seq Seq { get; set; }
+
     /// <summary>
     /// Gets or sets the outgoing ID for the store in the connection.
+    /// The value 0 indicates not connected.
     /// </summary>
     public Id IdOut { get; set; }
+
     /// <summary>
     /// Gets or sets a value indicating whether this store is a source in the connection.
     /// </summary>
     public bool Source { get; set; }
+
+    /// <summary>
+    ///
+    /// </summary>
+    public bool IsConnected => IdOut != 0;
 }
 
 /// <summary>
@@ -133,7 +141,7 @@ public class SyncConnection : Protocol.ProtocolLayer
             return 0;
         }
 
-        if (!store.HasChanged(info.Seq))
+        if (!info.IsConnected || !store.HasChanged(info.Seq))
         {
             // No recent changes
             return 0;
@@ -209,6 +217,7 @@ public class SyncConnection : Protocol.ProtocolLayer
                 };
                 _stores[journal] = info;
 
+                Debug.Assert(info.IsConnected);
                 id = NextId();
                 _idIn[id] = journal;
                 EncodeId(id);
@@ -246,6 +255,7 @@ public class SyncConnection : Protocol.ProtocolLayer
                 info.Seq = seq;
                 info.IdOut = welcomeId;
                 Debug.Assert(info.Source);
+                Debug.Assert(info.IsConnected);
 
                 break;
             }
@@ -300,7 +310,7 @@ public class SyncConnection : Protocol.ProtocolLayer
                     }
 
                     StoreInfo info = _stores[value];
-                    if (info.Source && info.IdOut == 0)
+                    if (info.Source && info.IsConnected)
                     {
                         HelloAgain(value);
                     }
@@ -323,7 +333,7 @@ public class SyncConnection : Protocol.ProtocolLayer
                         break;
                     }
 
-                    if (info.Source && info.IdOut == 0)
+                    if (info.Source && info.IsConnected)
                     {
                         HelloAgain(journal);
                     }
@@ -350,6 +360,13 @@ public class SyncConnection : Protocol.ProtocolLayer
     public bool IsSynchronizing(StoreJournal journal) => _stores.ContainsKey(journal);
 
     /// <summary>
+    /// Returns if the given store is currently connected over this connection.
+    /// </summary>
+    /// <param name="journal"></param>
+    /// <returns></returns>
+    public bool IsConnected(StoreJournal journal) => _stores.TryGetValue(journal, out StoreInfo? info) && info.IsConnected;
+
+    /// <summary>
     /// Resets the connection, drops all non-source stores, and sends Hello messages for sources.
     /// </summary>
     public override void Reset()
@@ -359,6 +376,20 @@ public class SyncConnection : Protocol.ProtocolLayer
         DropNonSources();
         base.Reset();
         HelloAgain();
+    }
+
+    /// <inheritdoc />
+    public override void Connected()
+    {
+        HelloAgain();
+        base.Connected();
+    }
+
+    /// <inheritdoc />
+    public override void Disconnected()
+    {
+        DropNonSources();
+        base.Disconnected();
     }
 
     /// <summary>
@@ -372,7 +403,7 @@ public class SyncConnection : Protocol.ProtocolLayer
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="hash"></param>
     protected void SendBye(string hash)
@@ -572,6 +603,7 @@ public class SyncConnection : Protocol.ProtocolLayer
         Id id = _idIn.FirstOrDefault(x => x.Value == store).Key;
 
         Debug.Assert(id > 0);
+        Debug.Assert(!info.IsConnected);
 
         EncodeCmd(SyncConnection.Hello);
         store.EncodeHash(this, false);

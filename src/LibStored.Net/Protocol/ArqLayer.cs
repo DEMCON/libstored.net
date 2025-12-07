@@ -29,7 +29,7 @@ public enum ArqEvent
     /// </summary>
     Retransmit,
     /// <summary>
-    /// A connection has been establised.
+    /// A connection has been established.
     /// </summary>
     Connected,
 }
@@ -95,6 +95,11 @@ public class ArqLayer : ProtocolLayer
     /// </summary>
     public event EventHandler<ArqEventArgs>? EventOccurred;
 
+    /// <summary>
+    /// Gets whether this ARQ layer has an established connection.
+    /// </summary>
+    public bool IsConnected => _connected;
+
     /// <inheritdoc />
     public override void Reset()
     {
@@ -112,7 +117,7 @@ public class ArqLayer : ProtocolLayer
         _recvSeq = 0;
         _buffer.Clear();
 
-        // base.Disconnected();
+        base.Disconnected();
         base.Reset();
         KeepAlive();
     }
@@ -202,7 +207,7 @@ public class ArqLayer : ProtocolLayer
                         // This is an ack to our reset message.
                         _connected = true;
                         _recvSeq = NextSeq(0);
-                        // Libstored uses a method, here an event is used.
+                        base.Connected();
                         Event(ArqEvent.Connected);
                     }
                 }
@@ -231,7 +236,7 @@ public class ArqLayer : ProtocolLayer
                         Event(ArqEvent.Reconnect);
                     }
 
-                    // base.Disconnected()
+                    base.Disconnected();
                 }
             }
             else if(headerSeq == _recvSeq)
@@ -330,6 +335,18 @@ public class ArqLayer : ProtocolLayer
     /// </summary>
     /// <returns>True when a message was sent.</returns>
     public bool Process() => Transmit();
+
+    /// <summary>
+    /// Don't propagate the connected event.
+    /// A reconnection is handled by this layer itself, via re-transmits or resets.
+    /// </summary>
+    public override void Connected() {}
+
+    /// <summary>
+    /// Don't propagate the disconnected event.
+    /// A reconnection is handled by this layer itself, via re-transmits or resets.
+    /// </summary>
+    public override void Disconnected() {}
 
     /// <summary>
     /// Transmit the first message in the encode queue.
