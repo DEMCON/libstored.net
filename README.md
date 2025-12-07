@@ -171,7 +171,7 @@ The ZeroMQ socket type changed from `PAIR` to `DEALER` for the SyncZeroMQLayer. 
 
 ## Build
 
-Install the [.NET SDK](https://dotnet.microsoft.com/download), version 9.0 or higher, and run the following command in the root directory of the project:
+Install the [.NET SDK](https://dotnet.microsoft.com/download), version 10.0 or higher, and run the following command in the root directory of the project:
 
 Build the library and examples:
 ```bash
