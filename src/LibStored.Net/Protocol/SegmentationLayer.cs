@@ -113,6 +113,20 @@ public class SegmentationLayer : ProtocolLayer
     /// <inheritdoc />
     public override int Mtu() => 0; // No MTU limit for segmentation layer
 
+    /// <inheritdoc />
+    public override void Connected()
+    {
+        _encoded = 0;
+        base.Connected();
+    }
+
+    /// <inheritdoc />
+    public override void Disconnected()
+    {
+        _decodeBuffer.Clear();
+        base.Disconnected();
+    }
+
     private int LowerMtu()
     {
         int lowerMtu = base.Mtu();

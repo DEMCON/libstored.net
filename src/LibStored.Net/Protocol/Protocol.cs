@@ -1,5 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2025 Guus Kuiper
-// 
+//
 // SPDX-License-Identifier: MIT
 
 namespace LibStored.Net.Protocol;
@@ -69,14 +69,51 @@ public class ProtocolLayer
     /// <param name="up">The upper protocol layer to wrap.</param>
     public void Wrap(ProtocolLayer up)
     {
-        if (up._down is not null)
+        // Disconnect our old upper layer.
+        ProtocolLayer? oldUp = _up;
+        if (oldUp is not null)
         {
-            throw new InvalidOperationException("Cannot wrap a layer that already has a down layer.");
+            oldUp._down = null;
+            _up = null;
         }
 
+        // Inject ourselves below the given layer.
+        ProtocolLayer? currentBottom = Bottom();
+        ProtocolLayer? injectAbove = up._down;
+
+        if (injectAbove is not null)
+        {
+            currentBottom._down = injectAbove;
+            injectAbove._up = currentBottom;
+            currentBottom = injectAbove.Bottom();
+        }
+
+        // Set out new upper layer
         up._down = this;
         _up = up;
+
+        // Invoke all notifications.
+        oldUp?.Disconnected();
+
+        if (injectAbove is not null)
+        {
+            currentBottom.Connected();
+        }
+        else
+        {
+            up.Connected();
+        }
     }
+
+    /// <summary>
+    /// (Re)connected notification (bottom-up).
+    /// </summary>
+    public virtual void Connected() => _up?.Connected();
+
+    /// <summary>
+    /// Disconnected notification (bottom-up).
+    /// </summary>
+    public virtual void Disconnected() => _up?.Disconnected();
 
     private ProtocolLayer Bottom()
     {
